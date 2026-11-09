@@ -23,7 +23,8 @@ npm run dev            # 개발 서버
 npm test               # Vitest
 npm run validate       # 데이터 ID 참조 무결성 검사
 npm run assets         # art/source → public/assets 정규화
-npm run build:release  # 더블클릭으로 열리는 단일 index.html 빌드
+npm run build:release  # release/ConfessionWard_v1.0_web.zip 생성 (index.html 더블클릭 실행)
+npm run test:release   # zip을 풀어 file://로 열고 자동 플레이 확인 (Playwright)
 ```
 (단계 1에서 실제 스크립트를 만들면 이 목록을 맞게 고친다.)
 
@@ -49,7 +50,11 @@ npm run build:release  # 더블클릭으로 열리는 단일 index.html 빌드
 - 이미지에 읽을 글자를 굽지 않는다. 문서 내용은 HTML로 표시한다.
 
 ### 제출 호환
-- 최종 빌드는 `file://`로 더블클릭해 열려야 한다. 런타임에 `fetch()`로 파일을 읽지 않는다. 데이터는 import, 이미지는 번들에 포함한다.
+- 최종 빌드는 zip을 풀고 `index.html`을 더블클릭(`file://`)해서 열려야 한다. 세부 규칙은 `docs/이전계획.md` 6.2.
+  - JS·CSS는 `index.html`에 인라인. 런타임 `fetch()`/XHR 금지. 데이터는 TS import.
+  - 이미지는 `./assets/` 상대경로, Phaser `loader.imageLoadType: 'HTMLImageElement'`.
+  - 폰트는 base64 인라인 또는 시스템 폰트.
+- README는 `docs/이전계획.md` 6.4 템플릿 순서를 유지한다.
 - `localStorage` 접근은 try/catch로 감싼다.
 
 ### 원본 보호

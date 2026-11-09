@@ -1,0 +1,20 @@
+{
+  "evidence": [
+    { "id": "E01_last_letter", "title": "박은지의 마지막 편지", "description": "새 삶이라는 병원의 표현과 사라진 환자들에 대한 공포가 담긴 편지.", "sourceType": 3, "acquiredSceneId": "scene_01_office", "sourceCharacterId": "park_eunji", "timestamp": "의뢰 전날" },
+    { "id": "E02_altar_blood", "title": "기도대 아래 혈흔", "description": "놋쇠 기도대 받침 아래에 닦이지 않은 혈흔이 남아 있다.", "sourceType": 0, "acquiredSceneId": "room_director", "sourceCharacterId": "", "timestamp": "사건 현장" },
+    { "id": "E03_preliminary_exam", "title": "예비 검안 메모", "description": "기도대 옆 바닥에서 후두부 열상과 미약 호흡을 확인했다는 삭제 전 기록.", "sourceType": 1, "acquiredSceneId": "room_director", "sourceCharacterId": "oh_miran", "timestamp": "22:47" },
+    { "id": "E04_wristband_fragment", "title": "찢어진 손목띠 조각", "description": "원장실에서 발견된 정하늘의 환자 손목띠 조각.", "sourceType": 0, "acquiredSceneId": "room_director", "sourceCharacterId": "jeong_haneul", "timestamp": "사건 현장" },
+    { "id": "E05_access_log", "title": "원장실 출입 기록", "description": "22시 41분 청소용 마스터키로 원장실 문이 열린 기록.", "sourceType": 1, "acquiredSceneId": "floor2", "sourceCharacterId": "", "timestamp": "22:41" },
+    { "id": "E06_torn_sleeve", "title": "찢어진 환자복 소매", "description": "채소연이 본 정하늘의 찢어진 소매와 병실 복귀 시각에 관한 진술.", "sourceType": 2, "acquiredSceneId": "room_jeong", "sourceCharacterId": "chae_soyeon", "timestamp": "22:51" },
+    { "id": "E07_report_revision", "title": "검안 기록 수정 이력", "description": "백선우 계정으로 발견 위치와 상처, 생존 상태가 수정된 기록.", "sourceType": 1, "acquiredSceneId": "room_baek", "sourceCharacterId": "baek_sunwoo", "timestamp": "23:16" },
+    { "id": "E08_miran_revised", "title": "오미란의 수정 진술", "description": "원장이 바닥에 있었고 백선우와 이혜정 도착 뒤 시신 위치가 바뀌었다는 진술.", "sourceType": 2, "acquiredSceneId": "room_oh", "sourceCharacterId": "oh_miran", "timestamp": "22:47~22:55" },
+    { "id": "E09_sedative_gap", "title": "진정제 재고 불일치", "description": "진정제 1회분 누락과 원장실 현장 주사기가 맞물리는 기록.", "sourceType": 1, "acquiredSceneId": "room_oh", "sourceCharacterId": "", "timestamp": "사건 당일" },
+    { "id": "E10_consent_forms", "title": "위조 동의서 묶음", "description": "특별 치료 대상자의 서명이 서로 다른 필체로 작성된 동의서.", "sourceType": 1, "acquiredSceneId": "room_lee", "sourceCharacterId": "lee_hyejeong", "timestamp": "최근 8개월" },
+    { "id": "E11_transfer_order", "title": "화장·환자 이송 지시", "description": "원장 화장과 특별 치료 환자, 지하 자료의 동시 반출을 지시한 문서.", "sourceType": 1, "acquiredSceneId": "room_lee", "sourceCharacterId": "lee_hyejeong", "timestamp": "23:24" },
+    { "id": "E12_ledger", "title": "특별 치료 장부", "description": "P-271이 2주 전 처리 완료됐고 선정·승인·진행 담당 약자가 적힌 장부.", "sourceType": 1, "acquiredSceneId": "basement", "sourceCharacterId": "", "timestamp": "2주 전" },
+    { "id": "E13_identity_map", "title": "환자번호-코드 연결표", "description": "박은지의 입원번호 EW-0827과 P-271을 연결하는 표.", "sourceType": 1, "acquiredSceneId": "basement", "sourceCharacterId": "", "timestamp": "2주 전" },
+    { "id": "E14_belongings_diary", "title": "박은지의 유품과 일기", "description": "노란 실팔찌와 목걸이, 정하늘에게 책임이 없다고 남긴 일기 마지막 장.", "sourceType": 0, "acquiredSceneId": "basement", "sourceCharacterId": "park_eunji", "timestamp": "2주 전" },
+    { "id": "E15_transport_manifest", "title": "생체 보존물 운송표", "description": "수용 병원이 비어 있고 백선우 결재와 이혜정 관리번호가 함께 적힌 운송표.", "sourceType": 1, "acquiredSceneId": "basement", "sourceCharacterId": "baek_sunwoo", "timestamp": "2주 전" },
+    { "id": "E16_secure_receipt", "title": "외부 보관 전송 영수증", "description": "촬영 기록과 음성 메모가 외부 보관소와 박은호에게 보존됐다는 확인서.", "sourceType": 1, "acquiredSceneId": "basement_exit", "sourceCharacterId": "park_eunho", "timestamp": "최종 보고 전" }
+  ]
+}

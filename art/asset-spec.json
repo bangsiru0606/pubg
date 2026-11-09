@@ -1,0 +1,26 @@
+{
+  "_comment": "논리 해상도 480x270. 1유닛(craft_on) = 45px (카메라 orthographicSize 3 → 화면 높이 6유닛 = 270px). 높이 값 = craft_on targetWorldHeight(유닛) x 45.",
+  "pxPerUnit": 45,
+  "colours": 48,
+  "sequences": [
+    { "id": "player", "src": "Art/Player", "frames": ["idle_0","idle_1","walk_0","walk_1","walk_2","walk_3"], "canvasHeight": 90, "colours": 64, "note": "캐릭터 2유닛 = 90px. 프레임 캔버스 전체를 같은 배율로 축소(잘라내지 않음, 하단 중앙 피벗)" },
+    { "id": "eunho",  "src": "Art/ParkEunho", "frames": ["idle_0","idle_1","walk_0","walk_1","walk_2","walk_3","walk_4","walk_5"], "canvasHeight": 90, "colours": 64 }
+  ],
+  "sprites": [
+    { "id": "door",           "src": "Resources/Art/Office/door.png",           "height": 117, "note": "2.6u" },
+    { "id": "window",         "src": "Resources/Art/Office/window.png",         "height": 90,  "note": "2.0u" },
+    { "id": "desk_bg",        "src": "Resources/Art/Office/desk_bg.png",        "height": 59,  "note": "1.3u" },
+    { "id": "evidence_board", "src": "Resources/Art/Office/evidence_board.png", "height": 90,  "note": "2.0u" },
+    { "id": "wall",           "src": "Resources/Art/Office/wall.png",           "height": 270, "note": "6u, 가로 타일" },
+    { "id": "floor",          "src": "Resources/Art/Office/floor.png",          "height": 124, "note": "470/170u, 가로 타일" },
+    { "id": "floor_topband",  "src": "Resources/Art/Office/floor_topband.png",  "height": 11,  "note": "40/170u, 가로 타일" }
+  ],
+  "illust": [
+    "Art/Portraits/*.png",
+    "Resources/Art/Cutscenes/hospital_intro.png",
+    "Resources/Art/Office/desk.png", "Resources/Art/Office/hat.png", "Resources/Art/Office/hat_detail.png",
+    "Resources/Art/Office/calendar.png", "Resources/Art/Office/calendar_detail.png",
+    "Resources/Art/Office/item_letter.png"
+  ],
+  "unused": ["Resources/Art/Office/newspaper.png", "Resources/Art/Office/newspaper_detail.png"]
+}

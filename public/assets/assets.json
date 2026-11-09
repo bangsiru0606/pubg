@@ -1,0 +1,86 @@
+{
+ "door": {
+  "w": 75,
+  "h": 117
+ },
+ "window": {
+  "w": 67,
+  "h": 90
+ },
+ "desk_bg": {
+  "w": 70,
+  "h": 59
+ },
+ "evidence_board": {
+  "w": 118,
+  "h": 90
+ },
+ "wall": {
+  "w": 411,
+  "h": 270
+ },
+ "floor": {
+  "w": 346,
+  "h": 124
+ },
+ "floor_topband": {
+  "w": 360,
+  "h": 11
+ },
+ "player_idle_0": {
+  "w": 53,
+  "h": 90
+ },
+ "player_idle_1": {
+  "w": 53,
+  "h": 90
+ },
+ "player_walk_0": {
+  "w": 53,
+  "h": 90
+ },
+ "player_walk_1": {
+  "w": 53,
+  "h": 90
+ },
+ "player_walk_2": {
+  "w": 53,
+  "h": 90
+ },
+ "player_walk_3": {
+  "w": 53,
+  "h": 90
+ },
+ "eunho_idle_0": {
+  "w": 53,
+  "h": 90
+ },
+ "eunho_idle_1": {
+  "w": 53,
+  "h": 90
+ },
+ "eunho_walk_0": {
+  "w": 53,
+  "h": 90
+ },
+ "eunho_walk_1": {
+  "w": 53,
+  "h": 90
+ },
+ "eunho_walk_2": {
+  "w": 53,
+  "h": 90
+ },
+ "eunho_walk_3": {
+  "w": 53,
+  "h": 90
+ },
+ "eunho_walk_4": {
+  "w": 53,
+  "h": 90
+ },
+ "eunho_walk_5": {
+  "w": 53,
+  "h": 90
+ }
+}

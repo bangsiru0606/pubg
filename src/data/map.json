@@ -1,0 +1,16 @@
+{
+  "_comment": "craft_on StoryBuilder.BuildOffice 이전. 단위 px (1유닛=45px). 오브젝트 x는 하단 중앙 기준, y는 groundY에서 위로 올라간 높이(bottom).",
+  "office": {
+    "minX": -90, "maxX": 630, "groundY": 158,
+    "playerStartX": 180, "playerSpeed": 135,
+    "objects": [
+      { "id": "window",         "tex": "window",         "x": 157.5, "bottom": 54 },
+      { "id": "desk_bg",        "tex": "desk_bg",        "x": 67.5,  "bottom": 0 },
+      { "id": "evidence_board", "tex": "evidence_board", "x": 315,   "bottom": 54 },
+      { "id": "door",           "tex": "door",           "x": 540,   "bottom": 0 }
+    ],
+    "npcs": [
+      { "id": "eunho", "x": 495, "flipX": true }
+    ]
+  }
+}

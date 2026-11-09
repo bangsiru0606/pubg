@@ -1,0 +1,35 @@
+// zip을 임시 폴더에 풀어 file:// 로 열고 자동 확인
+import AdmZip from 'adm-zip';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { launch } from './browser';
+
+const dir = mkdtempSync(join(tmpdir(), 'cw-'));
+new AdmZip('release/ConfessionWard_v1.0_web.zip').extractAllTo(dir, true);
+const url = pathToFileURL(join(dir, 'ConfessionWard_v1.0_web', 'index.html')).href;
+
+const browser = await launch();
+const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
+const errors: string[] = [];
+page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+page.on('pageerror', (e) => errors.push(String(e)));
+page.on('requestfailed', (r) => errors.push(`requestfailed ${r.url()}`));
+await page.goto(url);
+await page.waitForFunction(() => (window as any).__game?.scene.getScene('Explore')?.player, null, { timeout: 10000 });
+const px = () => page.evaluate(() => (window as any).__game.scene.getScene('Explore').player.x as number);
+const x0 = await px();
+await page.keyboard.down('ArrowRight');
+await page.waitForTimeout(600);
+await page.keyboard.up('ArrowRight');
+const x1 = await px();
+const canvas = await page.evaluate(() => { const c = document.querySelector('canvas'); return c ? [c.width, c.height] : null; });
+await browser.close();
+
+const fail: string[] = [];
+if (errors.length) fail.push(`콘솔 오류 ${errors.length}건: ${errors.join(' | ')}`);
+if (!canvas || canvas[0] !== 480 || canvas[1] !== 270) fail.push(`캔버스 이상: ${canvas}`);
+if (!(x1 > x0)) fail.push(`이동 안 됨: ${x0} → ${x1}`);
+if (fail.length) { console.error('FAIL\n' + fail.join('\n')); process.exit(1); }
+console.log(`OK file:// 콘솔 오류 0, 캔버스 ${canvas}, x ${x0.toFixed(1)} → ${x1.toFixed(1)}`);

@@ -25,8 +25,11 @@ npm run validate       # 데이터 ID 참조 무결성 검사
 npm run assets         # art/source → public/assets 정규화
 npm run build:release  # release/ConfessionWard_v1.0_web.zip 생성 (index.html 더블클릭 실행)
 npm run test:release   # zip을 풀어 file://로 열고 자동 플레이 확인 (Playwright)
+npm run build           # tsc + vite build (dist/)
+npm run screenshot      # release zip을 열어 사무실 화면을 ×4로 캡처 (docs/screenshots/)
 ```
-(단계 1에서 실제 스크립트를 만들면 이 목록을 맞게 고친다.)
+
+- test:release 는 시스템 Chrome → Edge 순으로 사용한다 (`BROWSER=msedge` 로 지정 가능). Playwright 번들 브라우저는 설치하지 않는다.
 
 ## 절대 규칙
 

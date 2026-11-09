@@ -1,12 +1,4 @@
 node_modules/
 dist/
 release/
-src-tauri/target/
-.vite/
-*.log
-.DS_Store
-Thumbs.db
-.env
-coverage/
-playwright-report/
-test-results/
+.tmp/

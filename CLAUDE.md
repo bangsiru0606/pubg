@@ -10,7 +10,7 @@ Claude Code는 이 파일(`CLAUDE.md`), Codex는 `AGENTS.md`를 읽는다. 두 �
 
 ## 스택
 
-- Vite + TypeScript(strict) + Phaser 3 (탐색 화면)
+- Vite + TypeScript(strict) + Phaser 4 (탐색 화면)
 - HTML/CSS 오버레이 (대화, 사건 수첩, 근접 조사, 퍼즐, 최종 보고서, 엔딩)
 - Vitest (테스트), Playwright (file:// 실행 검증)
 - 선택: Tauri 2 (Windows exe)

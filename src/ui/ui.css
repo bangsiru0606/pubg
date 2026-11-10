@@ -1,0 +1,82 @@
+/* 논리 해상도 480×270 기준 px. #ui 전체가 정수 배율로 확대된다. 바닥선 y=158 아래(약 112px)가 대화창·프롬프트 자리. */
+#stage { position: relative; overflow: hidden; background: #000; }
+#ui {
+  position: absolute; left: 0; top: 0; width: 480px; height: 270px; transform-origin: 0 0;
+  font: 10px/1.4 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: #e8e2d4;
+  user-select: none; pointer-events: none;
+}
+#ui > * { pointer-events: auto; }
+#ui button { font: inherit; color: inherit; }
+.hidden { display: none !important; }
+
+/* 프롬프트 */
+.prompt {
+  position: absolute; left: 50%; top: 176px; transform: translateX(-50%); text-align: center;
+  background: rgba(14,16,20,.88); border: 1px solid #8a7f68; padding: 3px 10px; white-space: nowrap; pointer-events: none;
+}
+.prompt .lbl { color: #e2c98a; }
+.prompt kbd { background: #3a4a58; padding: 0 3px; border-radius: 2px; font: inherit; margin-right: 3px; }
+.toast {
+  position: absolute; left: 50%; top: 8px; transform: translateX(-50%); background: rgba(14,16,20,.92);
+  border: 1px solid #e2c98a; padding: 3px 10px; white-space: nowrap; pointer-events: none;
+}
+.hint { position: absolute; right: 6px; top: 4px; color: #b8b09c; font-size: 8px; pointer-events: none; }
+.fade { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity linear; }
+
+/* 대화창 */
+.dlg {
+  position: absolute; left: 0; right: 0; top: 158px; bottom: 0; background: rgba(14,16,20,.95);
+  border-top: 1px solid #8a7f68; padding: 4px 8px 4px 8px; box-sizing: border-box;
+}
+.dlg.has-portrait { padding-left: 82px; }
+.dlg .portrait { position: absolute; left: 6px; bottom: 3px; height: 104px; width: auto; }
+.dlg .name { color: #e2c98a; font-weight: 700; }
+.dlg .text { min-height: 28px; white-space: pre-wrap; }
+.dlg .msg { color: #9fb4c8; min-height: 12px; }
+.dlg .opts { margin-top: 1px; }
+.opt { padding: 0 4px; cursor: pointer; display: block; width: 100%; text-align: left; background: none; border: 0; }
+.opt.sel { background: #3a4a58; color: #fff; }
+.opt.dis { color: #77746a; }
+.opt .box { display: inline-block; width: 10px; }
+.cont { color: #b8b09c; text-align: right; }
+.st-unconfirmed { color: #b9b9b9; }
+.st-contradiction { color: #f08a8a; text-decoration: underline; text-decoration-color: #e05050; }
+.st-revised s { color: #888; } .st-revised b { color: #cfe9c8; font-weight: 400; }
+
+/* 전체 화면 모달 (수첩·근접 조사·원문 보기) */
+.modal { position: absolute; inset: 0; background: #14161a; box-sizing: border-box; }
+.tabs { display: flex; gap: 2px; height: 16px; border-bottom: 1px solid #55503f; padding: 2px 4px 0; }
+.tab { padding: 0 6px; background: #22252b; cursor: pointer; border: 0; }
+.tab.sel { background: #4a5662; color: #fff; }
+.nbody { position: absolute; left: 0; right: 0; top: 18px; bottom: 12px; display: flex; }
+.nlist { width: 160px; border-right: 1px solid #55503f; padding: 2px; overflow: hidden; }
+.ndetail { flex: 1; padding: 4px 8px; overflow: hidden; }
+.row { padding: 0 3px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; width: 100%; text-align: left; background: none; border: 0; }
+.row.sel { background: #3a4a58; color: #fff; }
+.row.dis { color: #77746a; }
+.tag { display: inline-block; font-size: 8px; padding: 0 3px; margin-right: 3px; border-radius: 2px; background: #333a42; color: #cdd; }
+.t-physical { background: #5a4630; } .t-record { background: #2f4a5c; } .t-testimony { background: #4a3a5c; } .t-context { background: #444; }
+.ver { color: #9fd49a; } .unver { color: #e0b070; }
+.ndetail h3 { margin: 0 0 2px; font-size: 11px; color: #e2c98a; }
+.ndetail p { margin: 2px 0; }
+.meta { color: #a9a290; font-size: 8px; }
+.warn { color: #e0b070; }
+.note { color: #9fb4c8; }
+.foot { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; padding: 0 6px; color: #8f8873; font-size: 8px; border-top: 1px solid #333; }
+.claimq { margin: 0 0 3px; color: #e2c98a; }
+.slotlbl { color: #a9a290; font-size: 8px; }
+.picker { position: absolute; left: 170px; right: 4px; top: 22px; bottom: 16px; background: #1d2026; border: 1px solid #8a7f68; padding: 3px; z-index: 5; }
+
+/* 근접 조사 */
+.closeup { background: #000; }
+.closeup .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.7); }
+.closeup .title { position: absolute; left: 0; right: 0; top: 4px; text-align: center; color: #e2c98a; text-shadow: 0 0 2px #000; }
+.hot { position: absolute; transform: translate(-50%, -50%); cursor: pointer; background: none; border: 0; padding: 0; filter: brightness(.8); }
+.hot img { display: block; width: 100%; height: auto; }
+.hot:hover, .hot.sel { filter: brightness(1.25) drop-shadow(0 0 3px #e2c98a); }
+.hot .hl { position: absolute; left: 50%; top: -12px; transform: translateX(-50%); background: rgba(0,0,0,.75); padding: 0 4px; white-space: nowrap; display: none; }
+.hot:hover .hl, .hot.sel .hl { display: block; }
+.exit { position: absolute; right: 6px; bottom: 6px; background: #2f4030; border: 1px solid #8a7f68; padding: 1px 8px; cursor: pointer; }
+.detail { position: absolute; inset: 0; background: rgba(0,0,0,.88); display: flex; align-items: center; justify-content: center; z-index: 3; }
+.detail img { max-height: 262px; max-width: 470px; }
+.viewer { padding: 10px 16px; font-size: 11px; line-height: 1.5; }

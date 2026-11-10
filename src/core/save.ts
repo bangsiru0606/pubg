@@ -22,6 +22,7 @@ export function loadGame(store: KeyValueStore | null = defaultStore()): GameStat
     if (typeof o !== 'object' || o === null) return null;
     const base = createGameState();
     for (const k of Object.keys(base) as (keyof GameState)[]) {
+      if (!(k in o)) continue; // 이전 버전 저장본: 없는 필드는 기본값
       if (k === 'reportTarget') { if (o[k] !== null && typeof o[k] !== 'string') return null; continue; }
       if (typeof o[k] !== typeof base[k] || Array.isArray(o[k]) !== Array.isArray(base[k])) return null;
     }

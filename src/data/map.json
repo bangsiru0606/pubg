@@ -1,16 +1,507 @@
 {
-  "_comment": "craft_on StoryBuilder.BuildOffice 이전. 단위 px (1유닛=45px). 오브젝트 x는 하단 중앙 기준, y는 groundY에서 위로 올라간 높이(bottom).",
-  "office": {
-    "minX": -90, "maxX": 630, "groundY": 158,
-    "playerStartX": 180, "playerSpeed": 135,
-    "objects": [
-      { "id": "window",         "tex": "window",         "x": 157.5, "bottom": 54 },
-      { "id": "desk_bg",        "tex": "desk_bg",        "x": 67.5,  "bottom": 0 },
-      { "id": "evidence_board", "tex": "evidence_board", "x": 315,   "bottom": 54 },
-      { "id": "door",           "tex": "door",           "x": 540,   "bottom": 0 }
-    ],
-    "npcs": [
-      { "id": "eunho", "x": 495, "flipX": true }
-    ]
+ "_comment": "craft_on StoryBuilder 좌표(1유닛=45px) 이전 + 보정판 8장 배치. 단위 px. x 는 하단 중앙. requires: 플래그 이름 또는 @basement_open.",
+ "groundY": 158,
+ "playerSpeed": 135,
+ "runMultiplier": 2,
+ "interactRange": 45,
+ "startArea": "office",
+ "startX": 180,
+ "themes": {
+  "hospital": {
+   "wall": "#5d7373",
+   "floor": "#3c4747"
+  },
+  "admin": {
+   "wall": "#6b6458",
+   "floor": "#43403a"
+  },
+  "ward": {
+   "wall": "#66787a",
+   "floor": "#3a4546"
+  },
+  "basement": {
+   "wall": "#3a4048",
+   "floor": "#262b31"
   }
+ },
+ "areas": {
+  "office": {
+   "name": "탐정 사무실",
+   "theme": "office",
+   "minX": -90,
+   "maxX": 630,
+   "objects": [
+    {
+     "id": "window",
+     "tex": "window",
+     "x": 157.5,
+     "bottom": 54
+    },
+    {
+     "id": "desk_bg",
+     "tex": "desk_bg",
+     "x": 67.5,
+     "bottom": 0
+    },
+    {
+     "id": "evidence_board",
+     "tex": "evidence_board",
+     "x": 315,
+     "bottom": 54
+    },
+    {
+     "id": "door",
+     "tex": "door",
+     "x": 540,
+     "bottom": 0
+    }
+   ],
+   "interactables": [
+    {
+     "type": "examine",
+     "id": "desk",
+     "x": 67.5,
+     "name": "책상",
+     "closeup": "office_desk"
+    },
+    {
+     "type": "npc",
+     "id": "eunho",
+     "x": 495,
+     "name": "박은호",
+     "dialogueId": "eunho_intro"
+    },
+    {
+     "type": "transition",
+     "id": "door_out",
+     "x": 540,
+     "label": "[나가기]",
+     "to": "floor1",
+     "spawnX": 0,
+     "kind": "door",
+     "requires": "intro_done"
+    }
+   ],
+   "npcSprite": {
+    "eunho": "eunho"
+   },
+   "flipNpc": [
+    "eunho"
+   ]
+  },
+  "floor1": {
+   "name": "1층 로비+복도",
+   "theme": "hospital",
+   "minX": -360,
+   "maxX": 1800,
+   "interactables": [
+    {
+     "type": "npc",
+     "id": "baek",
+     "x": 180,
+     "name": "백선우",
+     "dialogueId": "baek_lobby",
+     "autoTrigger": {
+      "x": 112.5,
+      "width": 45
+     }
+    },
+    {
+     "type": "transition",
+     "id": "door_director",
+     "x": 585,
+     "label": "[원장실] 들어가기",
+     "to": "room_director",
+     "spawnX": 360,
+     "kind": "door",
+     "requires": "office_access_granted"
+    },
+    {
+     "type": "examine",
+     "id": "exam_note",
+     "x": 1260,
+     "name": "검안 메모",
+     "evidenceId": "E03_preliminary_exam"
+    },
+    {
+     "type": "transition",
+     "id": "stairs_b1",
+     "x": 1440,
+     "label": "[지하로 내려가기]",
+     "to": "b1",
+     "spawnX": 0,
+     "kind": "stairs",
+     "requires": "@basement_open"
+    },
+    {
+     "type": "transition",
+     "id": "stairs_up",
+     "x": 1620,
+     "label": "[2층 올라가기]",
+     "to": "floor2",
+     "spawnX": 0,
+     "kind": "stairs"
+    }
+   ]
+  },
+  "room_director": {
+   "name": "원장실",
+   "theme": "admin",
+   "minX": -180,
+   "maxX": 900,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "exit",
+     "x": 360,
+     "label": "복도로 나가기",
+     "to": "floor1",
+     "spawnX": 585,
+     "kind": "door"
+    },
+    {
+     "type": "examine",
+     "id": "altar",
+     "x": 90,
+     "name": "기도대 아래",
+     "evidenceId": "E02_altar_blood"
+    },
+    {
+     "type": "examine",
+     "id": "under_desk",
+     "x": 630,
+     "name": "책상 아래",
+     "evidenceId": "E04_wristband_fragment"
+    }
+   ]
+  },
+  "floor2": {
+   "name": "2층 병동",
+   "theme": "ward",
+   "minX": -90,
+   "maxX": 1530,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "stairs_down",
+     "x": 0,
+     "label": "[1층 내려가기]",
+     "to": "floor1",
+     "spawnX": 1620,
+     "kind": "stairs"
+    },
+    {
+     "type": "transition",
+     "id": "door_201",
+     "x": 270,
+     "label": "[201호] 들어가기",
+     "to": "room_choi",
+     "spawnX": 0,
+     "kind": "door"
+    },
+    {
+     "type": "transition",
+     "id": "door_202",
+     "x": 540,
+     "label": "[202호] 들어가기",
+     "to": "room_han",
+     "spawnX": 0,
+     "kind": "door"
+    },
+    {
+     "type": "transition",
+     "id": "door_203",
+     "x": 810,
+     "label": "[203호] 들어가기",
+     "to": "room_jeong",
+     "spawnX": 0,
+     "kind": "door"
+    },
+    {
+     "type": "transition",
+     "id": "stairs_up",
+     "x": 1350,
+     "label": "[3층 올라가기]",
+     "to": "floor3",
+     "spawnX": 0,
+     "kind": "stairs"
+    }
+   ]
+  },
+  "room_choi": {
+   "name": "201호 병실",
+   "theme": "ward",
+   "minX": -45,
+   "maxX": 540,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "exit",
+     "x": 0,
+     "label": "복도로 나가기",
+     "to": "floor2",
+     "spawnX": 270,
+     "kind": "door"
+    },
+    {
+     "type": "npc",
+     "id": "choi",
+     "x": 180,
+     "name": "최옥자",
+     "dialogueId": "choi_okja"
+    }
+   ]
+  },
+  "room_han": {
+   "name": "202호 병실",
+   "theme": "ward",
+   "minX": -45,
+   "maxX": 540,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "exit",
+     "x": 0,
+     "label": "복도로 나가기",
+     "to": "floor2",
+     "spawnX": 540,
+     "kind": "door"
+    },
+    {
+     "type": "npc",
+     "id": "han",
+     "x": 180,
+     "name": "한유진",
+     "dialogueId": "han_yujin"
+    }
+   ]
+  },
+  "room_jeong": {
+   "name": "203호 병실",
+   "theme": "ward",
+   "minX": -45,
+   "maxX": 540,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "exit",
+     "x": 0,
+     "label": "복도로 나가기",
+     "to": "floor2",
+     "spawnX": 810,
+     "kind": "door"
+    },
+    {
+     "type": "npc",
+     "id": "chae",
+     "x": 225,
+     "name": "채소연",
+     "dialogueId": "chae_soyeon"
+    },
+    {
+     "type": "npc",
+     "id": "haneul",
+     "x": 405,
+     "name": "정하늘",
+     "dialogueId": "jeong_haneul"
+    }
+   ]
+  },
+  "floor3": {
+   "name": "3층 관계자 구역",
+   "theme": "admin",
+   "minX": -90,
+   "maxX": 1035,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "stairs_down",
+     "x": 0,
+     "label": "[2층 내려가기]",
+     "to": "floor2",
+     "spawnX": 1350,
+     "kind": "stairs"
+    },
+    {
+     "type": "transition",
+     "id": "door_baek",
+     "x": 315,
+     "label": "[부원장실] 들어가기",
+     "to": "room_baek",
+     "spawnX": 0,
+     "kind": "door"
+    },
+    {
+     "type": "transition",
+     "id": "door_oh",
+     "x": 630,
+     "label": "[간호사실] 들어가기",
+     "to": "room_oh",
+     "spawnX": 0,
+     "kind": "door"
+    },
+    {
+     "type": "transition",
+     "id": "door_lee",
+     "x": 945,
+     "label": "[이혜정실] 들어가기",
+     "to": "room_lee",
+     "spawnX": 0,
+     "kind": "door"
+    }
+   ]
+  },
+  "room_baek": {
+   "name": "부원장실",
+   "theme": "admin",
+   "minX": -45,
+   "maxX": 540,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "exit",
+     "x": 0,
+     "label": "복도로 나가기",
+     "to": "floor3",
+     "spawnX": 315,
+     "kind": "door"
+    },
+    {
+     "type": "npc",
+     "id": "baek",
+     "x": 180,
+     "name": "백선우",
+     "dialogueId": "baek_office"
+    },
+    {
+     "type": "examine",
+     "id": "revision",
+     "x": 360,
+     "name": "검안 기록",
+     "evidenceId": "E07_report_revision"
+    }
+   ]
+  },
+  "room_oh": {
+   "name": "간호사실",
+   "theme": "admin",
+   "minX": -45,
+   "maxX": 540,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "exit",
+     "x": 0,
+     "label": "복도로 나가기",
+     "to": "floor3",
+     "spawnX": 630,
+     "kind": "door"
+    },
+    {
+     "type": "npc",
+     "id": "miran",
+     "x": 180,
+     "name": "오미란",
+     "dialogueId": "oh_miran"
+    },
+    {
+     "type": "examine",
+     "id": "stock",
+     "x": 360,
+     "name": "진정제 재고표",
+     "evidenceId": "E09_sedative_gap"
+    },
+    {
+     "type": "examine",
+     "id": "access",
+     "x": 450,
+     "name": "출입 기록",
+     "evidenceId": "E05_access_log"
+    }
+   ]
+  },
+  "room_lee": {
+   "name": "이혜정실",
+   "theme": "admin",
+   "minX": -45,
+   "maxX": 540,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "exit",
+     "x": 0,
+     "label": "복도로 나가기",
+     "to": "floor3",
+     "spawnX": 945,
+     "kind": "door"
+    },
+    {
+     "type": "npc",
+     "id": "lee",
+     "x": 180,
+     "name": "이혜정",
+     "dialogueId": "lee_hyejeong"
+    },
+    {
+     "type": "examine",
+     "id": "forms",
+     "x": 270,
+     "name": "동의서 묶음",
+     "evidenceId": "E10_consent_forms"
+    },
+    {
+     "type": "examine",
+     "id": "order",
+     "x": 405,
+     "name": "지시서",
+     "evidenceId": "E11_transfer_order"
+    }
+   ]
+  },
+  "b1": {
+   "name": "지하 1층 창고",
+   "theme": "basement",
+   "minX": -90,
+   "maxX": 1170,
+   "interactables": [
+    {
+     "type": "transition",
+     "id": "stairs_up",
+     "x": 0,
+     "label": "[1층으로 올라가기]",
+     "to": "floor1",
+     "spawnX": 1440,
+     "kind": "stairs"
+    },
+    {
+     "type": "examine",
+     "id": "ledger",
+     "x": 270,
+     "name": "특별 치료 장부",
+     "evidenceId": "E12_ledger"
+    },
+    {
+     "type": "examine",
+     "id": "idmap",
+     "x": 405,
+     "name": "코드 연결표",
+     "evidenceId": "E13_identity_map"
+    },
+    {
+     "type": "examine",
+     "id": "belongings",
+     "x": 810,
+     "name": "유품 보관함",
+     "evidenceId": "E14_belongings_diary"
+    },
+    {
+     "type": "examine",
+     "id": "manifest",
+     "x": 945,
+     "name": "운송표",
+     "evidenceId": "E15_transport_manifest"
+    }
+   ]
+  }
+ }
 }

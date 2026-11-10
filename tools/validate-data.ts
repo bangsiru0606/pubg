@@ -1,7 +1,10 @@
 // 데이터 ID 참조 무결성 검사: npm run validate
 import { existsSync } from 'node:fs';
-import map from '../src/data/map.json' with { type: 'json' };
+import real from '../src/data/dialogue.json' with { type: 'json' };
+import fixture from '../src/data/dialogue.test-fixture.json' with { type: 'json' };
+import { areas } from '../src/explore/interaction';
 import { claims, endingLines, endings, evidenceById, evidenceList, puzzles } from '../src/core/data';
+import type { Dialogue } from '../src/core/types';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -9,13 +12,45 @@ const TYPES = ['physical', 'record', 'testimony', 'context'];
 const PUZZLE_TYPES = ['SpatialPlacement', 'Timeline', 'DocumentDiff', 'Connection', 'LogicGrid'];
 const dup = (ids: string[], what: string) => ids.forEach((id, i) => ids.indexOf(id) !== i && err(`${what} 중복 id: ${id}`));
 
-// map
-for (const o of map.office.objects) if (!existsSync(`public/assets/${o.tex}.png`)) err(`map: 누락 에셋 ${o.tex}`);
+// map / dialogue
+const dialogueIds = new Set([...Object.keys(real.dialogues), ...Object.keys(fixture.dialogues)]);
+const knownFlags = new Set<string>(['@basement_open', ...puzzles.map((p) => p.flagOnSolve)]);
+for (const d of [...Object.values(real.dialogues), ...Object.values(fixture.dialogues)] as unknown as Dialogue[])
+  for (const n of Object.values(d.nodes)) for (const f of n.onEnter?.setFlags ?? []) knownFlags.add(f);
+const needEvLater: [string, string][] = [];
+for (const [aid, a] of Object.entries(areas)) {
+  const where = `map/${aid}`;
+  if (a.minX >= a.maxX) err(`${where}: 범위 이상`);
+  for (const o of a.objects ?? []) if (!existsSync(`public/assets/${o.tex}.png`)) err(`${where}: 누락 에셋 ${o.tex}`);
+  for (const it of a.interactables) {
+    const w = `${where}/${it.id}`;
+    if (it.x < a.minX || it.x > a.maxX) err(`${w}: 구역 밖`);
+    if (it.type === 'transition') {
+      const t = areas[it.to];
+      if (!t) { err(`${w}: 없는 구역 ${it.to}`); continue; }
+      if (it.spawnX < t.minX || it.spawnX > t.maxX) err(`${w}: spawnX 가 ${it.to} 범위 밖`);
+      if (it.requires && !knownFlags.has(it.requires)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.requires}`);
+    } else if (it.type === 'examine' && it.evidenceId) needEvLater.push([it.evidenceId, w]);
+  }
+}
+for (const [did, d] of Object.entries(fixture.dialogues) as [string, Dialogue][]) {
+  if (!d.nodes[d.start]) err(`fixture ${did}: start 노드 없음`);
+  for (const [nid, n] of Object.entries(d.nodes)) {
+    const w = `fixture ${did}/${nid}`;
+    const refs = [n.next, ...(n.choices ?? []).map((c) => c.next), ...(n.present ?? []).map((p) => p.next)].filter(Boolean) as string[];
+    for (const r of refs) if (!d.nodes[r]) err(`${w}: 없는 노드 ${r}`);
+    for (const id of [...(n.onEnter?.acquire ?? []), ...(n.present ?? []).flatMap((p) => p.evidenceIds)]) needEvLater.push([id, w]);
+  }
+}
+// 지도의 NPC 대사 중 아직 없는 것은 허용(4단계에서 작성)
+const missing = Object.values(areas).flatMap((a) => a.interactables).filter((i) => i.type === 'npc' && !dialogueIds.has(i.dialogueId)).length;
 
 // evidence
 dup(evidenceList.map((e) => e.id), 'evidence');
 for (const e of evidenceList) if (!TYPES.includes(e.sourceType)) err(`${e.id}: sourceType ${e.sourceType}`);
 const needEv = (id: string, where: string) => { if (!evidenceById.has(id)) err(`${where}: 없는 단서 ${id}`); };
+
+needEvLater.forEach(([id, w]) => needEv(id, w));
 
 // puzzles
 dup(puzzles.map((p) => p.id), 'puzzle');
@@ -77,4 +112,4 @@ for (const [key, lines] of Object.entries(endingLines)) {
 }
 
 if (errors.length) { console.error(errors.map((e) => `✗ ${e}`).join('\n')); process.exit(1); }
-console.log(`validate OK (단서 ${evidenceList.length}, 질문 ${claims.length}, 퍼즐 ${puzzles.length}, 엔딩 ${endings.length})`);
+console.log(`validate OK (단서 ${evidenceList.length}, 질문 ${claims.length}, 퍼즐 ${puzzles.length}, 엔딩 ${endings.length}, 구역 ${Object.keys(areas).length}, 대사 미작성 NPC ${missing})`);

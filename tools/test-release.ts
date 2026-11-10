@@ -1,6 +1,6 @@
 // zip을 임시 폴더에 풀어 file:// 로 열고 자동 확인
 import AdmZip from 'adm-zip';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -9,6 +9,9 @@ import { launch } from './browser';
 const dir = mkdtempSync(join(tmpdir(), 'cw-'));
 new AdmZip('release/ConfessionWard_v1.0_web.zip').extractAllTo(dir, true);
 const url = pathToFileURL(join(dir, 'ConfessionWard_v1.0_web', 'index.html')).href;
+
+const html = readFileSync(join(dir, 'ConfessionWard_v1.0_web', 'index.html'), 'utf8');
+const leaked = ['〔시험용', '시험용 대사', '__cw'].filter((m) => html.includes(m));
 
 const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
@@ -28,6 +31,7 @@ const canvas = await page.evaluate(() => { const c = document.querySelector('can
 await browser.close();
 
 const fail: string[] = [];
+if (leaked.length) fail.push(`테스트 전용 내용이 제출 빌드에 포함됨: ${leaked.join(', ')}`);
 if (errors.length) fail.push(`콘솔 오류 ${errors.length}건: ${errors.join(' | ')}`);
 if (!canvas || canvas[0] !== 480 || canvas[1] !== 270) fail.push(`캔버스 이상: ${canvas}`);
 if (!(x1 > x0)) fail.push(`이동 안 됨: ${x0} → ${x1}`);

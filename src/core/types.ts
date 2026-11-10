@@ -27,6 +27,21 @@ export interface EndingLine { when: LineWhen; source: 'spec' | 'new'; text: stri
 export interface Ending { id: string; title: string; card: string; finalDialogue?: string[][] }
 export type EndingLineKey = 'haneul' | 'organization' | 'eunho';
 
+export type StatementStage = 'unconfirmed' | 'contradiction' | 'revised';
+export interface StatementRecord { text: string; speaker: string; stage: StatementStage; revisedText?: string }
+
+export interface DialogueNode {
+  speaker: string; portrait?: string; text: string;
+  next?: string;
+  choices?: { text: string; next: string; requiresFlag?: string }[];
+  statement?: { id: string };   // 이 문장은 검증 대상 진술 (9.3)
+  revises?: { id: string };     // 이 노드는 해당 진술의 정정 (text 가 새 문장)
+  present?: { evidenceIds: string[]; next: string }[]; // 이 문장에만 제시 가능한 단서 (9.2)
+  onEnter?: { acquire?: string[]; setFlags?: string[] };
+}
+export interface Dialogue { start: string; nodes: Record<string, DialogueNode> }
+export type Dialogues = Record<string, Dialogue>;
+
 export type ReportTarget = 'eunho_only' | 'external';
 
 /** 기획서 10.5 + 추가 필드(submittedRebuttalByClaim, wrongCountByPuzzle, reportTarget). 순수 데이터라 JSON 직렬화 가능. */
@@ -43,4 +58,7 @@ export interface GameState {
   wrongCountByPuzzle: Record<string, number>;
   evidenceSecured: boolean;
   reportTarget: ReportTarget | null;
+  visitedAreaIds: string[];
+  statements: Record<string, StatementRecord>;
+  presentedKeys: string[];
 }

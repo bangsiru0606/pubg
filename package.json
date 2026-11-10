@@ -11,7 +11,8 @@
     "assets": "tsx tools/normalize-assets.ts",
     "build:release": "tsx tools/build-release.ts",
     "test:release": "tsx tools/test-release.ts",
-    "screenshot": "tsx tools/screenshot.ts"
+    "screenshot": "tsx tools/screenshot.ts",
+    "test:e2e": "tsx tools/test-e2e.ts"
   },
   "dependencies": {
     "phaser": "^4.2.1"

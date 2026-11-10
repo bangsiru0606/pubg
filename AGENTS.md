@@ -27,11 +27,15 @@ npm run build:release  # release/ConfessionWard_v1.0_web.zip 생성 (index.html 
 npm run test:release   # zip을 풀어 file://로 열고 자동 플레이 확인 (Playwright)
 npm run build           # tsc + vite build (dist/)
 npm run screenshot      # release zip을 열어 사무실 화면을 ×4로 캡처 (docs/screenshots/)
+npm run test:e2e        # 테스트 전용 대사 포함 빌드(.tmp/e2e)로 이동·대화·수첩 자동 검증 (SHOTS=1 이면 docs/screenshots 에 캡처)
 ```
 
 - test:release 는 시스템 Chrome → Edge 순으로 사용한다 (`BROWSER=msedge` 로 지정 가능). Playwright 번들 브라우저는 설치하지 않는다.
 
 ## 절대 규칙
+
+### 테스트 전용 대사
+- 시스템 확인용 대사는 `src/data/dialogue.test-fixture.json` 에만 둔다. `vite build --mode e2e` 에서만 번들에 들어가며, 제출 빌드(`build:release`)에는 절대 들어가지 않는다 (`test:release` 가 검사).
 
 ### 게임 설계
 - 보정판에 없는 단서·퍼즐·인물·엔딩을 추가하지 않는다. 사용자가 요청할 때만 추가한다.

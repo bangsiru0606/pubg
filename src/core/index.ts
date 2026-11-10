@@ -6,3 +6,4 @@ export * from './deduction';
 export * from './ending';
 export * from './puzzle';
 export * from './save';
+export * from './dialogue';

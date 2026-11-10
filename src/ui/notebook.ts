@@ -12,7 +12,7 @@ import { openViewer } from './viewer';
 type Tab = { id: string; label: string };
 const TABS: Tab[] = [{ id: 'evidence', label: '단서' }, { id: 'statements', label: '진술' },
   ...claims.map((c, i) => ({ id: c.claimId, label: `질문 ${'ABCD'[i]}` }))];
-const STAGE_LABEL = { unconfirmed: '미확인', contradiction: '모순', revised: '수정' } as const;
+const STAGE_LABEL = { unconfirmed: '“ 미확인', contradiction: '≠ 모순', revised: '✎ 수정' } as const; // 색만이 아니라 기호로도 구분
 
 interface Draft { hyp: string | null; support: string[]; rebuttal: string[] }
 const VISIBLE_ROWS = 14;

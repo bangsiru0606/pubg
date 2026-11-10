@@ -54,3 +54,40 @@ export function resolveClaim(s: GameState, claim: Claim): ClaimResult {
 
 export const resolveAll = (s: GameState) => claims.map((c) => resolveClaim(s, c));
 export const solvedClaimIds = (s: GameState) => resolveAll(s).filter((r) => r.solved).map((r) => r.claimId);
+
+/** UI 규칙: 반박 슬롯이 비어 있으면 결론을 제출(저장)할 수 없다. 반박이 맞았는지는 점수·등급에만 반영된다. */
+export const isRebuttalFilled = (rebuttal: string[]) => rebuttal.length >= MAX_REBUTTAL_SLOTS;
+export const canSaveConclusion = (hypothesisId: string | null, rebuttal: string[]) => !!hypothesisId && isRebuttalFilled(rebuttal);
+
+/** 보류: 저장된 결론을 지운다 */
+export function clearConclusion(s: GameState, claimId: string) {
+  delete s.selectedHypothesisByClaim[claimId];
+  delete s.submittedEvidenceByClaim[claimId];
+  delete s.submittedRebuttalByClaim[claimId];
+}
+
+/** 열려 있는 질문 */
+export const isClaimOpen = (s: GameState, claim: Claim) => !claim.requiresFlag || hasFlag(s, claim.requiresFlag);
+
+/**
+ * 4.4 근거 충돌 중립 경고. 단서 데이터의 sourceCharacterId·timestamp 만으로 판정한다:
+ * 같은 인물이 만든 서로 다른 자료의 시각 범위가 겹치면 "동시에 참일 수 없을 수 있다".
+ * 내용은 판단하지 않으며 어느 쪽이 거짓인지도 알려주지 않는다.
+ */
+function range(ts: string): [number, number] | null {
+  const m = ts.match(/^(\d{1,2}):(\d{2})(?:~(\d{1,2}):(\d{2}))?$/);
+  if (!m) return null;
+  const a = +m[1] * 60 + +m[2];
+  return [a, m[3] ? +m[3] * 60 + +m[4] : a];
+}
+export const CONFLICT_MESSAGE = '이 자료들은 동시에 참일 수 없다.';
+export function findConflicts(ids: string[]): [string, string][] {
+  const out: [string, string][] = [];
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+    const a = evidenceById.get(ids[i]), b = evidenceById.get(ids[j]);
+    if (!a || !b || !a.sourceCharacterId || a.sourceCharacterId !== b.sourceCharacterId) continue;
+    const ra = range(a.timestamp), rb = range(b.timestamp);
+    if (ra && rb && ra[0] <= rb[1] && rb[0] <= ra[1]) out.push([a.id, b.id]);
+  }
+  return out;
+}

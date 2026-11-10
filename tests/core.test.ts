@@ -132,27 +132,17 @@ describe('12.2 분기', () => {
     expect(finish(s, ['claim_a', 'claim_b', 'claim_c', 'claim_d'], 'external', true)).toBe('ending_a');
     expect(s.evidenceIds).toContain('E16_secure_receipt');
   });
-  it('2. 사망·정하늘만 해결 → B', () => {
-    expect(finish(fullState(), ['claim_a', 'claim_b'], 'eunho_only', true)).toBe('ending_b');
-    expect(finish(fullState(), ['claim_a', 'claim_b'], 'eunho_only', false)).toBe('ending_b');
+  it('2. 사망·정하늘만 해결 → B (보존·보고와 무관)', () => {
+    for (const secure of [true, false]) for (const t of ['external', 'eunho_only'] as const)
+      expect(finish(fullState(), ['claim_a', 'claim_b'], t, secure)).toBe('ending_b');
   });
-  it('3. 조직/은지 해결 + 증거 미보존 → C', () => {
-    expect(finish(fullState(), ['claim_c'], 'eunho_only', false)).toBe('ending_c');
-    expect(finish(fullState(), ['claim_a', 'claim_b', 'claim_c', 'claim_d'], 'external', false)).toBe('ending_c');
+  it('3. 미해결 1개 이하 + (미보존 또는 외부 보고 안 함) → C', () => {
+    expect(finish(fullState(), ['claim_a', 'claim_b', 'claim_c'], 'external', false)).toBe('ending_c');
+    expect(finish(fullState(), ['claim_a', 'claim_b', 'claim_c', 'claim_d'], 'eunho_only', true)).toBe('ending_c');
   });
-  it('4. 모두 오답 → D', () => {
+  it('4. 미해결 2개 이상 또는 질문 A 미해결 → D', () => {
     expect(finish(fullState(), [], 'external', true)).toBe('ending_d');
-  });
-  it('5. 엔딩 데이터가 조건과 맞는다 (박은호·정하늘·조직 상태 문구)', () => {
-    const s = fullState();
-    finish(s, ['claim_a', 'claim_b', 'claim_c', 'claim_d'], 'external', true);
-    const a = resolveEnding(s);
-    expect(a.results.join(' ')).toContain('박은호는 은지의 죽음을 확인');
-    expect(a.results.join(' ')).toContain('정하늘은 원장 사망 책임으로 조사');
-    expect(a.results.join(' ')).toContain('백선우와 이혜정');
-    const b = fullState(); finish(b, ['claim_a', 'claim_b'], 'eunho_only', false);
-    expect(resolveEnding(b).results.join(' ')).toContain('행방을 끝내 확인하지 못한다');
-    expect(resolveEnding(b).results.join(' ')).toContain('정하늘을 원장 살해범으로');
+    expect(finish(fullState(), ['claim_b', 'claim_c', 'claim_d'], 'external', true)).toBe('ending_d');
   });
   it('가설 선택 후에도 언제든 결론을 바꿀 수 있다', () => {
     const s = fullState();

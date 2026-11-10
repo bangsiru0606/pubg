@@ -1,7 +1,7 @@
 // 데이터 ID 참조 무결성 검사: npm run validate
 import { existsSync } from 'node:fs';
 import map from '../src/data/map.json' with { type: 'json' };
-import { claims, endings, evidenceById, evidenceList, puzzles } from '../src/core/data';
+import { claims, endingLines, endings, evidenceById, evidenceList, puzzles } from '../src/core/data';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -67,12 +67,14 @@ for (const c of claims) {
 // endings
 dup(endings.map((e) => e.id), 'ending');
 const claimIds = new Set(claims.map((c) => c.claimId));
-endings.forEach((e, i) => {
-  const r = e.rules;
-  for (const id of [...(r.mustSolve ?? []), ...(r.mustNotSolve ?? []), ...(r.anyOfSolve ?? [])]) if (!claimIds.has(id)) err(`${e.id}: 없는 질문 ${id}`);
-  const last = i === endings.length - 1;
-  if (last !== (Object.keys(r).length === 0)) err(`${e.id}: rules 가 빈 엔딩은 마지막 하나(기본값)여야 한다`);
-});
+for (const id of ['ending_a', 'ending_b', 'ending_c', 'ending_d']) if (!endings.some((e) => e.id === id)) err(`엔딩 ${id} 없음`);
+for (const [key, lines] of Object.entries(endingLines)) {
+  if (Object.keys(lines[lines.length - 1].when).length) err(`endingLines.${key}: 마지막 줄은 조건이 비어 있어야 한다(기본값)`);
+  lines.forEach((l, i) => {
+    const w = l.when;
+    for (const id of [...(w.solved ?? []), ...(w.notSolved ?? []), ...(w.anySolved ?? [])]) if (!claimIds.has(id)) err(`endingLines.${key}[${i}]: 없는 질문 ${id}`);
+  });
+}
 
 if (errors.length) { console.error(errors.map((e) => `✗ ${e}`).join('\n')); process.exit(1); }
 console.log(`validate OK (단서 ${evidenceList.length}, 질문 ${claims.length}, 퍼즐 ${puzzles.length}, 엔딩 ${endings.length})`);

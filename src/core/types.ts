@@ -20,14 +20,12 @@ export interface Puzzle {
   slots: string[]; correctSlots: Record<string, string[]>;
   distractors: string[]; conflicts: Record<string, string>; hintTexts: string[];
 }
-export interface EndingRules {
-  solveAll?: boolean; mustSolve?: string[]; mustNotSolve?: string[]; anyOfSolve?: string[];
-  evidenceSecured?: boolean; reportExternally?: boolean;
+export interface LineWhen {
+  solved?: string[]; notSolved?: string[]; anySolved?: string[]; secured?: boolean; external?: boolean;
 }
-export interface Ending {
-  id: string; title: string; rules: EndingRules; results: string[];
-  finalDialogue?: string[][]; card: string;
-}
+export interface EndingLine { when: LineWhen; source: 'spec' | 'new'; text: string }
+export interface Ending { id: string; title: string; card: string; finalDialogue?: string[][] }
+export type EndingLineKey = 'haneul' | 'organization' | 'eunho';
 
 export type ReportTarget = 'eunho_only' | 'external';
 

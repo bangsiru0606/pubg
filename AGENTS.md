@@ -53,6 +53,7 @@ npx tsx tools/reading-time.ts   # 씬 1~2 읽기 시간 추정 (분당 500자)
 
 ### 아트
 - 기준 그림체는 craft_on(`D:\2026_game\2026_craft_on`)의 에셋이다. 원본 사본은 `art/source/`에 있고 **수정하지 않는다**.
+- 새 에셋은 Codex `$imagegen`으로 만들어 `art/source/generated/`에 저장한다(목록·프롬프트는 `art/source/generated/manifest.json`, 생성 지시는 `docs/에셋_생성_프롬프트.md`). craft_on 사본 파일은 이 폴더 밖에 있으며 계속 수정하지 않는다.
 - 탐색 화면은 논리 해상도 480×270, 정수 배율 확대, `pixelArt: true`. 규격은 `docs/이전계획.md` 2장과 `art/asset-spec.json`.
 - 모든 탐색 에셋은 `npm run assets` 정규화를 거친 결과만 게임에서 쓴다. PPU나 스케일을 에셋마다 따로 맞추지 않는다.
 - 이미지에 읽을 글자를 굽지 않는다. 문서 내용은 HTML로 표시한다.

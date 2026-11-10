@@ -67,7 +67,11 @@
   "sourceType": "record",
   "acquiredSceneId": "room_oh",
   "sourceCharacterId": "",
-  "timestamp": "22:41"
+  "timestamp": "22:41",
+  "body": [
+   "22:41 / 청소용 마스터키 사용",
+   "원장실 문 열림"
+  ]
  },
  {
   "id": "E06_torn_sleeve",
@@ -85,7 +89,12 @@
   "sourceType": "record",
   "acquiredSceneId": "room_baek",
   "sourceCharacterId": "baek_sunwoo",
-  "timestamp": "23:16"
+  "timestamp": "23:16",
+  "body": [
+   "23:16 / user: BSW_ADMIN",
+   "삭제: 후두부 열상, 외부 충격 가능",
+   "추가: 기존 심장 질환에 의한 급성 심정지 추정"
+  ]
  },
  {
   "id": "E08_miran_revised",
@@ -103,7 +112,12 @@
   "sourceType": "record",
   "acquiredSceneId": "room_oh",
   "sourceCharacterId": "",
-  "timestamp": "사건 당일"
+  "timestamp": "사건 당일",
+  "body": [
+   "야간 응급 진정제 1회분 누락.",
+   "투여 대상과 서명이 비어 있음.",
+   "원장실에서 수거한 주사기 봉투가 폐기 대기함에 있음."
+  ]
  },
  {
   "id": "E10_consent_forms",
@@ -121,7 +135,13 @@
   "sourceType": "record",
   "acquiredSceneId": "room_lee",
   "sourceCharacterId": "lee_hyejeong",
-  "timestamp": "23:24"
+  "timestamp": "23:24",
+  "body": [
+   "14:00 원장 화장 절차 우선 진행",
+   "18:00 특별 치료 대상 6인 외부 이송",
+   "지하 보관 자료 동시 반출",
+   "— 이혜정"
+  ]
  },
  {
   "id": "E12_ledger",

@@ -1,12 +1,12 @@
 // 탐색 규칙(순수 TS, Phaser·DOM 없음): 구역 데이터, 가장 가까운 대상 1개, 잠금 조건, 자동 트리거.
 import map from '../data/map.json';
 import spec from '../../art/asset-spec.json';
-import { hasFlag, isBasementOpen, type GameState } from '../core';
+import { condMet, hasFlag, type GameState } from '../core';
 
 interface Gate { requires?: string; requiresEvidence?: string[]; hideWhen?: string }
 export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string }
 export interface Npc extends Gate { type: 'npc'; id: string; x: number; name: string; dialogueId: string; autoTrigger?: { x: number; width: number } }
-export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string }
+export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[] }
 export type Interactable = Transition | Npc | Examine;
 export interface Prop { id: string; x: number; w: number; h: number; color: string; label: string; showWhen?: string }
 export interface AreaDef {
@@ -26,8 +26,7 @@ export const areas = map.areas as unknown as Record<string, AreaDef>;
 /** 잠금 조건: 플래그 이름, 또는 '@basement_open'(P03+P04 해결) */
 export function isAvailable(it: Interactable, s: GameState): boolean {
   if (it.requiresEvidence?.some((id) => !s.evidenceIds.includes(id))) return false;
-  if (!it.requires) return true;
-  return it.requires === '@basement_open' ? isBasementOpen(s) : hasFlag(s, it.requires);
+  return !it.requires || condMet(s, it.requires);
 }
 /** 이미 사라진 대상(예: 자리를 뜬 NPC) */
 export const isHidden = (it: Interactable, s: GameState) => !!it.hideWhen && hasFlag(s, it.hideWhen);

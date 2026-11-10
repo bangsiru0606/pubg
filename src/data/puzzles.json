@@ -171,7 +171,16 @@
      }
     ]
    }
-  ]
+  ],
+  "layout": "plan",
+  "openWhen": {
+   "evidence": [
+    "E02_altar_blood",
+    "E03_preliminary_exam",
+    "E04_wristband_fragment"
+   ]
+  },
+  "solvedDialogue": "mono_p01_solved"
  },
  {
   "id": "P02_night_timeline",
@@ -209,7 +218,7 @@
    "*:sermon"
   ],
   "conflicts": {
-   "*:sermon": "설교 방송은 예약 재생이라 사람의 동선이 아니다. 시간이 충돌한다.",
+   "*:sermon": "설교 방송은 사람의 동선이 아니라 예약 재생이다. 시간이 충돌한다.",
    "t2241:key_lost": "마스터키가 사라진 뒤에야 문이 열릴 수 있다.",
    "t2234:door_open": "22:34 시점에는 아직 문이 열린 기록이 없다."
   },
@@ -217,13 +226,68 @@
    "출입 기록과 채소연의 진술 시각을 확인해 보세요.",
    "후보 하나를 제거했습니다.",
    "한 칸을 채웠습니다."
-  ]
+  ],
+  "layout": "timeline",
+  "title": "야간 동선 시간 배열",
+  "info": [
+   "사건 카드 5장 중 사람의 동선만 시간 칸에 놓는다",
+   "사람의 동선이 아닌 카드는 “타임라인 바깥”에 둔다"
+  ],
+  "tokens": [
+   {
+    "id": "key_lost",
+    "label": "청소용 마스터키 분실"
+   },
+   {
+    "id": "door_open",
+    "label": "원장실 문 개방"
+   },
+   {
+    "id": "thud",
+    "label": "둔탁한 충돌음"
+   },
+   {
+    "id": "return_room",
+    "label": "정하늘 병실 복귀"
+   },
+   {
+    "id": "sermon",
+    "label": "기도 설교 방송 시작"
+   }
+  ],
+  "boxes": [
+   {
+    "id": "t2234",
+    "label": "22:34"
+   },
+   {
+    "id": "t2241",
+    "label": "22:41"
+   },
+   {
+    "id": "t2246",
+    "label": "22:46"
+   },
+   {
+    "id": "t2251",
+    "label": "22:51"
+   }
+  ],
+  "openWhen": {
+   "flags": [
+    "choi_done",
+    "chae_done",
+    "broadcast_seen"
+   ]
+  },
+  "solvedDialogue": "mono_p02_solved"
  },
  {
   "id": "P03_revision_diff",
   "type": "DocumentDiff",
   "flagOnSolve": "flag_revision_found",
   "sourceEvidenceIds": [
+   "E03_preliminary_exam",
    "E07_report_revision"
   ],
   "verifiedEvidenceIds": [
@@ -251,7 +315,78 @@
    "의미가 달라진 항목만 표시하세요. 발견 위치와 상태를 보세요.",
    "후보 하나를 제거했습니다.",
    "한 칸을 채웠습니다."
-  ]
+  ],
+  "layout": "lightbox",
+  "title": "검안 기록 변조 비교",
+  "info": [
+   "예비 기록·최종 기록·수정 이력을 겹쳐 본다",
+   "의미가 달라진 항목 세 개를 표시한다"
+  ],
+  "panels": [
+   {
+    "title": "예비 기록",
+    "lines": [
+     "22:52 최초 확인",
+     "발견 위치: 기도대 옆 바닥",
+     "후두부 열상 및 출혈 흔적",
+     "의식없음, 미약 호흡",
+     "※ 부원장 재검토 요청"
+    ]
+   },
+   {
+    "title": "최종 기록",
+    "lines": [
+     "발견 위치: 책상 의자",
+     "기존 심장 질환에 의한 급성 심정지 추정",
+     "의식 없음, 발견 당시 사망",
+     "※ 부원장 재검토 요청"
+    ]
+   },
+   {
+    "title": "수정 이력",
+    "lines": [
+     "23:16 / user: BSW_ADMIN",
+     "삭제: 후두부 열상, 외부 충격 가능",
+     "추가: 기존 심장 질환에 의한 급성 심정지 추정"
+    ]
+   }
+  ],
+  "tasks": [
+   {
+    "slot": "marked",
+    "label": "의미가 달라진 항목",
+    "kind": "mark",
+    "options": [
+     {
+      "id": "position_changed",
+      "label": "발견 위치: 기도대 옆 바닥 → 책상 의자"
+     },
+     {
+      "id": "laceration_deleted",
+      "label": "‘후두부 열상’ 문구 삭제"
+     },
+     {
+      "id": "breathing_changed",
+      "label": "‘미약 호흡’ → ‘발견 당시 사망’"
+     },
+     {
+      "id": "spelling_fix",
+      "label": "‘의식없음’ → ‘의식 없음’ 띄어쓰기"
+     },
+     {
+      "id": "sentence_order",
+      "label": "‘부원장 재검토 요청’ 문장 위치 이동"
+     }
+    ]
+   }
+  ],
+  "openWhen": {
+   "evidence": [
+    "E03_preliminary_exam",
+    "E07_report_revision"
+   ]
+  },
+  "solvedDialogue": "mono_p03_solved"
  },
  {
   "id": "P04_approval_chain",
@@ -268,33 +403,164 @@
   "slots": [
    "doc_selection",
    "doc_approval",
-   "doc_execution"
+   "doc_schedule",
+   "doc_transfer"
   ],
   "correctSlots": {
    "doc_selection": [
     "lee_hyejeong"
    ],
    "doc_approval": [
-    "lee_hansin"
+    "lee_hanshin"
    ],
-   "doc_execution": [
+   "doc_schedule": [
+    "baek_sunwoo"
+   ],
+   "doc_transfer": [
     "baek_sunwoo"
    ]
   },
   "distractors": [
-   "doc_selection:lee_hansin"
+   "doc_selection:lee_hanshin"
   ],
   "conflicts": {
-   "doc_selection:lee_hansin": "선정 권한과 승인 권한이 충돌한다. 문서의 작성 권한을 다시 확인하세요.",
-   "doc_approval:lee_hyejeong": "선정 권한과 승인 권한이 충돌한다. 문서의 작성 권한을 다시 확인하세요.",
-   "doc_execution:lee_hansin": "승인자는 시술·이송 실행자가 아니다.",
-   "doc_execution:lee_hyejeong": "선정 담당은 시술·이송 실행자가 아니다."
+   "doc_selection:lee_hanshin": "선정 권한과 승인 권한이 충돌한다. 문서의 작성 약자를 다시 확인하세요.",
+   "doc_approval:lee_hyejeong": "선정 권한과 승인 권한이 충돌한다. 문서의 작성 약자를 다시 확인하세요.",
+   "doc_schedule:lee_hanshin": "시술 일정은 승인 권한이 아니라 진행 권한의 문서다.",
+   "doc_schedule:lee_hyejeong": "시술 일정은 선정 권한이 아니라 진행 권한의 문서다.",
+   "doc_transfer:lee_hanshin": "이송 실행 계정은 원장 승인 계정이 아니다.",
+   "doc_transfer:lee_hyejeong": "이송 실행 계정은 대상자 선정 계정이 아니다."
   },
   "hintTexts": [
    "영문 약자와 문서의 권한·수정 계정을 함께 보세요.",
    "후보 하나를 제거했습니다.",
    "한 칸을 채웠습니다."
-  ]
+  ],
+  "layout": "connect",
+  "title": "특별 치료 승인 체계",
+  "info": [
+   "문서의 약자·권한·수정 계정을 함께 본다",
+   "필체만으로는 판단하지 않는다"
+  ],
+  "zones": [
+   {
+    "id": "lee_hyejeong",
+    "label": "이혜정 (LHJ)",
+    "x": 64,
+    "y": 6,
+    "w": 34,
+    "h": 24
+   },
+   {
+    "id": "lee_hanshin",
+    "label": "이한신 (LHS)",
+    "x": 64,
+    "y": 38,
+    "w": 34,
+    "h": 24
+   },
+   {
+    "id": "baek_sunwoo",
+    "label": "백선우 (BSW)",
+    "x": 64,
+    "y": 70,
+    "w": 34,
+    "h": 24
+   }
+  ],
+  "tasks": [
+   {
+    "slot": "doc_selection",
+    "label": "대상자 선정표",
+    "token": "대상자 선정표",
+    "kind": "place",
+    "detail": "약자 LHJ · 권한: 선정 · 동의서와 같은 필체",
+    "options": [
+     {
+      "id": "lee_hyejeong",
+      "label": "이혜정 (LHJ)"
+     },
+     {
+      "id": "lee_hanshin",
+      "label": "이한신 (LHS)"
+     },
+     {
+      "id": "baek_sunwoo",
+      "label": "백선우 (BSW)"
+     }
+    ]
+   },
+   {
+    "slot": "doc_approval",
+    "label": "원장 승인표",
+    "token": "원장 승인표",
+    "kind": "place",
+    "detail": "약자 LHS · 권한: 최종 승인",
+    "options": [
+     {
+      "id": "lee_hyejeong",
+      "label": "이혜정 (LHJ)"
+     },
+     {
+      "id": "lee_hanshin",
+      "label": "이한신 (LHS)"
+     },
+     {
+      "id": "baek_sunwoo",
+      "label": "백선우 (BSW)"
+     }
+    ]
+   },
+   {
+    "slot": "doc_schedule",
+    "label": "시술 일정표",
+    "token": "시술 일정표",
+    "kind": "place",
+    "detail": "약자 BSW · 권한: 시술 진행",
+    "options": [
+     {
+      "id": "lee_hyejeong",
+      "label": "이혜정 (LHJ)"
+     },
+     {
+      "id": "lee_hanshin",
+      "label": "이한신 (LHS)"
+     },
+     {
+      "id": "baek_sunwoo",
+      "label": "백선우 (BSW)"
+     }
+    ]
+   },
+   {
+    "slot": "doc_transfer",
+    "label": "이송 지시서",
+    "token": "이송 지시서",
+    "kind": "place",
+    "detail": "집행 계정 BSW_ADMIN · 권한: 외부 이송 실행",
+    "options": [
+     {
+      "id": "lee_hyejeong",
+      "label": "이혜정 (LHJ)"
+     },
+     {
+      "id": "lee_hanshin",
+      "label": "이한신 (LHS)"
+     },
+     {
+      "id": "baek_sunwoo",
+      "label": "백선우 (BSW)"
+     }
+    ]
+   }
+  ],
+  "openWhen": {
+   "evidence": [
+    "E10_consent_forms",
+    "E11_transfer_order"
+   ]
+  },
+  "solvedDialogue": "mono_p04_solved"
  },
  {
   "id": "P05_patient_code",

@@ -27,6 +27,7 @@ const area = () => cw<string>('cw.scene.areaId');
 const teleport = (x: number) => cw(`cw.scene.teleportX(${x})`);
 const promptText = async () => ((await page.locator('#prompt:not(.hidden)').count()) ? (await page.locator('#prompt').innerText()).replace(/\s+/g, ' ') : '');
 const wait = (ms: number) => page.waitForTimeout(ms);
+const click = (sel: string) => page.locator(sel).first().click();
 const shot = async (name: string) => { if (SHOT) await page.screenshot({ path: `docs/screenshots/${name}.png` }); };
 // 화면 텍스트에 내부 ID(영문 snake_case, E01 같은 단서 코드, 플래그 이름)가 나오면 안 된다
 const ID_RE = /[a-z]+(?:_[a-z0-9]+)+|\bE\d{2}\b|\bP0\d\b|flag_|trigger_fired|puzzle_opened|cutscene_done/;
@@ -75,7 +76,7 @@ await wait(60); await press('Enter'); // 타이핑 완성
 await press('Enter'); // 대화 끝
 check((await page.locator('#dialogue').count()) === 0, '대화 종료');
 check(await cw<boolean>("cw.state.flags.includes('intro_done') && cw.state.evidenceIds.includes('E01_last_letter')"), '대화로 단서·플래그 획득');
-await cw("cw.state.flags.push('cutscene_done:hospital_intro', 'flag_scene_rebuilt')"); // 이동 시험용: 컷신·계단 잠금은 B 에서 확인
+await cw("cw.state.flags.push('cutscene_done:hospital_intro', 'flag_scene_rebuilt', 'flag_night_timeline')"); // 이동 시험용: 컷신·계단 잠금은 B 에서 확인
 
 await enterArea(12 * 45, 'floor1');
 check(true, '사무실 → 1층');
@@ -244,7 +245,6 @@ await noIds('[P01] 초기 화면');
 await shot('stage4_p01_start');
 
 // P01 오답: 마우스 (클릭 배치 + 드래그 배치)
-const click = (sel: string) => page.locator(sel).first().click();
 await click('#puzzle [data-token="impactPosition"]'); await click('#puzzle [data-zone="desk_side"]');
 const tk = await page.locator('#puzzle [data-token="finalPosition"]').first().boundingBox();
 const zn = await page.locator('#puzzle [data-zone="desk_chair"]').first().boundingBox();
@@ -296,6 +296,221 @@ check(!(await page.locator('#notebook').innerText()).includes('정하늘'), '[�
 await press('ArrowRight', 2); // 질문 A
 check((await page.locator('#notebook').innerText()).includes('결론은 저장만 된다'), '[수첩] 첫 가설은 저장만 가능하다는 안내');
 await press('Tab');
+
+
+// =====================================================================
+// 씬 3~4: 병동 → P02 → 3층 → 백선우·오미란·이혜정 → P03 · P04 → 지하 계단 개방
+// =====================================================================
+const until = async (text: string) => {
+  for (let i = 0; i < 25; i++) {
+    await wait(40);
+    if ((await page.locator('#dialogue .text').count()) && (await page.locator('#dialogue .text').innerText()).includes(text)) return true;
+    await press('Enter');
+  }
+  return false;
+};
+const focusOn = async (sel: string) => { for (let i = 0; i < 16 && (await page.locator(sel).count()) === 0; i++) await press('ArrowRight'); };
+const focusOnRow = async (name: string) => {
+  for (let i = 0; i < 16; i++) {
+    if ((await page.locator('#notebook .row.sel').first().innerText()).includes(name)) return;
+    await press('ArrowDown');
+  }
+};
+const enterRoom = async (doorX: number, areaId: string) => {
+  await teleport(doorX); await wait(60); await press('Enter');
+  await page.waitForFunction((a) => (window as any).__cw.scene.areaId === a && !(window as any).__cw.scene.busy, areaId, { timeout: 4000 });
+};
+const exitRoom = async (toArea: string) => enterRoom(0, toArea);
+const talkTo = async (x: number) => { await teleport(x); await wait(60); await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); };
+const pickEvidence = async (n: number) => { await press('ArrowDown'); await press('Enter'); for (let i = 0; i < n; i++) await press('ArrowDown'); await press('Space'); };
+
+await teleport(1350); await wait(60);
+check((await promptText()).includes('올라가기'), '[진행] 3층 계단에도 잠김 프롬프트');
+await press('Enter');
+await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
+check((await page.locator('#dialogue .text').innerText()).includes('병동의 밤 동선부터 정리해야 한다'), '[진행] P02 해결 전 3층 계단: 한 줄 독백');
+await mash();
+check((await area()) === 'floor2', '[진행] P02 해결 전에는 3층에 갈 수 없다');
+
+await enterRoom(270, 'room_choi');
+await talkTo(150);
+await press('Enter');
+check((await page.locator('#dialogue .opt').count()) === 2, '[씬 3] 최옥자: 선택지 2개');
+await noIds('[씬 3] 최옥자 대화');
+await shot('stage5_scene3_dialogue');
+await press('1'); await mash();
+check(await cw<boolean>("cw.state.statements.choi_s_prayer?.stage === 'unconfirmed' && cw.state.evidenceIds.length === 4"), '[씬 3] 최옥자 진술은 수첩에만 기록되고 단서가 아니다');
+await exitRoom('floor2');
+
+await enterRoom(810, 'room_jeong');
+await talkTo(190); await mash();
+check(await cw<boolean>("cw.state.evidenceIds.includes('E06_torn_sleeve')"), '[씬 3] 채소연: E06 증언 획득');
+check((await page.locator('#puzzle').count()) === 0, '[씬 3] 방송표를 보기 전에는 P02 가 열리지 않는다');
+
+// 정하늘 1차 대면
+await talkTo(370);
+check(await cw<boolean>("cw.state.flags.includes('haneul_met')"), '[씬 3] 정하늘 대화가 시작되면 E04 공개 플래그');
+await until('모릅니다.');
+await pickEvidence(3);
+check((await page.locator('#dialogue').innerText()).includes('정하늘 손목띠 조각'), '[씬 3] 대면 후 E04 표시 이름이 “정하늘 손목띠 조각”');
+await noIds('[씬 3] 단서 제시 선택기');
+await press('Enter');
+await until('그 방에 들어간 적 없어요');
+check(await cw<boolean>("cw.state.statements.haneul_s_denial?.stage === 'unconfirmed'"), '[씬 3] “그 방에 들어간 적 없어요”는 진술로만 기록(유죄 단서 아님)');
+await mash();
+await talkTo(370);
+await until('…더 말하면 저도 없어져요.');
+await press('Enter'); await wait(80);
+check((await page.locator('#dialogue').count()) === 0, '[씬 3] 반복 추궁해도 대화가 늘어나지 않는다');
+await exitRoom('floor2');
+
+// 방송표 → P02
+await teleport(1080); await wait(60);
+check((await promptText()).includes('복도 방송표'), '[씬 3] 복도 방송표 조사 지점');
+await press('Enter');
+await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
+check((await page.locator('#dialogue .text').innerText()).includes('예약 재생'), '[씬 3] 방송표: 예약 재생');
+await mash();
+await page.waitForSelector('#puzzle', { timeout: 3000 });
+check(await cw<boolean>("cw.state.statements.choi_s_prayer.stage === 'contradiction'"), '[씬 3] 최옥자 진술이 예약 방송 반증과 연결(모순)');
+check(true, '[P02] 최옥자·채소연 대화 + 방송표 → 자동 개방');
+await noIds('[P02] 초기 화면');
+
+// P02 오답: 방송 카드를 사람 동선(22:46)에 넣는다
+const put = async (card: string, slot: string) => { await click(`#puzzle [data-token="${card}"]`); await click(`#puzzle [data-zone="${slot}"]`); };
+await put('key_lost', 't2234'); await put('door_open', 't2241'); await put('sermon', 't2246');
+const rc = await page.locator('#puzzle [data-token="return_room"]').first().boundingBox();
+const z51 = await page.locator('#puzzle [data-zone="t2251"]').first().boundingBox();
+await page.mouse.move(rc!.x + rc!.width / 2, rc!.y + rc!.height / 2); await page.mouse.down();
+await page.mouse.move(z51!.x + z51!.width / 2, z51!.y + z51!.height / 2, { steps: 8 }); await page.mouse.up();
+await wait(100);
+await click('#puzzle [data-submit]'); await wait(60);
+check((await page.locator('#puzzle .warn').innerText()).includes('시간이 충돌한다'), '[P02] 방송을 사람 동선에 넣으면 시간 충돌을 표시');
+check(await cw<boolean>('cw.state.wrongCountByPuzzle.P02_night_timeline === 1'), '[P02] 오답 1회 기록');
+await noIds('[P02] 오답 화면');
+await shot('stage5_p02');
+// P02 정답: 키보드 (충돌음 카드를 22:46 칸에 → 방송 카드는 바깥으로 밀려난다)
+await page.mouse.move(5, 5);
+for (let i = 0; i < 12 && (await page.locator('#puzzle .tk.foc[data-token="thud"]').count()) === 0; i++) await press('ArrowLeft');
+await press('Enter'); await press('ArrowRight', 3); await press('Enter');
+check((await page.locator('#puzzle .zone.outside [data-token="sermon"]').count()) === 1, '[P02] 방송 카드는 “타임라인 바깥”으로 돌아간다');
+await focusOn('#puzzle .submit.foc');
+await press('Enter'); await wait(100);
+check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P02_night_timeline')"), '[P02] 정답(키보드) → 해결');
+await press('Enter');
+await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
+const p2 = await page.locator('#dialogue .text').innerText();
+check(p2.includes('정하늘이 원장실에 있었다') && !/계획|살인|의도/.test(p2), '[P02] 결과 문구는 “정하늘이 원장실에 있었다”까지만');
+await mash();
+
+// ---- 씬 4: 3층 ----
+await teleport(1350); await wait(60); await press('Enter');
+await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor3' && !(window as any).__cw.scene.busy);
+check(true, '[진행] P02 해결 후 2층 → 3층');
+
+// 4-1 백선우
+await enterRoom(315, 'room_baek');
+await teleport(360); await wait(60);
+check((await promptText()) === '', '[씬 4] 백선우가 거절하기 전에는 부원장 PC 를 볼 수 없다');
+await talkTo(150); await press('Enter');
+check((await page.locator('#dialogue .text').innerText()).includes('지병으로 돌아가셨습니다'), '[씬 4] 백선우 첫 진술');
+await pickEvidence(1); await press('Enter'); // E03 제시
+await wait(60);
+check(await cw<boolean>("cw.state.statements.baek_s_natural.stage === 'contradiction'"), '[씬 4] E03 제시 → 기존 진술 baek_s_natural 이 모순으로');
+await until('외부인이 볼 자료가 아닙니다.'); await mash();
+await teleport(360); await wait(60);
+check((await promptText()).includes('부원장 PC'), '[씬 4] 거절 뒤 부원장 PC 조사 가능');
+await press('Enter');
+await page.waitForSelector('#viewer');
+check((await docText()).includes('BSW_ADMIN') && (await docText()).includes('후두부 열상'), '[씬 4] 수정 이력 원문(E07)');
+await closeViewer();
+check(await cw<boolean>("cw.state.evidenceIds.includes('E07_report_revision') && !cw.state.verifiedEvidenceIds.includes('E07_report_revision')"), '[씬 4] E07 은 미검증으로 등록');
+await page.waitForSelector('#puzzle', { timeout: 3000 });
+check(true, '[P03] E03 + E07 이 있으면 자동 개방');
+await noIds('[P03] 초기 화면');
+await click('#puzzle [data-chip="position_changed"]'); await click('#puzzle [data-chip="laceration_deleted"]'); await click('#puzzle [data-chip="spelling_fix"]');
+await click('#puzzle [data-submit]'); await wait(60);
+check((await page.locator('#puzzle .warn').count()) === 1 && !(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P03_revision_diff')")), '[P03] 맞춤법 항목을 고르면 정답으로 인정하지 않고 충돌 표시');
+await noIds('[P03] 오답 화면');
+await shot('stage5_p03');
+await page.mouse.move(5, 5);
+await focusOn('#puzzle .chip.foc[data-chip="spelling_fix"]'); await press('Enter'); // 해제
+await focusOn('#puzzle .chip.foc[data-chip="breathing_changed"]'); await press('Enter');
+await focusOn('#puzzle .submit.foc'); await press('Enter'); await wait(100);
+check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P03_revision_diff') && cw.state.verifiedEvidenceIds.includes('E07_report_revision')"), '[P03] 정답(키보드) → E07 검증');
+await press('Enter'); await page.waitForSelector('#dialogue'); await mash();
+await talkTo(150);
+check(await until('의학적 판단이 아니라 문장을 지우셨군요.'), '[씬 4] E07 확보 뒤 백선우 후속 대사');
+await mash();
+await exitRoom('floor3');
+
+// 4-2 오미란
+await enterRoom(630, 'room_oh');
+await talkTo(150); await press('Enter');
+check((await page.locator('#dialogue .text').innerText()).includes('의자에 앉은 채 숨을 쉬지 않았어요'), '[씬 4] 오미란 첫 진술');
+await pickEvidence(1); await press('Enter'); // E03
+check(await cw<boolean>("cw.state.statements.oh_s_first.stage === 'contradiction'"), '[씬 4] E03 제시 → 오미란 진술이 모순으로');
+await until('…제가 잘못 적었습니다.');
+await pickEvidence(3); await press('ArrowDown'); await press('Space'); // E04 + E06
+await press('Enter');
+await until('원장님은 기도대 옆 바닥에 누워 있었고');
+check(await cw<boolean>("cw.state.statements.oh_s_first.stage === 'revised'"), '[씬 4] E04 + E06 제시 → 수정 진술');
+await mash();
+check(await cw<boolean>("cw.state.evidenceIds.includes('E08_miran_revised')"), '[씬 4] E08 획득');
+await press('Tab'); await page.waitForSelector('#notebook');
+await press('ArrowRight');
+await focusOnRow('오미란');
+check((await page.locator('#notebook').innerText()).includes('기도대 옆 바닥에 누워 있었고'), '[씬 4] 수첩 진술: 원문 취소선 + 수정 문장');
+await noIds('[수첩] 진술 탭');
+await shot('stage5_miran_revised');
+await press('Tab');
+await teleport(360); await wait(60); await press('Enter');
+await page.waitForSelector('#viewer'); await press('Enter'); await wait(200); await closeViewer(); // 원문 두 개를 차례로
+check(await cw<boolean>("cw.state.evidenceIds.includes('E09_sedative_gap') && cw.state.verifiedEvidenceIds.includes('E05_access_log') && cw.state.verifiedEvidenceIds.includes('E06_torn_sleeve')"), '[씬 4] 재고표: E09·E05 (P02 를 이미 풀었으므로 E05 즉시 검증, E06 도 검증)');
+await exitRoom('floor3');
+
+// 4-3 이혜정
+await enterRoom(945, 'room_lee');
+await talkTo(150); await mash();
+await teleport(340); await wait(60); await press('Enter');
+await page.waitForSelector('#viewer'); await press('Enter'); await wait(200);
+check((await docText()).includes('지하 보관 자료 동시 반출'), '[씬 4] 지시서 원문(E11)');
+await closeViewer();
+await page.waitForSelector('#puzzle', { timeout: 3000 });
+check(true, '[P04] E10 + E11 → 자동 개방');
+await noIds('[P04] 초기 화면');
+const dragTo = async (token: string, zone: string) => {
+  const a = await page.locator(`#puzzle [data-token="${token}"]`).first().boundingBox();
+  const b = await page.locator(`#puzzle [data-zone="${zone}"]`).first().boundingBox();
+  await page.mouse.move(a!.x + a!.width / 2, a!.y + a!.height / 2); await page.mouse.down();
+  await page.mouse.move(b!.x + b!.width / 2, b!.y + b!.height / 2, { steps: 8 }); await page.mouse.up(); await wait(80);
+};
+await dragTo('doc_selection', 'lee_hanshin'); await dragTo('doc_approval', 'lee_hyejeong');
+await dragTo('doc_schedule', 'baek_sunwoo'); await dragTo('doc_transfer', 'baek_sunwoo');
+await click('#puzzle [data-submit]'); await wait(60);
+check((await page.locator('#puzzle .warn').innerText()).includes('선정 권한과 승인 권한이 충돌'), '[P04] LHJ/LHS 를 혼동하면 선정·승인 권한 충돌 표시');
+await noIds('[P04] 오답 화면');
+await shot('stage5_p04');
+await page.mouse.move(5, 5);
+for (let i = 0; i < 12 && (await page.locator('#puzzle .tk.foc[data-token="doc_selection"]').count()) === 0; i++) await press('ArrowLeft');
+await press('Enter'); await press('ArrowLeft'); await press('Enter'); // 선정표 → 이혜정
+await press('ArrowRight'); await press('Enter'); await press('ArrowRight'); await press('Enter'); // 승인표 → 이한신
+await focusOn('#puzzle .submit.foc'); await press('Enter'); await wait(100);
+check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P04_approval_chain') && cw.state.verifiedEvidenceIds.includes('E10_consent_forms')"), '[P04] 정답(키보드) → E10·E11 검증');
+await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
+check((await page.locator('#dialogue .text').innerText()).includes('선정은 이혜정, 승인은 이한신, 실행은 백선우'), '[P04] 중간 결론: 선정·승인·실행');
+await press('Enter'); await wait(200); await press('Enter');
+check((await page.locator('#dialogue .text').innerText()).includes('지하 계단으로 내려갈 수 있다'), '[진행] P03·P04 완료 → 지하 계단 개방 안내');
+await mash();
+
+// 1층 지하 계단
+await exitRoom('floor3');
+await teleport(0); await wait(60); await press('Enter');
+await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor2' && !(window as any).__cw.scene.busy);
+await teleport(0); await wait(60); await press('Enter');
+await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor1' && !(window as any).__cw.scene.busy);
+await teleport(1440); await wait(60);
+check((await promptText()).includes('지하로 내려가기'), '[진행] 1층 지하 계단 프롬프트가 활성화된다');
 
 await browser.close();
 check(errors.length === 0, `콘솔 오류 0 ${errors.join(' | ')}`);

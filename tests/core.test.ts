@@ -180,7 +180,7 @@ describe('12.4 퍼즐', () => {
     expect(sub('P03_revision_diff', { marked: [...ANSWERS.P03_revision_diff.marked, 'spelling_fix'] }).r.status).toBe('wrong');
   });
   it('4. P04 LHJ/LHS 혼동 시 선정·승인 권한 충돌 표시', () => {
-    const { r } = sub('P04_approval_chain', { doc_selection: ['lee_hansin'], doc_approval: ['lee_hyejeong'], doc_execution: ['baek_sunwoo'] });
+    const { r } = sub('P04_approval_chain', { doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['baek_sunwoo'] });
     expect(r.status).toBe('wrong');
     expect(r.conflicts.join()).toContain('권한이 충돌');
   });

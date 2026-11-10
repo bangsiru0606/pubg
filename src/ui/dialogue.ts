@@ -1,5 +1,5 @@
 // 대화 오버레이 (바닥선 아래 112px). 타이핑 연출(Enter/클릭으로 즉시 완성), 선택지, 단서 제시(9.2), 진술 3단계(9.3).
-import { availableChoices, characterName, enterNode, shownEvidence, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
+import { availableChoices, startNodeOf, characterName, enterNode, shownEvidence, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
 import { dialogues } from '../explore/content';
 import { el, esc, root, showToast } from './hud';
 import { popModal, pushModal } from './input';
@@ -15,7 +15,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   const box = el('div', 'dlg'); box.id = 'dialogue';
   root().append(box);
 
-  let nodeId = d.start;
+  let nodeId = startNodeOf(s, d);
   let node: DialogueNode;
   let shown = 0, timer = 0, typing = false;
   let items: Item[] = [], sel = 0;
@@ -64,7 +64,9 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
     return `<span class="st-unconfirmed">“${esc(t)}”</span>`;
   }
   function render() {
-    const portrait = node.portrait ? `<img class="portrait" src="assets/illust/${node.portrait}.png" alt="">` : '';
+    // 초상이 아직 없는 인물은 회색 실루엣 placeholder (한지수·박은호 그림을 대신 쓰지 않는다)
+    const portrait = node.portrait ? `<img class="portrait" src="assets/illust/${node.portrait}.png" alt="">`
+      : node.speaker !== 'han_jisu' ? '<div class="portrait ph"><i></i><b></b></div>' : '';
     box.className = 'dlg' + (portrait ? ' has-portrait' : '');
     let opts = '';
     if (picker) {

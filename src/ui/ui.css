@@ -118,3 +118,35 @@
 .puzzle .submit { position: absolute; right: 0; top: 26px; background: #2f4030; border: 1px solid #8a7f68; padding: 1px 10px; cursor: pointer; }
 
 .detail.withdlg img { max-height: 150px; margin-bottom: 112px; }
+
+.dlg .portrait.ph { width: 60px; height: 100px; }
+.ph i { position: absolute; left: 18px; top: 8px; width: 26px; height: 30px; border-radius: 50%; background: #6d7378; }
+.ph b { position: absolute; left: 4px; top: 42px; width: 54px; height: 58px; border-radius: 28px 28px 0 0; background: #6d7378; }
+
+/* 퍼즐: 타임라인·라이트박스·연결 */
+.puzzle .zone.outside { border-style: dotted; background: rgba(160,120,120,.1); }
+.puzzle .zone.node { background: rgba(120,140,160,.2); border-style: solid; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 9px; }
+.puzzle .lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.puzzle .lines line { stroke: #e2c98a; stroke-width: .8; vector-effect: non-scaling-stroke; }
+.puzzle .crow { position: absolute; left: 1%; width: 58%; white-space: nowrap; }
+.puzzle .cdet { display: block; font-size: 7px; color: #a9a290; margin-left: 2px; white-space: normal; line-height: 1.2; }
+.lay-timeline .plan { height: 142px; }
+.lay-connect .plan { height: 142px; }
+.lay-lightbox .pleft { width: 468px; }
+.lay-lightbox .panels { display: flex; gap: 3px; height: 108px; }
+.lay-lightbox .panel { flex: 1; background: #20232a; border: 1px solid #8a7f68; padding: 2px 4px; font-size: 8px; line-height: 1.35; overflow: hidden; }
+.lay-lightbox .ph-t { color: #e2c98a; font-weight: 700; border-bottom: 1px solid #444; margin-bottom: 2px; }
+.lay-lightbox .ptasks { top: 130px; }
+.lay-lightbox .chip { display: block; margin-bottom: 1px; font-size: 8px; text-align: left; }
+.lay-lightbox .pright { left: 6px; right: 6px; top: 196px; height: 58px; font-size: 8px; }
+.lay-lightbox .pright ul { display: none; }
+.lay-lightbox .submit { top: 0; }
+.lay-timeline .ptasks, .lay-connect .ptasks { top: 190px; }
+
+.lay-timeline .zone .tk { display: block; white-space: normal; width: 92%; margin: 1px auto; text-align: center; box-sizing: border-box; font-size: 8px; line-height: 1.25; }
+.lay-lightbox .chip { display: inline-block; margin: 0 3px 2px 0; }
+.lay-lightbox .pright { top: 180px; height: 80px; }
+.lay-lightbox .ptasks { right: 70px; }
+.lay-lightbox .ptasks { right: 6px; }
+.lay-lightbox .pright { right: 74px; }
+.lay-lightbox .submit { top: 62px; }

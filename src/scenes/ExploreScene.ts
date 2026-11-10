@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import {
-  acquireEvidence, hasFlag, shownEvidence, puzzles, setFlag, type GameState,
+  acquireEvidence, hasFlag, isBasementOpen, shownEvidence, puzzles, setFlag, type GameState,
 } from '../core';
 import {
   GROUND_Y, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, promptOf, themes,
@@ -131,8 +131,8 @@ export class ExploreScene extends Phaser.Scene {
     if (it.type === 'transition') this.useTransition(it);
     else if (it.type === 'npc') this.talk(it);
     else if (it.closeup) { setPrompt(null); openCloseup(this.state, it.closeup, () => {}); }
-    else if (it.puzzleId) this.puzzle(it.puzzleId);
-    else if (it.evidenceId || it.dialogueId) this.examine(it);
+    else if (it.puzzleId && (hasFlag(this.state, `puzzle_opened:${it.puzzleId}`) || !(it.evidenceId || it.evidenceIds || it.dialogueId))) this.puzzle(it.puzzleId); // 이미 한 번 열린 퍼즐은 다시 연다
+    else if (it.evidenceId || it.evidenceIds || it.dialogueId) this.examine(it);
   }
 
   private useTransition(it: Transition) {
@@ -146,12 +146,12 @@ export class ExploreScene extends Phaser.Scene {
   /** 조사 지점: 독백(dialogueId)이 있으면 독백 → 원문 보기, 없으면 바로 원문 보기. 이미 얻었으면 원문만 다시 연다. */
   private examine(it: Examine) {
     setPrompt(null);
-    const have = it.evidenceId ? this.state.evidenceIds.includes(it.evidenceId) : false;
+    const ids = [...(it.evidenceId ? [it.evidenceId] : []), ...(it.evidenceIds ?? [])];
+    const have = ids.length > 0 && ids.every((id) => this.state.evidenceIds.includes(id));
     if (it.dialogueId && !have) { openDialogue(this.state, it.dialogueId, (got) => this.showDocs(got)); return; }
-    if (it.evidenceId) {
-      if (acquireEvidence(this.state, it.evidenceId)) showToast(`단서 획득: ${shownEvidence(this.state, it.evidenceId)!.title}`);
-      this.showDocs([it.evidenceId]);
-    }
+    const fresh = ids.filter((id) => acquireEvidence(this.state, id));
+    for (const id of fresh) showToast(`단서 획득: ${shownEvidence(this.state, id)!.title}`);
+    this.showDocs(have ? ids : fresh);
   }
 
   /** 얻은 자료의 원문을 차례로 보여 준 뒤 화면을 갱신하고, 조건이 갖춰진 퍼즐을 자동으로 연다 */
@@ -168,8 +168,9 @@ export class ExploreScene extends Phaser.Scene {
 
   private autoOpenPuzzle() {
     for (const p of puzzles) {
-      if (!p.tasks || this.state.solvedPuzzleIds.includes(p.id) || hasFlag(this.state, `puzzle_opened:${p.id}`)) continue;
-      if (!p.sourceEvidenceIds.every((id) => this.state.evidenceIds.includes(id))) continue;
+      if (!p.layout || !p.openWhen || this.state.solvedPuzzleIds.includes(p.id) || hasFlag(this.state, `puzzle_opened:${p.id}`)) continue;
+      const w = p.openWhen;
+      if (!(w.flags ?? []).every((f) => hasFlag(this.state, f)) || !(w.evidence ?? []).every((id) => this.state.evidenceIds.includes(id))) continue;
       setFlag(this.state, `puzzle_opened:${p.id}`);
       this.puzzle(p.id);
       return;
@@ -178,10 +179,17 @@ export class ExploreScene extends Phaser.Scene {
 
   private puzzle(id: string) {
     setPrompt(null);
-    if (this.state.solvedPuzzleIds.includes(id)) { openDialogue(this.state, 'mono_p01_solved'); return; }
-    openPuzzle(this.state, id, (solved) => {
-      if (solved) { this.refresh(); openDialogue(this.state, 'mono_p01_solved'); }
-    });
+    const p = puzzles.find((q) => q.id === id)!;
+    const solvedText = () => { if (p.solvedDialogue) openDialogue(this.state, p.solvedDialogue, () => this.announceBasement()); };
+    if (this.state.solvedPuzzleIds.includes(id)) { solvedText(); return; }
+    openPuzzle(this.state, id, (solved) => { if (solved) { this.refresh(); solvedText(); } });
+  }
+
+  /** P03·P04 를 모두 풀면 지하 계단이 열렸음을 한 번 알린다 */
+  private announceBasement() {
+    if (!isBasementOpen(this.state) || hasFlag(this.state, 'basement_announced')) return;
+    setFlag(this.state, 'basement_announced');
+    openDialogue(this.state, 'mono_basement_open');
   }
 
   private talk(npc: Npc) {

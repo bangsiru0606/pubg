@@ -254,7 +254,17 @@
      "label": "[3층 올라가기]",
      "to": "floor3",
      "spawnX": 0,
-     "kind": "stairs"
+     "kind": "stairs",
+     "requires": "flag_night_timeline",
+     "lockedDialogue": "mono_floor3_locked"
+    },
+    {
+     "type": "examine",
+     "id": "broadcast",
+     "x": 1080,
+     "name": "복도 방송표",
+     "dialogueId": "mono_broadcast",
+     "puzzleId": "P02_night_timeline"
     }
    ]
   },
@@ -407,8 +417,10 @@
      "type": "examine",
      "id": "revision",
      "x": 360,
-     "name": "검안 기록",
-     "evidenceId": "E07_report_revision"
+     "name": "부원장 PC",
+     "evidenceId": "E07_report_revision",
+     "requires": "baek_refused",
+     "puzzleId": "P03_revision_diff"
     }
    ]
   },
@@ -438,15 +450,11 @@
      "type": "examine",
      "id": "stock",
      "x": 360,
-     "name": "진정제 재고표",
-     "evidenceId": "E09_sedative_gap"
-    },
-    {
-     "type": "examine",
-     "id": "access",
-     "x": 450,
-     "name": "출입 기록",
-     "evidenceId": "E05_access_log"
+     "name": "재고표",
+     "evidenceIds": [
+      "E09_sedative_gap",
+      "E05_access_log"
+     ]
     }
    ]
   },
@@ -474,17 +482,14 @@
     },
     {
      "type": "examine",
-     "id": "forms",
-     "x": 270,
-     "name": "동의서 묶음",
-     "evidenceId": "E10_consent_forms"
-    },
-    {
-     "type": "examine",
-     "id": "order",
-     "x": 405,
-     "name": "지시서",
-     "evidenceId": "E11_transfer_order"
+     "id": "desk",
+     "x": 340,
+     "name": "이혜정의 책상",
+     "evidenceIds": [
+      "E10_consent_forms",
+      "E11_transfer_order"
+     ],
+     "puzzleId": "P04_approval_chain"
     }
    ]
   },

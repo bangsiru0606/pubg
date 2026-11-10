@@ -19,10 +19,11 @@ Claude Code는 이 파일(`CLAUDE.md`), Codex는 `AGENTS.md`를 읽는다. 두 �
 
 ```bash
 npm install
-npm run dev            # 개발 서버
+npm run dev            # 개발 서버 (F9: 디버그 메뉴 — 씬 1~7 점프·저장 초기화·상태 보기, 제출 빌드에는 없음)
 npm test               # Vitest
 npm run validate       # 데이터 ID 참조 무결성 검사
 npm run assets         # art/source → public/assets 정규화
+npm run play           # build:release 후 release/ConfessionWard_v1.0_web/index.html 을 기본 브라우저로 연다 (플레이 시험)
 npm run build:release  # release/ConfessionWard_v1.0_web.zip 생성 (index.html 더블클릭 실행)
 npm run test:release   # zip을 풀어 file://로 열고 자동 플레이 확인 (Playwright)
 npm run build           # tsc + vite build (dist/)

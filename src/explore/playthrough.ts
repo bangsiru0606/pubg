@@ -1,0 +1,54 @@
+// 씬 점프·시험용: "씬 N 을 시작하는 시점"의 상태를 정상 플레이와 같은 규칙으로 만든다 (순수 TS, Phaser·DOM 없음).
+// 각 씬에서 거치는 조사 지점·대사 노드·퍼즐을 그대로 적용하므로, 단서 검증 상태·진술·플래그가 실제 플레이와 같다.
+// 6단계 코어 테스트의 "모든 조사 지점과 대사를 거친 상태"도 이 함수(buildProgress(7))를 쓴다.
+import real from '../data/dialogue.json';
+import { acquireEvidence, createGameState, enterNode, puzzles, setFlag, submitPuzzle, type Dialogues, type GameState } from '../core';
+import { areas } from './interaction';
+
+const D = real.dialogues as unknown as Dialogues;
+
+interface SceneSteps { dialogues?: string[]; examines?: [string, string][]; puzzles?: string[]; flags?: string[] }
+/** 씬별로 끝내는 일 (씬 1 = 인덱스 0). 씬 6 은 증거 보존 선택에 따라 따로 처리한다. */
+export const SCENE_STEPS: SceneSteps[] = [
+  { dialogues: ['eunho_intro'], flags: ['cutscene_done:hospital_intro'] },
+  { dialogues: ['baek_lobby'], examines: [['floor1', 'exam_note'], ['room_director', 'altar'], ['room_director', 'under_desk']], puzzles: ['P01_scene_rebuild'] },
+  { dialogues: ['choi_okja', 'han_yujin', 'chae_soyeon', 'jeong_haneul'], examines: [['floor2', 'broadcast']], puzzles: ['P02_night_timeline'] },
+  { dialogues: ['baek_office', 'oh_miran', 'lee_hyejeong'], examines: [['room_baek', 'revision'], ['room_oh', 'stock'], ['room_lee', 'desk']], puzzles: ['P03_revision_diff', 'P04_approval_chain'], flags: ['basement_announced'] },
+  { dialogues: ['jeong_haneul_final'], examines: [['b1', 'ledger'], ['b1', 'idmap'], ['b1', 'manifest'], ['b1', 'belongings']], puzzles: ['P05_patient_code'], flags: ['diary_closed'] },
+];
+
+/** 씬 N(1~7) 시작 지점: 위치(구역·x)와 그 시점까지의 상태. 씬 7 = 증거 보존 선택까지 끝나고 최종 보고서를 여는 시점. */
+export const SCENE_START: { area: string; x: number }[] = [
+  { area: 'office', x: 180 }, { area: 'floor1', x: 0 }, { area: 'floor2', x: 50 }, { area: 'floor3', x: 50 }, { area: 'b1', x: 50 }, { area: 'b1', x: 50 }, { area: 'b1', x: 50 },
+];
+
+function applyExamine(s: GameState, areaId: string, id: string) {
+  const it = areas[areaId].interactables.find((i) => i.id === id);
+  if (!it || it.type !== 'examine') throw new Error(`examine ${areaId}/${id} 없음`);
+  if (it.dialogueId) for (const n of Object.values(D[it.dialogueId].nodes)) enterNode(s, n);
+  for (const e of [...(it.evidenceId ? [it.evidenceId] : []), ...(it.evidenceIds ?? [])]) acquireEvidence(s, e);
+}
+
+export function applyScene(s: GameState, scene: number, secure = true) {
+  if (scene === 6) { // 씬 6: 증거 보존 선택
+    enterNode(s, D.eunho_message.nodes.m1);
+    enterNode(s, D.eunho_message.nodes[secure ? 'a1' : 'b1']);
+    return;
+  }
+  const st = SCENE_STEPS[scene - 1];
+  for (const d of st.dialogues ?? []) for (const n of Object.values(D[d].nodes)) enterNode(s, n);
+  for (const [a, id] of st.examines ?? []) applyExamine(s, a, id);
+  for (const f of st.flags ?? []) setFlag(s, f);
+  for (const p of st.puzzles ?? []) submitPuzzle(s, p, puzzles.find((q) => q.id === p)!.correctSlots);
+}
+
+/** 씬 `scene`(1~7)을 시작하는 시점의 상태. 앞선 씬을 모두 거친 것으로 만든다. */
+export function buildProgress(scene: number, opts: { secure?: boolean; name?: string } = {}): { state: GameState; area: string; x: number } {
+  const state = createGameState();
+  if (opts.name) state.playerName = opts.name;
+  for (let k = 1; k < scene; k++) applyScene(state, k, opts.secure ?? true);
+  const at = SCENE_START[scene - 1];
+  state.currentSceneId = at.area; state.playerX = at.x;
+  if (scene > 1) for (const a of ['office', 'floor1']) if (!state.visitedAreaIds.includes(a)) state.visitedAreaIds.push(a);
+  return { state, ...at };
+}

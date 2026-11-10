@@ -13,7 +13,11 @@
     "test:release": "tsx tools/test-release.ts",
     "screenshot": "tsx tools/screenshot.ts",
     "test:e2e": "tsx tools/test-e2e.ts",
-    "prepare": "git config core.hooksPath .githooks || exit 0"
+    "prepare": "git config core.hooksPath .githooks || exit 0",
+    "play": "tsx tools/play.ts",
+    "test:dev": "tsx tools/test-dev.ts",
+    "import:generated": "tsx tools/import-generated.ts",
+    "ui-shots": "tsx tools/ui-shots.ts"
   },
   "dependencies": {
     "phaser": "^4.2.1"

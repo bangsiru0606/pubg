@@ -26,19 +26,23 @@ export async function removeChromaKey(input: Buffer | string, o: ChromaOptions =
   return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
 
-/** 가장자리 반투명 픽셀의 초록 번짐 제거: 이웃 중 투명 픽셀이 있는 불투명 픽셀의 g 를 r,b 최대값으로 제한 */
-export async function despillEdges(png: Buffer): Promise<Buffer> {
+/**
+ * 가장자리 초록 번짐 제거: 투명 픽셀에서 `radius` 칸 안에 있는 픽셀의 g 를 max(r, b) 로 제한한다.
+ * 청록(g == b)·회색(r == g == b) 은 g 가 max(r, b) 이하이므로 그대로 남는다.
+ */
+export async function despillEdges(png: Buffer, radius = 2): Promise<Buffer> {
   const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info;
-  const at = (x: number, y: number) => (y * w + x) * 4;
-  const copy = Buffer.from(data);
-  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
-    const i = at(x, y);
-    if (copy[i + 3] === 0) continue;
-    const edge = copy[at(x - 1, y) + 3] === 0 || copy[at(x + 1, y) + 3] === 0 || copy[at(x, y - 1) + 3] === 0 || copy[at(x, y + 1) + 3] === 0;
-    if (!edge) continue;
-    const cap = Math.max(copy[i], copy[i + 2]);
-    if (copy[i + 1] > cap) data[i + 1] = cap;
+  const clear = (x: number, y: number) => x < 0 || y < 0 || x >= w || y >= h || data[(y * w + x) * 4 + 3] === 0;
+  const out = Buffer.from(data);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4;
+    if (data[i + 3] === 0) continue;
+    let near = false;
+    for (let dy = -radius; dy <= radius && !near; dy++) for (let dx = -radius; dx <= radius; dx++) if (clear(x + dx, y + dy)) { near = true; break; }
+    if (!near) continue;
+    const cap = Math.max(data[i], data[i + 2]);
+    if (data[i + 1] > cap) out[i + 1] = cap;
   }
-  return sharp(data, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+  return sharp(out, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
 }

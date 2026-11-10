@@ -704,15 +704,29 @@ await press('Enter'); // 대화 끝 → 씬 7
 // 씬 7: 최종 보고서
 await page.waitForSelector('#report', { timeout: 3000 });
 check(true, '[씬 7] 최종 보고서 시작');
-// 시험 편의: 결론은 시험 훅으로 저장한다 (수첩에서 키보드로 저장하는 경로는 위에서 질문 A 로 이미 검증)
-await cw(`(() => { const s = cw.state;
-  const ok = (id, sup, reb) => cw.saveConclusion(s, id, cw.claims.find((c) => c.claimId === id).hypotheses.find((h) => h.isCorrect).id, sup, reb);
-  ok('claim_a', ['E02_altar_blood', 'E03_preliminary_exam'], ['E07_report_revision']);
-  ok('claim_b', ['E04_wristband_fragment', 'E08_miran_revised'], ['E05_access_log']);
-  ok('claim_c', ['E07_report_revision', 'E08_miran_revised'], ['E06_torn_sleeve']);
-  ok('claim_d', ['E12_ledger', 'E14_belongings_diary'], ['E15_transport_manifest']); })()`);
-await press('ArrowUp'); await press('ArrowDown'); // 다시 그리기
-await press('ArrowDown', 3); await press('ArrowDown'); // 보고 대상 행
+// 질문 A~D 네 개를 사건 수첩 UI 에서 키보드로 직접 채운다 (시험 훅 사용 안 함)
+const selText = async (sel: string) => (await page.locator(sel).first().innerText().catch(() => '')).replace(/\s+/g, ' ');
+const moveTo = async (sel: string, text: string, key = 'ArrowDown') => { for (let i = 0; i < 20 && !(await selText(sel)).includes(text); i++) await press(key); };
+const claimsToFill: [string, string, string[], string][] = [
+  ['claim_a', '기도대 충돌', ['기도대 아래 혈흔', '예비 검안 메모'], '검안 기록 수정 이력'],
+  ['claim_b', '은지와 자신을 구하려', ['정하늘 손목띠 조각', '오미란의 수정 진술'], '원장실 출입 기록'],
+  ['claim_c', '백선우와 이혜정이', ['검안 기록 수정 이력', '오미란의 수정 진술'], '찢어진 환자복 소매'],
+  ['claim_d', 'P-271로 분류', ['특별 치료 장부', '박은지의 유품과 일기'], '생체 보존물 운송표'],
+];
+for (let i = 0; i < claimsToFill.length; i++) {
+  const [cid, hyp, sup, reb] = claimsToFill[i];
+  await press('Enter'); // 질문 i 의 사건 수첩 탭
+  await page.waitForSelector('#notebook');
+  await moveTo('#notebook .ndetail .row.sel', hyp); await press('Enter');
+  const pick = async (slot: string, title: string) => { await moveTo('#notebook .ndetail .row.sel', slot); await press('Enter'); await moveTo('#notebook .picker .row.sel', title); await press('Enter'); };
+  await pick('지지 근거 1', sup[0]); await pick('지지 근거 2', sup[1]); await pick('반박 근거', reb);
+  await moveTo('#notebook .ndetail .row.sel', '[결론 저장]'); await press('Enter');
+  check(await cw<boolean>(`!!cw.state.selectedHypothesisByClaim.${cid} && cw.state.submittedEvidenceByClaim.${cid}.length === 2 && cw.state.submittedRebuttalByClaim.${cid}.length === 1`), `[씬 7] 사건 수첩에서 키보드로 질문 ${'ABCD'[i]} 결론 저장 (시험 훅 없음)`);
+  await press('Escape'); // 수첩 닫기 → 보고서
+  await page.waitForSelector('#report');
+  if (i < 3) await press('ArrowDown');
+}
+await press('ArrowDown'); // 보고 대상 행
 await press('ArrowRight'); await press('ArrowRight'); // 박은호만 → 외부 수사기관 포함
 await press('ArrowDown'); await press('Enter'); // 작성 내용 확인
 await page.waitForFunction(() => document.querySelector('#report .sum'));

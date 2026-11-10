@@ -5,24 +5,13 @@ import {
   resolveEnding, saveConclusion, saveGame, setReportTarget, shownEvidence, startNodeOf, submitPuzzle, type Dialogues, type GameState, type KeyValueStore,
 } from '../src/core';
 import { areas, autoTriggered, isAvailable } from '../src/explore/interaction';
+import { buildProgress } from '../src/explore/playthrough';
 
 const D = real.dialogues as unknown as Dialogues;
 const P = (id: string) => puzzles.find((p) => p.id === id)!;
 
-/** 실제 플레이로 얻을 수 있는 상태: 모든 조사 지점·대사를 거치고(씬 6 은 선택대로) 퍼즐을 푼다 */
-function playThrough(secure: boolean): GameState {
-  const s = createGameState();
-  for (const a of Object.values(areas)) for (const it of a.interactables)
-    if (it.type === 'examine') for (const id of [...(it.evidenceId ? [it.evidenceId] : []), ...(it.evidenceIds ?? [])]) acquireEvidence(s, id);
-  for (const [id, d] of Object.entries(D)) {
-    if (id === 'eunho_message') continue;
-    for (const n of Object.values(d.nodes)) enterNode(s, n);
-  }
-  enterNode(s, D.eunho_message.nodes.m1);
-  enterNode(s, D.eunho_message.nodes[secure ? 'a1' : 'b1']);
-  for (const p of puzzles) submitPuzzle(s, p.id, p.correctSlots);
-  return s;
-}
+/** 실제 플레이로 얻을 수 있는 상태: 씬 1~6 을 모두 거친(= 씬 7 시작) 상태. 디버그 메뉴의 씬 점프와 같은 함수. */
+const playThrough = (secure: boolean): GameState => buildProgress(7, { secure }).state;
 const GOOD: Record<string, [string[], string[]]> = {
   claim_a: [['E02_altar_blood', 'E03_preliminary_exam'], ['E07_report_revision']],
   claim_b: [['E04_wristband_fragment', 'E08_miran_revised'], ['E05_access_log']],
@@ -162,4 +151,25 @@ describe('씬 6·7', () => {
   it('E14 원문을 닫으면 켜지는 플래그가 데이터에 있다', () => expect(shownEvidence(createGameState(), 'E14_belongings_diary')!.afterView).toBe('diary_closed'));
   it('지하 계단 조건은 변하지 않는다', () => expect(isAvailable(areas.floor1.interactables.find((i) => i.id === 'stairs_b1')!, createGameState())).toBe(false));
   it('연속 호출해도 startNodeOf 는 처음부터', () => expect(startNodeOf(createGameState(), D.jeong_haneul_final)).toBe('f1'));
+});
+
+describe('씬 점프 상태 (디버그 메뉴 = 정상 플레이와 같은 상태)', () => {
+  const solved = (n: number) => buildProgress(n).state.solvedPuzzleIds.map((id) => id.slice(0, 3));
+  it('씬 N 시작 시점에는 앞선 씬의 퍼즐만 풀려 있다', () => {
+    expect(solved(1)).toEqual([]); expect(solved(2)).toEqual([]); expect(solved(3)).toEqual(['P01']);
+    expect(solved(4)).toEqual(['P01', 'P02']); expect(solved(5)).toEqual(['P01', 'P02', 'P03', 'P04']);
+    expect(solved(6)).toEqual(['P01', 'P02', 'P03', 'P04', 'P05']);
+  });
+  it('씬 6 시작에는 정하늘 고백·P05 가 끝나 있어 씬 6 사건이 바로 시작된다, 씬 7 시작에는 증거 보존 선택이 끝나 있다', () => {
+    const s6 = buildProgress(6).state;
+    expect(autoTriggered('b1', areas.b1, 0, s6)?.id).toBe('scene6');
+    expect(buildProgress(7, { secure: true }).state.evidenceSecured).toBe(true);
+    expect(buildProgress(7, { secure: false }).state.evidenceSecured).toBe(false);
+  });
+  it('이름 유지, 단서 검증 상태는 정상 플레이와 같다 (퍼즐 해결 후 검증)', () => {
+    const { state } = buildProgress(5, { name: '서윤' });
+    expect(state.playerName).toBe('서윤');
+    expect(state.verifiedEvidenceIds).toEqual(expect.arrayContaining(['E02_altar_blood', 'E07_report_revision', 'E10_consent_forms']));
+    expect(state.verifiedEvidenceIds).not.toContain('E12_ledger');
+  });
 });

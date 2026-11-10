@@ -31,9 +31,10 @@ for (const s of spec.sprites) {
 // 시퀀스: 같은 캐릭터의 모든 프레임을 가로로 이어 붙여 한 번에 양자화 → 프레임별로 다시 자름 (프레임 간 팔레트 동일)
 for (const q of spec.sequences) {
   const frames = await Promise.all(q.frames.map(async (f: string) => {
-    const meta = await sharp(join(SRC, q.src, `${f}.png`)).metadata();
+    const src = await load(join(SRC, q.src, `${f}.png`), q.chromaKey);
+    const meta = await sharp(src).metadata();
     const w = Math.round((meta.width! * q.canvasHeight) / meta.height!);
-    return { f, w, buf: await sharp(join(SRC, q.src, `${f}.png`)).resize(w, q.canvasHeight, { kernel: 'lanczos3' }).png().toBuffer() };
+    return { f, w, buf: await sharp(src).resize(w, q.canvasHeight, { kernel: 'lanczos3' }).png().toBuffer() };
   }));
   const total = frames.reduce((a, x) => a + x.w, 0);
   let left = 0;

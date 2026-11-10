@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import assetList from '../../public/assets/assets.json';
 import { openNamePopup } from '../ui/namepopup';
+import { buildProgress } from '../explore/playthrough';
 import {
   acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, puzzles, setFlag, type GameState,
 } from '../core';
@@ -275,6 +276,16 @@ export class ExploreScene extends Phaser.Scene {
     this.state = saved;
     this.buildArea(saved.currentSceneId, saved.playerX);
     this.startReport();
+  }
+
+  /** 개발 모드 디버그 메뉴: 씬 N 시작 지점으로 이동 (정상 플레이와 같은 상태, src/explore/playthrough.ts) */
+  jumpToScene(n: number) {
+    setPrompt(null); this.locked = false; this.camPan = null;
+    if (n === 1) { this.state = createGameState(); setPlayerName(this.state.playerName); this.started = false; this.buildArea(START.area, START.x); void this.runOpening(); return; }
+    const { state, area, x } = buildProgress(n, { name: this.state?.playerName });
+    this.state = state; setPlayerName(state.playerName); this.started = true;
+    this.buildArea(area, x);
+    if (n === 7) this.startReport();
   }
 
   openTitle() {

@@ -1,9 +1,12 @@
 import Phaser from 'phaser';
 import './ui/ui.css';
-import { acquireEvidence, claims, createGameState, enterNode, getNode, puzzles, saveConclusion, setFlag, submitPuzzle } from './core';
+import { acquireEvidence, claims, createGameState, enterNode, getNode, puzzles, saveConclusion, setFlag, setReportTarget, submitPuzzle } from './core';
 import { dialogues, isTestBuild } from './explore/content';
 import { ExploreScene } from './scenes/ExploreScene';
 import { openDialogue } from './ui/dialogue';
+import { openEnding } from './ui/ending';
+import { openNotebook } from './ui/notebook';
+import { openPuzzle } from './ui/puzzle';
 import { closeTitleNow } from './ui/title';
 import { initHud } from './ui/hud';
 
@@ -44,6 +47,9 @@ window.addEventListener('resize', fit);
 fit();
 scene.openTitle(); // 타이틀: 새 게임 / 이어하기 / 조작법
 
+// 개발 서버(npm run dev)에서만: 디버그 메뉴(F9). 제출 빌드에서는 이 분기가 통째로 제거된다.
+if (import.meta.env.DEV) void import('./ui/debug').then((m) => m.initDebug(scene));
+
 // 테스트·스크린샷용 훅 (e2e 빌드에서만 노출)
 (window as unknown as { __game: Phaser.Game }).__game = game;
 if (isTestBuild) {
@@ -66,5 +72,17 @@ if (isTestBuild) {
   (window as unknown as Record<string, unknown>).__cw = {
     get state() { return scene.state; }, scene, ff, quick: () => { closeTitleNow(); scene.newGame(true); }, saveConclusion, claims,
     openDialogue: (id: string) => openDialogue(scene.state, id),
+    // 화면 디자인 확인용 (tools/ui-shots.ts): 각 오버레이를 현재 상태로 바로 연다
+    ui: {
+      notebook: (tab: number) => openNotebook(scene.state, () => {}, tab),
+      puzzle: (id: string) => openPuzzle(scene.state, id, () => {}),
+      ending: () => openEnding(scene.state, { onRetry: () => {}, onRestart: () => {}, onTitle: () => {} }),
+      acquire: (ids: string[]) => ids.forEach((id) => acquireEvidence(scene.state, id)),
+      conclude: (good: boolean) => { /* 질문 A~D 를 모두 맞게 저장하고 보고 대상을 외부 수사기관으로 */
+        const G: Record<string, [string[], string[]]> = { claim_a: [['E02_altar_blood', 'E03_preliminary_exam'], ['E07_report_revision']], claim_b: [['E04_wristband_fragment', 'E08_miran_revised'], ['E05_access_log']], claim_c: [['E07_report_revision', 'E08_miran_revised'], ['E06_torn_sleeve']], claim_d: [['E12_ledger', 'E14_belongings_diary'], ['E15_transport_manifest']] };
+        for (const [id, [sup, reb]] of Object.entries(G)) saveConclusion(scene.state, id, claims.find((c) => c.claimId === id)!.hypotheses.find((h) => h.isCorrect === good)!.id, good ? sup : [], good ? reb : ['E02_altar_blood']);
+        setReportTarget(scene.state, 'external');
+      },
+    },
   };
 }

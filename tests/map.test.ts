@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GROUND_Y, START, areas, autoTriggered, fadeSeconds, isAvailable, nearest, triggerKey, type Transition } from '../src/explore/interaction';
+import { GROUND_Y, START, areas, autoTriggered, fadeSeconds, isAvailable, nearest, talkStand, triggerKey, type Transition } from '../src/explore/interaction';
 import { createGameState, setFlag, submitPuzzle, puzzles } from '../src/core';
 
 const transitions = (id: string) => areas[id].interactables.filter((i): i is Transition => i.type === 'transition');
@@ -63,4 +63,13 @@ describe('상호작용 규칙', () => {
     expect(f.out + f.in).toBeLessThanOrEqual(0.4);
   });
   it('시작 위치는 사무실', () => expect(START.area).toBe('office'));
+});
+
+describe('대화 위치', () => {
+  it('최소 28px 를 두고 플레이어가 있던 쪽에 선다, 겹치면 왼쪽, 맵 끝이면 반대쪽', () => {
+    expect(talkStand(100, 180, -90, 630)).toEqual({ x: 152, playerFacesLeft: false });
+    expect(talkStand(300, 180, -90, 630)).toEqual({ x: 208, playerFacesLeft: true });
+    expect(talkStand(180, 180, -90, 630).x).toBe(152);
+    expect(talkStand(-80, -85, -90, 630).x).toBe(-57);
+  });
 });

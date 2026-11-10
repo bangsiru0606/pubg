@@ -26,6 +26,9 @@ const teleport = (x: number) => cw(`cw.scene.teleportX(${x})`);
 const promptText = async () => ((await page.locator('#prompt:not(.hidden)').count()) ? (await page.locator('#prompt').innerText()).replace(/\s+/g, ' ') : '');
 const wait = (ms: number) => page.waitForTimeout(ms);
 const shot = async (name: string) => { if (SHOT) await page.screenshot({ path: `docs/screenshots/${name}.png` }); };
+// 화면 텍스트에 내부 ID(영문 snake_case, E01 같은 단서 코드, 플래그 이름)가 나오면 안 된다
+const ID_RE = /[a-z]+(?:_[a-z0-9]+)+|E\d{2}|P0\d|flag_|trigger_fired/;
+const noIds = async (where: string) => { const t = await page.locator('#ui').innerText(); const m = t.match(ID_RE); check(!m, `${where}: 내부 ID 노출 없음${m ? ' → ' + m[0] : ''}`); };
 async function enterArea(x: number, expect: string) {
   await teleport(x); await wait(60);
   await press('Enter');
@@ -54,7 +57,11 @@ await teleport(11 * 45 - 25); await wait(60);
 check((await promptText()).includes('대화하기'), '박은호 앞에서 "대화하기" 프롬프트');
 await press('Enter');
 await page.waitForSelector('#dialogue');
-await wait(60); await press('Enter'); // 타이핑 즉시 완성
+await wait(60);
+check(Math.abs((await cw<number>('cw.scene.player.x')) - 495) >= 28, '대화 시작 시 상대와 28px 이상 거리');
+check(await cw<boolean>('cw.scene.player.flipX === false'), '대화 시작 시 서로 마주 봄 (플레이어는 오른쪽을 본다)');
+await noIds('대화창');
+await press('Enter'); // 타이핑 즉시 완성
 await press('Enter'); // 다음 노드 (n2: 선택지)
 await wait(60); await press('Enter');
 check((await page.locator('#dialogue .opt').count()) === 2, '선택지 2개 표시');
@@ -108,6 +115,7 @@ await cw(`(cw.state.evidenceIds.splice(0, 99, 'E01_last_letter', 'E02_altar_bloo
   cw.state.flags.push('flag_scene_rebuilt'))`);
 await press('Tab');
 await page.waitForSelector('#notebook');
+await noIds('수첩 단서 목록');
 check((await page.locator('#notebook .nlist .row').count()) === 4, '수첩 단서 목록 4개');
 await shot('stage3_notebook_evidence');
 await press('ArrowRight', 2); // 질문 A
@@ -124,6 +132,7 @@ await press('ArrowDown', 2); await press('Enter'); // 결론 저장
 check(await cw<boolean>("cw.state.selectedHypothesisByClaim.claim_a === 'a3_collision' && cw.state.submittedRebuttalByClaim.claim_a[0] === 'E07_report_revision'"), '수첩에서 키보드로 결론 저장');
 const nb = await page.locator('#notebook').innerText();
 check(!/정답|오답|맞았|틀렸/.test(nb), '저장 후 정답 여부를 표시하지 않는다');
+await noIds('수첩 질문');
 await shot('stage3_notebook');
 await press('Tab');
 check((await page.locator('#notebook').count()) === 0, 'Tab 으로 수첩 닫기');

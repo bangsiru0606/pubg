@@ -16,7 +16,7 @@ describe('대화 엔진 (테스트 전용 대사)', () => {
   });
   it('선택지: 플래그 조건 필터', () => {
     const s = createGameState();
-    const node = { speaker: 'x', text: 'y', choices: [{ text: 'a', next: 'n' }, { text: 'b', next: 'n', requiresFlag: 'f' }] };
+    const node = { speaker: 'han_jisu', text: 'y', choices: [{ text: 'a', next: 'n' }, { text: 'b', next: 'n', requiresFlag: 'f' }] };
     expect(availableChoices(s, node)).toHaveLength(1);
     s.flags.push('f');
     expect(availableChoices(s, node)).toHaveLength(2);
@@ -40,8 +40,8 @@ describe('대화 엔진 (테스트 전용 대사)', () => {
     const s = createGameState();
     acquireEvidence(s, 'E08_miran_revised'); // 증언
     const d: Dialogue = { start: 'a', nodes: {
-      a: { speaker: 'x', text: 't', statement: { id: 's' }, present: [{ evidenceIds: ['E08_miran_revised'], next: 'r' }] },
-      r: { speaker: 'x', text: 'new', revises: { id: 's' } },
+      a: { speaker: 'han_jisu', text: 't', statement: { id: 's' }, present: [{ evidenceIds: ['E08_miran_revised'], next: 'r' }] },
+      r: { speaker: 'han_jisu', text: 'new', revises: { id: 's' } },
     } };
     enterNode(s, d.nodes.a);
     expect(presentEvidence(s, d, 'd', 'a', ['E08_miran_revised']).kind).toBe('none');

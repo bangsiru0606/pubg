@@ -1,5 +1,5 @@
 // 대화 오버레이 (바닥선 아래 112px). 타이핑 연출(Enter/클릭으로 즉시 완성), 선택지, 단서 제시(9.2), 진술 3단계(9.3).
-import { availableChoices, enterNode, evidenceById, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
+import { availableChoices, characterName, enterNode, evidenceById, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
 import { dialogues } from '../explore/content';
 import { el, esc, root, showToast } from './hud';
 import { popModal, pushModal } from './input';
@@ -76,7 +76,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: () => vo
       opts = single ? `<div class="cont">▼ Enter</div>` :
         items.map((it, i) => `<button class="opt${i === sel ? ' sel' : ''}${it.disabled ? ' dis' : ''}" data-i="${i}">${i + 1}. ${esc(it.label)}</button>`).join('');
     }
-    box.innerHTML = `${portrait}<div class="name">${esc(node.speaker)}</div><div class="text">${textHtml()}</div><div class="msg">${esc(msg)}</div><div class="opts">${opts}</div>`;
+    box.innerHTML = `${portrait}<div class="name">${esc(characterName(node.speaker))}</div><div class="text">${textHtml()}</div><div class="msg">${esc(msg)}</div><div class="opts">${opts}</div>`;
   }
 
   box.addEventListener('click', (e) => {

@@ -53,6 +53,14 @@ export function autoTriggered(areaId: string, area: AreaDef, x: number, s: GameS
   return null;
 }
 
+/** 대화 시작 시 서는 위치: 상대와 최소 TALK_DISTANCE 를 두고, 플레이어가 있던 쪽(겹쳤으면 왼쪽)에 선다. 맵 끝이면 반대쪽. */
+export const TALK_DISTANCE = 28;
+export function talkStand(playerX: number, npcX: number, minX: number, maxX: number): { x: number; playerFacesLeft: boolean } {
+  let side = playerX > npcX ? 1 : -1;
+  if (npcX + side * TALK_DISTANCE < minX || npcX + side * TALK_DISTANCE > maxX) side = -side;
+  return { x: npcX + side * TALK_DISTANCE, playerFacesLeft: side > 0 };
+}
+
 /** 전환 페이드(초). 이미 방문한 구역은 왕복 합계 0.4초 이하 (보정판 8.2) */
 export function fadeSeconds(visited: boolean): { out: number; in: number } {
   return visited ? { out: 0.18, in: 0.18 } : { out: 0.3, in: 0.3 };

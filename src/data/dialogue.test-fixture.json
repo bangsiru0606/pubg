@@ -4,22 +4,22 @@
     "eunho_intro": {
       "start": "n1",
       "nodes": {
-        "n1": { "speaker": "박은호", "portrait": "eunho_worried", "text": "〔시험용 대사〕 박은호가 의뢰를 설명한다.", "next": "n2" },
-        "n2": { "speaker": "한지수", "portrait": "player_question", "text": "〔시험용 대사〕 한지수가 대답을 고른다.",
+        "n1": { "speaker": "park_eunho", "portrait": "eunho_worried", "text": "〔시험용 대사〕 박은호가 의뢰를 설명한다.", "next": "n2" },
+        "n2": { "speaker": "han_jisu", "portrait": "player_question", "text": "〔시험용 대사〕 한지수가 대답을 고른다.",
                 "choices": [{ "text": "의뢰를 받아들인다", "next": "n3" }, { "text": "더 묻는다", "next": "n2b" }] },
-        "n2b": { "speaker": "박은호", "portrait": "eunho_fear", "text": "〔시험용 대사〕 박은호가 한마디 더 한다.", "next": "n3" },
-        "n3": { "speaker": "박은호", "portrait": "eunho_neutral", "text": "〔시험용 대사〕 편지를 건넨다.",
+        "n2b": { "speaker": "park_eunho", "portrait": "eunho_fear", "text": "〔시험용 대사〕 박은호가 한마디 더 한다.", "next": "n3" },
+        "n3": { "speaker": "park_eunho", "portrait": "eunho_neutral", "text": "〔시험용 대사〕 편지를 건넨다.",
                 "onEnter": { "acquire": ["E01_last_letter"], "setFlags": ["intro_done"] } }
       }
     },
     "baek_lobby": {
       "start": "b1",
       "nodes": {
-        "b1": { "speaker": "백선우", "text": "〔시험용 대사〕 원장님은 의자에서 평온하게 발견됐습니다.", "statement": { "id": "baek_s1" },
+        "b1": { "speaker": "baek_sunwoo", "text": "〔시험용 대사〕 원장님은 의자에서 평온하게 발견됐습니다.", "statement": { "id": "baek_s1" },
                 "present": [{ "evidenceIds": ["E03_preliminary_exam"], "next": "b_contra" }], "next": "b_end" },
-        "b_end": { "speaker": "백선우", "text": "〔시험용 대사〕 원장실은 필요하면 보셔도 됩니다.", "onEnter": { "setFlags": ["office_access_granted"] } },
-        "b_contra": { "speaker": "한지수", "portrait": "player_neutral", "text": "〔시험용 대사〕 검안 메모에는 바닥이라고 적혀 있습니다.", "next": "b_rev" },
-        "b_rev": { "speaker": "백선우", "text": "〔시험용 대사〕 …정정합니다. 처음에는 바닥에 계셨습니다.", "revises": { "id": "baek_s1" },
+        "b_end": { "speaker": "baek_sunwoo", "text": "〔시험용 대사〕 원장실은 필요하면 보셔도 됩니다.", "onEnter": { "setFlags": ["office_access_granted"] } },
+        "b_contra": { "speaker": "han_jisu", "portrait": "player_neutral", "text": "〔시험용 대사〕 검안 메모에는 바닥이라고 적혀 있습니다.", "next": "b_rev" },
+        "b_rev": { "speaker": "baek_sunwoo", "text": "〔시험용 대사〕 …정정합니다. 처음에는 바닥에 계셨습니다.", "revises": { "id": "baek_s1" },
                    "onEnter": { "setFlags": ["office_access_granted"] } }
       }
     }

@@ -89,8 +89,10 @@ describe('반박 슬롯·보류·충돌 경고', () => {
     clearConclusion(s, 'claim_a');
     expect(s.selectedHypothesisByClaim.claim_a).toBeUndefined();
   });
-  it('같은 인물·겹치는 시각의 자료만 충돌 경고, 정답 제출 조합에서는 경고 없음', () => {
-    expect(findConflicts(['E03_preliminary_exam', 'E08_miran_revised'])).toEqual([['E03_preliminary_exam', 'E08_miran_revised']]);
+  it('충돌 경고는 conflicts.json 에 명시한 쌍만, 정답 제출 조합에서는 경고 없음', () => {
+    expect(findConflicts(['E03_preliminary_exam', 'E08_miran_revised'])).toEqual([]); // 자동 추론 없음: E03/E08 은 서로 뒷받침한다
+    expect(findConflicts(['x', 'y', 'z'], [['x', 'y']])).toEqual([['x', 'y']]); // 명시한 쌍만
+    expect(findConflicts(['x', 'z'], [['x', 'y']])).toEqual([]);
     for (const [sup, reb] of Object.values(GOOD)) expect(findConflicts([...sup, ...reb])).toEqual([]);
   });
 });

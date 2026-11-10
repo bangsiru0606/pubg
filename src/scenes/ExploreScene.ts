@@ -4,7 +4,7 @@ import {
 } from '../core';
 import {
   GROUND_Y, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, fadeSeconds, isAvailable, nearest, promptOf, themes,
-  triggerKey, type Interactable, type Npc,
+  triggerKey, talkStand, type Interactable, type Npc,
 } from '../explore/interaction';
 import { openCloseup } from '../ui/closeup';
 import { hasDialogue, openDialogue } from '../ui/dialogue';
@@ -25,6 +25,7 @@ export class ExploreScene extends Phaser.Scene {
   busy = false; // 전환 중
   private minX = 0;
   private maxX = 0;
+  private npcSprites = new Map<string, Phaser.GameObjects.Sprite>();
 
   constructor() { super('Explore'); }
 
@@ -48,6 +49,7 @@ export class ExploreScene extends Phaser.Scene {
   private buildArea(id: string, spawnX: number) {
     this.children.removeAll(true);
     this.areaId = id;
+    this.npcSprites.clear();
     this.state.currentSceneId = id;
     if (!this.state.visitedAreaIds.includes(id)) this.state.visitedAreaIds.push(id);
     const a = areas[id], g = GROUND_Y, w = a.maxX - a.minX;
@@ -83,7 +85,7 @@ export class ExploreScene extends Phaser.Scene {
       if (stairs) for (let i = 1; i < 5; i++) this.add.rectangle(it.x, g - i * 18, 56, 1, 0x000000, 0.35).setOrigin(0.5, 1).setDepth(4);
     } else if (it.type === 'npc') {
       const sprite = a.npcSprite?.[it.id];
-      if (sprite) this.add.sprite(it.x, g, `${sprite}_idle_0`).setOrigin(0.5, 1).setFlipX(!!a.flipNpc?.includes(it.id)).setDepth(5).play(`${sprite}_idle`);
+      if (sprite) this.npcSprites.set(it.id, this.add.sprite(it.x, g, `${sprite}_idle_0`).setOrigin(0.5, 1).setFlipX(!!a.flipNpc?.includes(it.id)).setDepth(5).play(`${sprite}_idle`));
       else { // 회색 실루엣 placeholder (몸 + 머리)
         this.add.rectangle(it.x, g, 30, 66, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
         this.add.rectangle(it.x, g - 66, 22, 24, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
@@ -129,6 +131,9 @@ export class ExploreScene extends Phaser.Scene {
 
   private talk(npc: Npc) {
     setPrompt(null);
+    const st = talkStand(this.player.x, npc.x, this.minX, this.maxX); // 서로 마주 보고 최소 거리 확보
+    this.player.x = st.x; this.player.setFlipX(st.playerFacesLeft);
+    this.npcSprites.get(npc.id)?.setFlipX(!st.playerFacesLeft);
     if (!hasDialogue(npc.dialogueId)) { showToast(`${npc.name}: (대사는 4단계부터 들어간다)`); return; }
     openDialogue(this.state, npc.dialogueId, () => {});
   }

@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import real from '../src/data/dialogue.json' with { type: 'json' };
 import fixture from '../src/data/dialogue.test-fixture.json' with { type: 'json' };
 import { areas } from '../src/explore/interaction';
-import { claims, endingLines, endings, evidenceById, evidenceList, puzzles } from '../src/core/data';
+import { characters, claims, conflictPairs, endingLines, endings, evidenceById, evidenceList, puzzles } from '../src/core/data';
 import type { Dialogue } from '../src/core/types';
 
 const errors: string[] = [];
@@ -33,10 +33,14 @@ for (const [aid, a] of Object.entries(areas)) {
     } else if (it.type === 'examine' && it.evidenceId) needEvLater.push([it.evidenceId, w]);
   }
 }
-for (const [did, d] of Object.entries(fixture.dialogues) as [string, Dialogue][]) {
-  if (!d.nodes[d.start]) err(`fixture ${did}: start 노드 없음`);
+const charIds = new Set(characters.map((c) => c.id));
+for (const c of characters) if (c.portrait && !existsSync(`public/assets/illust/${c.portrait}_neutral.png`)) err(`characters/${c.id}: 초상 ${c.portrait} 없음`);
+for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues }) as [string, Dialogue][]) {
+  if (!d.nodes[d.start]) err(`dialogue ${did}: start 노드 없음`);
   for (const [nid, n] of Object.entries(d.nodes)) {
-    const w = `fixture ${did}/${nid}`;
+    const w = `dialogue ${did}/${nid}`;
+    if (!charIds.has(n.speaker)) err(`${w}: 없는 인물 ${n.speaker}`);
+    if (n.portrait && !existsSync(`public/assets/illust/${n.portrait}.png`)) err(`${w}: 없는 초상 ${n.portrait}`);
     const refs = [n.next, ...(n.choices ?? []).map((c) => c.next), ...(n.present ?? []).map((p) => p.next)].filter(Boolean) as string[];
     for (const r of refs) if (!d.nodes[r]) err(`${w}: 없는 노드 ${r}`);
     for (const id of [...(n.onEnter?.acquire ?? []), ...(n.present ?? []).flatMap((p) => p.evidenceIds)]) needEvLater.push([id, w]);
@@ -51,6 +55,8 @@ for (const e of evidenceList) if (!TYPES.includes(e.sourceType)) err(`${e.id}: s
 const needEv = (id: string, where: string) => { if (!evidenceById.has(id)) err(`${where}: 없는 단서 ${id}`); };
 
 needEvLater.forEach(([id, w]) => needEv(id, w));
+for (const e of evidenceList) if (e.sourceCharacterId && !charIds.has(e.sourceCharacterId)) err(`${e.id}: 없는 인물 ${e.sourceCharacterId}`);
+for (const [a, b] of conflictPairs) { needEv(a, 'conflicts'); needEv(b, 'conflicts'); }
 
 // puzzles
 dup(puzzles.map((p) => p.id), 'puzzle');

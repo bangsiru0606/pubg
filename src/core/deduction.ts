@@ -1,4 +1,4 @@
-import { claimById, claims, evidenceById } from './data';
+import { claimById, claims, conflictPairs, evidenceById } from './data';
 import { hasFlag, isVerified } from './state';
 import type { Claim, GameState } from './types';
 
@@ -70,24 +70,10 @@ export function clearConclusion(s: GameState, claimId: string) {
 export const isClaimOpen = (s: GameState, claim: Claim) => !claim.requiresFlag || hasFlag(s, claim.requiresFlag);
 
 /**
- * 4.4 근거 충돌 중립 경고. 단서 데이터의 sourceCharacterId·timestamp 만으로 판정한다:
- * 같은 인물이 만든 서로 다른 자료의 시각 범위가 겹치면 "동시에 참일 수 없을 수 있다".
- * 내용은 판단하지 않으며 어느 쪽이 거짓인지도 알려주지 않는다.
+ * 4.4 근거 충돌 중립 경고. 충돌 쌍은 src/data/conflicts.json 에 명시한 것만 쓴다(자동 추론 없음).
+ * 현재 단서 16개는 모두 사실이라 목록은 비어 있다. 어느 쪽이 거짓인지는 알려주지 않는다.
  */
-function range(ts: string): [number, number] | null {
-  const m = ts.match(/^(\d{1,2}):(\d{2})(?:~(\d{1,2}):(\d{2}))?$/);
-  if (!m) return null;
-  const a = +m[1] * 60 + +m[2];
-  return [a, m[3] ? +m[3] * 60 + +m[4] : a];
-}
 export const CONFLICT_MESSAGE = '이 자료들은 동시에 참일 수 없다.';
-export function findConflicts(ids: string[]): [string, string][] {
-  const out: [string, string][] = [];
-  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
-    const a = evidenceById.get(ids[i]), b = evidenceById.get(ids[j]);
-    if (!a || !b || !a.sourceCharacterId || a.sourceCharacterId !== b.sourceCharacterId) continue;
-    const ra = range(a.timestamp), rb = range(b.timestamp);
-    if (ra && rb && ra[0] <= rb[1] && rb[0] <= ra[1]) out.push([a.id, b.id]);
-  }
-  return out;
+export function findConflicts(ids: string[], pairs: [string, string][] = conflictPairs): [string, string][] {
+  return pairs.filter(([a, b]) => ids.includes(a) && ids.includes(b));
 }

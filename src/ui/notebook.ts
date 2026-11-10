@@ -1,7 +1,7 @@
 // 사건 수첩 (Tab): 단서 / 진술 / 질문 A~D. 정답 여부는 어디에도 표시하지 않는다.
 // 키보드: ←→ 탭, ↑↓ 이동, Enter 실행, Esc/Tab 닫기. 마우스: 클릭.
 import {
-  CONFLICT_MESSAGE, MAX_SUPPORT_SLOTS, canSaveConclusion, claims, clearConclusion, evidenceById, findConflicts, hasFlag,
+  CONFLICT_MESSAGE, characterName, MAX_SUPPORT_SLOTS, canSaveConclusion, claims, clearConclusion, evidenceById, findConflicts, hasFlag,
   isClaimOpen, isVerified, saveConclusion, type Claim, type GameState,
 } from '../core';
 import { el, esc, root } from './hud';
@@ -49,17 +49,17 @@ export function openNotebook(s: GameState, onClose: () => void) {
     const ver = isVerified(s, e.id) ? '<span class="ver">검증됨</span>' : '<span class="unver">미검증 (퍼즐을 풀어야 근거로 제출할 수 있다)</span>';
     return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(e.title)}</h3>
       <div class="meta"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${ver}</div>
-      <div class="meta">${esc(areaName(e.acquiredSceneId))} · ${esc(e.timestamp)}${e.sourceCharacterId ? ' · ' + esc(e.sourceCharacterId) : ''}</div>
+      <div class="meta">${esc(areaName(e.acquiredSceneId))} · ${esc(e.timestamp)}${e.sourceCharacterId ? ' · ' + esc(characterName(e.sourceCharacterId)) : ''}</div>
       <p>${esc(e.description)}</p><button class="row sel" data-open="${e.id}" style="width:auto;display:inline-block">원문 다시 열기 (Enter)</button></div>`;
   }
   function statementsTab(): string {
     const list = Object.entries(s.statements);
     if (!list.length) return '<div class="nlist"></div><div class="ndetail note">기록된 진술이 없다.</div>';
-    const rows = list.map(([, st], i) => `<button class="row${i === Math.min(cur(), list.length - 1) ? ' sel' : ''}" data-row="${i}">${esc(st.speaker)} <span class="tag">${STAGE_LABEL[st.stage]}</span></button>`).join('');
+    const rows = list.map(([, st], i) => `<button class="row${i === Math.min(cur(), list.length - 1) ? ' sel' : ''}" data-row="${i}">${esc(characterName(st.speaker))} <span class="tag">${STAGE_LABEL[st.stage]}</span></button>`).join('');
     const [, st] = list[Math.min(cur(), list.length - 1)];
     const body = st.stage === 'revised' ? `<s class="st-revised">${esc(st.text)}</s><br><b>${esc(st.revisedText ?? '')}</b>`
       : `<span class="st-${st.stage}">${st.stage === 'unconfirmed' ? '“' + esc(st.text) + '”' : esc(st.text)}</span>`;
-    return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(st.speaker)}의 진술</h3><p>${body}</p></div>`;
+    return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(characterName(st.speaker))}의 진술</h3><p>${body}</p></div>`;
   }
   const rowsOfClaim = (c: Claim) => c.hypotheses.length + 5; // 가설들 + 지지1,2 + 반박 + 보류 + 저장
   function claimTab(c: Claim): string {

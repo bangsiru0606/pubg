@@ -31,9 +31,11 @@ export function acquireEvidence(s: GameState, id: string): boolean {
 /** 현재 플래그에 맞게 표시 이름·설명을 갱신한 단서 (화면에는 항상 이것을 쓴다) */
 export function shownEvidence(s: GameState, id: string): Evidence | undefined {
   const e = evidenceById.get(id);
-  if (!e?.reveal || !s.flags.includes(e.reveal.flag)) return e;
-  const { flag: _f, ...r } = e.reveal;
-  return { ...e, ...r };
+  if (!e?.reveal) return e;
+  const { reveal, ...base } = e; // 화면용 사본에는 공개 전 정보(reveal)를 남기지 않는다
+  if (!s.flags.includes(reveal.flag)) return base;
+  const { flag: _f, ...r } = reveal;
+  return { ...base, ...r };
 }
 
 export const isVerified = (s: GameState, id: string) => s.verifiedEvidenceIds.includes(id);

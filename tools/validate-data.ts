@@ -73,6 +73,7 @@ const needEv = (id: string, where: string) => { if (!evidenceById.has(id)) err(`
 
 needEvLater.forEach(([id, w]) => needEv(id, w));
 for (const e of evidenceList) if (e.sourceCharacterId && !charIds.has(e.sourceCharacterId)) err(`${e.id}: 없는 인물 ${e.sourceCharacterId}`);
+for (const e of evidenceList) for (const l of e.newText ?? []) if (!e.body?.includes(l)) err(`${e.id}: newText 가 body 에 없음`);
 for (const e of evidenceList) if (e.illust && !existsSync(`public/assets/illust/${e.illust}.png`)) err(`${e.id}: 없는 일러스트 ${e.illust}`);
 for (const [a, b] of conflictPairs) { needEv(a, 'conflicts'); needEv(b, 'conflicts'); }
 
@@ -98,6 +99,12 @@ for (const p of puzzles) {
       const [slot, tok] = k.split(':');
       if (slot === t.slot && !ids.has(tok.replace(/^!/, ''))) err(`${p.id}: ${k} 가 ${t.slot} 선택지에 없음`);
     }
+  }
+  for (const pn of p.panels ?? []) {
+    // 원문 문서는 단서 ID 로 참조한다(복사 금지). 단서가 아닌 문서만 lines 를 직접 가진다.
+    if (pn.evidenceId && pn.lines) err(`${p.id}: 패널 ${pn.title} 이 evidenceId 와 lines 를 함께 가짐 (원문은 참조만)`);
+    if (pn.evidenceId && !evidenceById.get(pn.evidenceId)?.body) err(`${p.id}: 패널 ${pn.title} 의 단서 ${pn.evidenceId} 에 body 없음`);
+    if (!pn.evidenceId && pn.lines) for (const e of evidenceList) if (e.body && pn.lines.length >= 3 && pn.lines.every((l) => e.body!.includes(l))) err(`${p.id}: 패널 ${pn.title} 이 ${e.id} 원문을 복사함 — evidenceId 로 참조할 것`);
   }
   if (p.hintTexts.length !== 3) err(`${p.id}: hintTexts 는 3개`);
   const slotKeys = new Set(p.slots);

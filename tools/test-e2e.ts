@@ -27,6 +27,7 @@ const area = () => cw<string>('cw.scene.areaId');
 const teleport = (x: number) => cw(`cw.scene.teleportX(${x})`);
 const promptText = async () => ((await page.locator('#prompt:not(.hidden)').count()) ? (await page.locator('#prompt').innerText()).replace(/\s+/g, ' ') : '');
 const wait = (ms: number) => page.waitForTimeout(ms);
+const confirmPick = async () => { for (let i = 0; i < 20 && !(await page.locator('#dialogue .opt.sel').innerText()).includes('제시하기'); i++) await press('ArrowDown'); await press('Enter'); }; // 선택기: [제시하기] 행에서 Enter
 const click = (sel: string) => page.locator(sel).first().click();
 const shot = async (name: string) => { if (SHOT) await page.screenshot({ path: `docs/screenshots/${name}.png` }); };
 // 화면 텍스트에 내부 ID(영문 snake_case, E01 같은 단서 코드, 플래그 이름)가 나오면 안 된다
@@ -85,11 +86,11 @@ await page.waitForSelector('#dialogue');
 await wait(60); await press('Enter'); // 타이핑 완성
 await press('ArrowDown'); await press('Enter'); // [단서 제시]
 await press('Space'); // 첫 번째 자료(E01) 선택
-await press('Enter');
+await confirmPick();
 await wait(30);
 check((await page.locator('#dialogue .msg').innerText()).includes('직접 충돌하지 않는다'), '관련 없는 단서 제시: 중립 메시지만');
 await press('Enter'); // 선택이 [단서 제시]에 남아 있으므로 바로 다시 열기
-await press('ArrowDown'); await press('Space'); await press('Enter'); // E03 제시 → 모순 → 한지수 노드
+await press('ArrowDown'); await press('Enter'); await confirmPick(); // E03 제시 (Enter 로도 선택된다) → 모순 → 한지수 노드
 await wait(60); await press('Enter'); await press('Enter'); // 한지수 노드 → b_rev (수정 진술)
 await wait(60); await press('Enter');
 check(await cw<boolean>("cw.state.statements.baek_s1?.stage === 'revised'"), '진술 3단계: 미확인 → 모순 → 수정');
@@ -354,7 +355,7 @@ await until('모릅니다.');
 await pickEvidence(3);
 check((await page.locator('#dialogue').innerText()).includes('정하늘 손목띠 조각'), '[씬 3] 대면 후 E04 표시 이름이 “정하늘 손목띠 조각”');
 await noIds('[씬 3] 단서 제시 선택기');
-await press('Enter');
+await confirmPick();
 await until('그 방에 들어간 적 없어요');
 check(await cw<boolean>("cw.state.statements.haneul_s_denial?.stage === 'unconfirmed'"), '[씬 3] “그 방에 들어간 적 없어요”는 진술로만 기록(유죄 단서 아님)');
 await mash();
@@ -414,7 +415,7 @@ await teleport(360); await wait(60);
 check((await promptText()) === '', '[씬 4] 백선우가 거절하기 전에는 부원장 PC 를 볼 수 없다');
 await talkTo(150); await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('지병으로 돌아가셨습니다'), '[씬 4] 백선우 첫 진술');
-await pickEvidence(1); await press('Enter'); // E03 제시
+await pickEvidence(1); await confirmPick(); // E03 제시
 await wait(60);
 check(await cw<boolean>("cw.state.statements.baek_s_natural.stage === 'contradiction'"), '[씬 4] E03 제시 → 기존 진술 baek_s_natural 이 모순으로');
 await until('외부인이 볼 자료가 아닙니다.'); await mash();
@@ -448,11 +449,11 @@ await exitRoom('floor3');
 await enterRoom(630, 'room_oh');
 await talkTo(150); await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('의자에 앉은 채 숨을 쉬지 않았어요'), '[씬 4] 오미란 첫 진술');
-await pickEvidence(1); await press('Enter'); // E03
+await pickEvidence(1); await confirmPick(); // E03
 check(await cw<boolean>("cw.state.statements.oh_s_first.stage === 'contradiction'"), '[씬 4] E03 제시 → 오미란 진술이 모순으로');
 await until('…제가 잘못 적었습니다.');
 await pickEvidence(3); await press('ArrowDown'); await press('Space'); // E04 + E06
-await press('Enter');
+await confirmPick();
 await until('원장님은 기도대 옆 바닥에 누워 있었고');
 check(await cw<boolean>("cw.state.statements.oh_s_first.stage === 'revised'"), '[씬 4] E04 + E06 제시 → 수정 진술');
 await mash();
@@ -495,6 +496,7 @@ await page.mouse.move(5, 5);
 for (let i = 0; i < 12 && (await page.locator('#puzzle .tk.foc[data-token="doc_selection"]').count()) === 0; i++) await press('ArrowLeft');
 await press('Enter'); await press('ArrowLeft'); await press('Enter'); // 선정표 → 이혜정
 await press('ArrowRight'); await press('Enter'); await press('ArrowRight'); await press('Enter'); // 승인표 → 이한신
+await press('ArrowRight', 2); await press('Enter'); await press('ArrowRight'); await press('Enter'); // 이송 지시서 → 이혜정 (백선우 칸에서 한 칸 뒤로 돌아 이혜정)
 await focusOn('#puzzle .submit.foc'); await press('Enter'); await wait(100);
 check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P04_approval_chain') && cw.state.verifiedEvidenceIds.includes('E10_consent_forms')"), '[P04] 정답(키보드) → E10·E11 검증');
 await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');

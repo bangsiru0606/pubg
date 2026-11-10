@@ -71,3 +71,4 @@ npx tsx tools/reading-time.ts   # 씬 1~2 읽기 시간 추정 (분당 500자)
 ## 커밋
 - 단계 하나를 끝낼 때, 또는 의미 있는 기능 단위로 커밋한다.
 - 커밋 전에 `npm test`와 `npm run validate`를 통과시킨다.
+- push 전 훅(`.githooks/pre-push`: `npm test && npm run validate`) 통과 필수. `--no-verify` 금지. `npm install` 시 `prepare` 스크립트가 `core.hooksPath` 를 설정한다.

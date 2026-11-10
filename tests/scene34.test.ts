@@ -154,3 +154,32 @@ describe('씬 3·4 대사 출처', () => {
     for (const d of Object.values(D)) for (const n of Object.values(d.nodes)) expect(['spec', 'new']).toContain(n.source);
   });
 });
+
+describe('5단계 보완', () => {
+  it('P04: 인물 노드에 약자가 없고 이름·역할만 있다, 정답은 선정표·이송 지시서 → 이혜정', () => {
+    const p = P('P04_approval_chain');
+    for (const z of p.zones!) { expect(z.label).not.toMatch(/LH|BSW|\(/); expect(z.sub).toBeTruthy(); }
+    expect(p.correctSlots).toEqual({ doc_selection: ['lee_hyejeong'], doc_approval: ['lee_hanshin'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['lee_hyejeong'] });
+    const transfer = p.tasks!.find((t) => t.slot === 'doc_transfer')!;
+    expect(transfer.detail).toBe('서명: 이혜정 · 권한: 이송 지시');
+    expect(JSON.stringify(p.tasks)).not.toContain('BSW_ADMIN');
+    const s = createGameState();
+    expect(submitPuzzle(s, p.id, { ...p.correctSlots, doc_transfer: ['baek_sunwoo'] }).status).toBe('wrong');
+  });
+  it('P03: 예비 기록·수정 이력 패널은 E03·E07 원문을 참조하고, 띄어쓰기·문장 위치 방해 항목이 성립한다', () => {
+    const p = P('P03_revision_diff');
+    expect(p.panels!.filter((x) => x.evidenceId).map((x) => x.evidenceId)).toEqual(['E03_preliminary_exam', 'E07_report_revision']);
+    expect(p.panels!.filter((x) => x.evidenceId).every((x) => !x.lines)).toBe(true);
+    const e03 = shownEvidence(createGameState(), 'E03_preliminary_exam')!.body!;
+    const fin = p.panels!.find((x) => x.title === '최종 기록')!.lines!;
+    expect(e03).toContain('의식없음, 미약 호흡');
+    expect(fin).toContain('의식 없음, 발견 당시 사망');
+    expect(e03[e03.length - 1]).toBe('※ 부원장 재검토 요청');
+    expect(fin[0]).toBe('※ 부원장 재검토 요청'); // 문장 위치 이동
+  });
+  it('E01 원문 끝에 봉투 정보(입원번호 EW-0827)가 있고 새 문장으로 표시된다', () => {
+    const e = shownEvidence(createGameState(), 'E01_last_letter')!;
+    expect(e.body![e.body!.length - 1]).toBe('봉투 발신: 은혜요양병원 2병동 · 입원번호 EW-0827 · 박은지');
+    expect(e.newText).toEqual([e.body![e.body!.length - 1]]);
+  });
+});

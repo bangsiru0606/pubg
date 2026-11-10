@@ -150,3 +150,7 @@
 .lay-lightbox .ptasks { right: 6px; }
 .lay-lightbox .pright { right: 74px; }
 .lay-lightbox .submit { top: 62px; }
+
+.puzzle .zs { display: block; font-size: 7px; color: #a9a290; }
+.puzzle .psub { font-size: 8px; font-weight: 400; color: #b8b09c; margin-left: 6px; }
+.lay-lightbox .ptitle { white-space: nowrap; }

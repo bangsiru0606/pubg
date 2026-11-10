@@ -3,6 +3,7 @@ export type SourceType = 'physical' | 'record' | 'testimony' | 'context';
 export interface Evidence {
   id: string; title: string; description: string; sourceType: SourceType;
   acquiredSceneId: string; sourceCharacterId: string; timestamp: string;
+  newText?: string[];  // body 중 새로 쓴 줄 (보고용)
   body?: string[];   // 원문(문서 전문). HTML 로 표시한다
   illust?: string;
   reveal?: { flag: string; title?: string; description?: string; sourceCharacterId?: string }; // 플래그가 서면 표시 이름·설명이 바뀐다   // 원문 보기 배경 일러스트 (public/assets/illust/<이름>.png)
@@ -18,7 +19,7 @@ export interface Claim {
 }
 export type PuzzleType = 'SpatialPlacement' | 'Timeline' | 'DocumentDiff' | 'Connection' | 'LogicGrid';
 export interface PuzzleTask { slot: string; label: string; token?: string; detail?: string; kind: 'place' | 'mark'; options: { id: string; label: string }[] }
-export interface PuzzleBox { id: string; label: string; x: number; y: number; w: number; h: number } // 평면도 좌표(%)
+export interface PuzzleBox { id: string; label: string; sub?: string; x: number; y: number; w: number; h: number } // 평면도 좌표(%)
 export interface Puzzle {
   id: string; type: PuzzleType; flagOnSolve: string;
   // 화면 구성 데이터
@@ -26,7 +27,8 @@ export interface Puzzle {
   title?: string; info?: string[]; tasks?: PuzzleTask[]; fixtures?: PuzzleBox[]; zones?: PuzzleBox[];
   tokens?: { id: string; label: string }[];            // timeline: 사건 카드
   boxes?: { id: string; label: string }[];             // timeline: 시간 칸 (id = 슬롯)
-  panels?: { title: string; lines: string[] }[];       // lightbox: 겹쳐 보는 문서
+  panels?: { title: string; evidenceId?: string; lines?: string[] }[]; // evidenceId 로 원문(body)을 참조하거나, 단서가 아닌 문서는 lines
+  subtitle?: string;       // lightbox: 겹쳐 보는 문서
   openWhen?: { flags?: string[]; evidence?: string[] }; // 자동으로 열리는 조건
   solvedDialogue?: string;                              // 해결 직후 독백 (중간 결론만)
   sourceEvidenceIds: string[]; verifiedEvidenceIds: string[];

@@ -318,37 +318,24 @@
   ],
   "layout": "lightbox",
   "title": "검안 기록 변조 비교",
-  "info": [
-   "예비 기록·최종 기록·수정 이력을 겹쳐 본다",
-   "의미가 달라진 항목 세 개를 표시한다"
-  ],
+  "info": [],
   "panels": [
    {
     "title": "예비 기록",
-    "lines": [
-     "22:52 최초 확인",
-     "발견 위치: 기도대 옆 바닥",
-     "후두부 열상 및 출혈 흔적",
-     "의식없음, 미약 호흡",
-     "※ 부원장 재검토 요청"
-    ]
+    "evidenceId": "E03_preliminary_exam"
    },
    {
     "title": "최종 기록",
     "lines": [
+     "※ 부원장 재검토 요청",
      "발견 위치: 책상 의자",
      "기존 심장 질환에 의한 급성 심정지 추정",
-     "의식 없음, 발견 당시 사망",
-     "※ 부원장 재검토 요청"
+     "의식 없음, 발견 당시 사망"
     ]
    },
    {
     "title": "수정 이력",
-    "lines": [
-     "23:16 / user: BSW_ADMIN",
-     "삭제: 후두부 열상, 외부 충격 가능",
-     "추가: 기존 심장 질환에 의한 급성 심정지 추정"
-    ]
+    "evidenceId": "E07_report_revision"
    }
   ],
   "tasks": [
@@ -386,7 +373,8 @@
     "E07_report_revision"
    ]
   },
-  "solvedDialogue": "mono_p03_solved"
+  "solvedDialogue": "mono_p03_solved",
+  "subtitle": "예비 기록·최종 기록·수정 이력을 겹쳐 본다. 의미가 달라진 항목 세 개를 표시한다."
  },
  {
   "id": "P04_approval_chain",
@@ -417,7 +405,7 @@
     "baek_sunwoo"
    ],
    "doc_transfer": [
-    "baek_sunwoo"
+    "lee_hyejeong"
    ]
   },
   "distractors": [
@@ -428,8 +416,8 @@
    "doc_approval:lee_hyejeong": "선정 권한과 승인 권한이 충돌한다. 문서의 작성 약자를 다시 확인하세요.",
    "doc_schedule:lee_hanshin": "시술 일정은 승인 권한이 아니라 진행 권한의 문서다.",
    "doc_schedule:lee_hyejeong": "시술 일정은 선정 권한이 아니라 진행 권한의 문서다.",
-   "doc_transfer:lee_hanshin": "이송 실행 계정은 원장 승인 계정이 아니다.",
-   "doc_transfer:lee_hyejeong": "이송 실행 계정은 대상자 선정 계정이 아니다."
+   "doc_transfer:lee_hanshin": "이송 지시서의 서명은 원장 승인 계정과 다르다.",
+   "doc_transfer:baek_sunwoo": "이송 지시서의 서명과 권한은 시술 진행 담당의 것이 아니다."
   },
   "hintTexts": [
    "영문 약자와 문서의 권한·수정 계정을 함께 보세요.",
@@ -445,7 +433,8 @@
   "zones": [
    {
     "id": "lee_hyejeong",
-    "label": "이혜정 (LHJ)",
+    "label": "이혜정",
+    "sub": "교주의 딸 · 서류 관리",
     "x": 64,
     "y": 6,
     "w": 34,
@@ -453,7 +442,8 @@
    },
    {
     "id": "lee_hanshin",
-    "label": "이한신 (LHS)",
+    "label": "이한신",
+    "sub": "원장 · 교주",
     "x": 64,
     "y": 38,
     "w": 34,
@@ -461,7 +451,8 @@
    },
    {
     "id": "baek_sunwoo",
-    "label": "백선우 (BSW)",
+    "label": "백선우",
+    "sub": "부원장",
     "x": 64,
     "y": 70,
     "w": 34,
@@ -478,15 +469,15 @@
     "options": [
      {
       "id": "lee_hyejeong",
-      "label": "이혜정 (LHJ)"
+      "label": "이혜정"
      },
      {
       "id": "lee_hanshin",
-      "label": "이한신 (LHS)"
+      "label": "이한신"
      },
      {
       "id": "baek_sunwoo",
-      "label": "백선우 (BSW)"
+      "label": "백선우"
      }
     ]
    },
@@ -499,15 +490,15 @@
     "options": [
      {
       "id": "lee_hyejeong",
-      "label": "이혜정 (LHJ)"
+      "label": "이혜정"
      },
      {
       "id": "lee_hanshin",
-      "label": "이한신 (LHS)"
+      "label": "이한신"
      },
      {
       "id": "baek_sunwoo",
-      "label": "백선우 (BSW)"
+      "label": "백선우"
      }
     ]
    },
@@ -520,15 +511,15 @@
     "options": [
      {
       "id": "lee_hyejeong",
-      "label": "이혜정 (LHJ)"
+      "label": "이혜정"
      },
      {
       "id": "lee_hanshin",
-      "label": "이한신 (LHS)"
+      "label": "이한신"
      },
      {
       "id": "baek_sunwoo",
-      "label": "백선우 (BSW)"
+      "label": "백선우"
      }
     ]
    },
@@ -537,19 +528,19 @@
     "label": "이송 지시서",
     "token": "이송 지시서",
     "kind": "place",
-    "detail": "집행 계정 BSW_ADMIN · 권한: 외부 이송 실행",
+    "detail": "서명: 이혜정 · 권한: 이송 지시",
     "options": [
      {
       "id": "lee_hyejeong",
-      "label": "이혜정 (LHJ)"
+      "label": "이혜정"
      },
      {
       "id": "lee_hanshin",
-      "label": "이한신 (LHS)"
+      "label": "이한신"
      },
      {
       "id": "baek_sunwoo",
-      "label": "백선우 (BSW)"
+      "label": "백선우"
      }
     ]
    }

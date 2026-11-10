@@ -91,7 +91,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   function mainHtml(): string {
     const here = (z: string) => visibleTokens().filter((k) => (where[k] ?? (timeline ? OUTSIDE : undefined)) === z);
     if (layout === 'lightbox') {
-      return `<div class="panels">${(p.panels ?? []).map((pn) => `<div class="panel"><div class="ph-t">${esc(pn.title)}</div>${pn.lines.map((l) => `<div>${esc(l)}</div>`).join('')}</div>`).join('')}</div>`;
+      return `<div class="panels">${(p.panels ?? []).map((pn) => { const lines = pn.evidenceId ? (shownEvidence(s, pn.evidenceId)?.body ?? []) : (pn.lines ?? []); return `<div class="panel"><div class="ph-t">${esc(pn.title)}</div>${lines.map((l) => `<div>${esc(l)}</div>`).join('')}</div>`; }).join('')}</div>`;
     }
     if (layout === 'connect') {
       const zs = allZones();
@@ -99,7 +99,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
         const y = 4 + i * 24;
         return `<div class="crow" style="top:${y}%"><span class="tk${grabbed === t.slot ? ' grab' : ''}${isFocus('token', t.slot) ? ' foc' : ''}" data-token="${esc(t.slot)}">${esc(t.token ?? t.label)}</span><span class="cdet">${esc(t.detail ?? '')}</span></div>`;
       }).join('');
-      const nodes = zs.map((z) => `<div class="zone node" data-zone="${z.id}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span class="zl">${esc(z.label)}</span></div>`).join('');
+      const nodes = zs.map((z) => `<div class="zone node" data-zone="${z.id}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span class="zl">${esc(z.label)}</span>${z.sub ? `<span class="zs">${esc(z.sub)}</span>` : ''}</div>`).join('');
       const lines = placeTasks.map((t, i) => {
         const z = zs.find((q) => q.id === where[t.slot]); if (!z) return '';
         return `<line x1="58" y1="${4 + i * 24 + 6}" x2="${z.x}" y2="${z.y + z.h / 2}" />`;
@@ -127,10 +127,10 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     const hintTxt = hintLevel ? `<div class="hint-t">힌트 ${hintLevel}단계: ${esc(p.hintTexts[hintLevel - 1])}</div>` : '';
     const fb = solved ? '<div class="ok">맞춰졌다. (Enter: 닫기)</div>'
       : `${conflicts.length ? `<div class="warn">${conflicts.map((c) => `· ${esc(c)}`).join('<br>')}</div>` : ''}${note ? `<div class="note">${esc(note)}</div>` : ''}${hintTxt}`;
-    const side = `<div class="slotlbl">제공 정보</div><ul>${(p.info ?? []).map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
-      <div class="slotlbl">원문 자료 다시 열기</div>${srcs}${fb}`;
+    const info = (p.info ?? []).length ? `<div class="slotlbl">제공 정보</div><ul>${p.info!.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : '';
+    const side = `${info}${srcs ? '<div class="slotlbl">원문 자료 다시 열기</div>' + srcs : ''}${fb}`;
     box.className = `modal puzzle lay-${layout}`;
-    box.innerHTML = `<div class="ptitle">${esc(p.title ?? '')}</div>
+    box.innerHTML = `<div class="ptitle">${esc(p.title ?? '')}${p.subtitle ? ` <span class="psub">${esc(p.subtitle)}</span>` : ''}</div>
       <div class="pleft">${mainHtml()}${tray}</div>
       <div class="pright">${side}</div>
       <div class="ptasks">${taskRows}${chips}<button class="submit${isFocus('submit', 'submit') ? ' foc' : ''}" data-submit>[확인]</button></div>

@@ -50,7 +50,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
     picker = { cursor: 0, chosen: new Set(), list }; render();
   }
   function confirmPicker() {
-    if (!picker || !picker.chosen.size) { msg = '제시할 자료를 고른다 (Space).'; render(); return; }
+    if (!picker || !picker.chosen.size) { msg = '제시할 자료를 고른 뒤 [제시하기]를 선택한다.'; render(); return; }
     const r = presentEvidence(s, d, dialogueId, nodeId, [...picker.chosen]);
     if (r.kind === 'ok') go(r.next); else { msg = r.message; picker = null; render(); }
   }
@@ -70,11 +70,12 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
     box.className = 'dlg' + (portrait ? ' has-portrait' : '');
     let opts = '';
     if (picker) {
-      opts = '<div class="slotlbl">제시할 자료 — ↑↓ 이동 · Space 선택 · Enter 제시 · Esc 취소</div>' +
-        picker.list.map((id, i) => {
+      opts = '<div class="slotlbl">제시할 자료 — ↑↓ 이동 · Enter/Space 선택 · [제시하기]에서 Enter · Esc 취소</div>' +
+        [...picker.list.map((id, i) => {
           const e = shownEvidence(s, id)!;
           return `<button class="opt${i === picker!.cursor ? ' sel' : ''}" data-pi="${i}"><span class="box">${picker!.chosen.has(id) ? '☑' : '☐'}</span><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${esc(e.title)}</button>`;
-        }).join('');
+        }), `<button class="opt${picker.cursor === picker.list.length ? ' sel' : ''}" data-pi="${picker.list.length}">[제시하기] (${picker.chosen.size}개 선택)</button>`]
+          .slice(Math.max(0, Math.min(picker.cursor - 2, picker.list.length + 1 - 5)), Math.max(0, Math.min(picker.cursor - 2, picker.list.length + 1 - 5)) + 5).join('');
     } else if (!typing) {
       const single = items.length === 1;
       opts = single ? `<div class="cont">▼ Enter</div>` :
@@ -94,6 +95,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   });
   function toggle() {
     if (!picker) return;
+    if (picker.cursor === picker.list.length) { confirmPicker(); return; }
     const id = picker.list[picker.cursor];
     if (picker.chosen.has(id)) picker.chosen.delete(id); else if (picker.chosen.size < 3) picker.chosen.add(id);
     render();
@@ -103,10 +105,11 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
     id: 'dialogue',
     onKey(e) {
       if (picker) {
-        if (e.key === 'ArrowDown') picker.cursor = (picker.cursor + 1) % picker.list.length;
-        else if (e.key === 'ArrowUp') picker.cursor = (picker.cursor + picker.list.length - 1) % picker.list.length;
+        const n = picker.list.length + 1; // 마지막 행 = [제시하기]
+        if (e.key === 'ArrowDown') picker.cursor = (picker.cursor + 1) % n;
+        else if (e.key === 'ArrowUp') picker.cursor = (picker.cursor + n - 1) % n;
         else if (e.key === ' ') toggle();
-        else if (e.key === 'Enter' && !e.repeat) { confirmPicker(); return; }
+        else if (e.key === 'Enter' && !e.repeat) { if (picker.cursor === picker.list.length) { confirmPicker(); return; } toggle(); }
         else if (e.key === 'Escape') picker = null;
         render(); return;
       }

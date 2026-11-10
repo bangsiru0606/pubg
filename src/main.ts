@@ -49,6 +49,7 @@ scene.openTitle(); // 타이틀: 새 게임 / 이어하기 / 조작법
 
 // 개발 서버(npm run dev)에서만: 디버그 메뉴(F9). 제출 빌드에서는 이 분기가 통째로 제거된다.
 if (import.meta.env.DEV) void import('./ui/debug').then((m) => m.initDebug(scene));
+if (isTestBuild) void import('./ui/debug').then((m) => m.installJump(scene)); // 시험 빌드: 화면 스크린샷용 씬 점프 (제출 빌드에서는 제거된다)
 
 // 테스트·스크린샷용 훅 (e2e 빌드에서만 노출)
 (window as unknown as { __game: Phaser.Game }).__game = game;

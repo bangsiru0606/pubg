@@ -16,6 +16,8 @@ export function openNamePopup(onDone: (name: string) => void) {
   // IME 조합 중(isComposing / keyCode 229)의 Enter 는 글자 확정용이므로 무시한다
   const composing = (e: KeyboardEvent) => e.isComposing || e.keyCode === 229;
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !composing(e)) { e.preventDefault(); confirm(); } });
-  pushModal({ id: 'namepopup', raw: true, onKey() { /* 입력창이 처리한다: 게임 키는 모달에 막혀 동작하지 않는다 */ } });
+  pushModal({ id: 'namepopup', raw: true, onKey(e) { if (e.key === 'Enter' && !composing(e) && document.activeElement !== input) confirm(); } }); // 입력창이 처리하고, 포커스가 없을 때의 Enter 도 확정한다
+  // 입력창 밖을 눌러 포커스를 잃어도 곧바로 되돌린다 (키보드만으로 계속 진행할 수 있게)
+  input.addEventListener('blur', () => { if (!done) setTimeout(() => input.focus(), 0); });
   setTimeout(() => input.focus(), 0);
 }

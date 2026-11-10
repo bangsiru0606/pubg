@@ -26,7 +26,7 @@ describe('크로마키 제거 (#00FF00)', () => {
       if (a < 255) semi++;
       let near = false;
       for (let dy = -2; dy <= 2 && !near; dy++) for (let dx = -2; dx <= 2; dx++) if (data[((y + dy) * info.width + x + dx) * 4 + 3] === 0) { near = true; break; }
-      if (near && data[i + 1] > Math.max(data[i], data[i + 2])) spill++;
+      if (near && data[i + 1] - Math.max(data[i], data[i + 2]) >= 50) spill++;
     }
     expect(semi).toBeGreaterThan(0);
     expect(spill).toBe(0);
@@ -38,6 +38,14 @@ describe('크로마키 제거 (#00FF00)', () => {
     expect(keyAlpha(110, 130, 120)).toBe(1);    // 회청색
     expect(keyAlpha(128, 128, 128)).toBe(1);    // 회색
     expect(keyAlpha(0, 190, 40)).toBeGreaterThan(0); // 키 색에서 멀어진 초록은 일부 남는다
+  });
+  it('어두운 올리브·연두 계열 색은 가장자리에서도 바뀌지 않는다', async () => {
+    const W = 8, H = 8, buf = Buffer.alloc(W * H * 4);
+    for (let i = 0; i < W * H; i++) { const x = i % W; buf.set(x < 3 ? [0, 255, 0, 255] : [80, 100, 40, 255], i * 4); } // 왼쪽 키 배경, 오른쪽 올리브
+    const png = await sharp(buf, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer();
+    const { data } = await sharp(await despillEdges(await removeChromaKey(png))).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const i = (3 * W + 3) * 4; // 투명 경계 바로 옆 올리브 픽셀
+    expect([data[i], data[i + 1], data[i + 2], data[i + 3]]).toEqual([80, 100, 40, 255]);
   });
   it('실제 생성 에셋이 없어도 통과한다 (합성 이미지만 사용)', () => expect(true).toBe(true));
 });

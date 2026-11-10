@@ -67,13 +67,16 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
       : `<span class="st-${st.stage}">${st.stage === 'unconfirmed' ? '“' + esc(st.text) + '”' : esc(st.text)}</span>`;
     return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(characterName(st.speaker))}의 진술</h3><p>${body}</p></div>`;
   }
+  // 가설 표시 순서는 질문마다 다르게 돌려 둔다 (정답이 항상 같은 자리에 오지 않게). 데이터 순서는 그대로.
+  const SHIFT = [0, 1, 2, 1];
+  const hypsOf = (c: Claim) => { const k = SHIFT[claims.indexOf(c)] % c.hypotheses.length; return [...c.hypotheses.slice(k), ...c.hypotheses.slice(0, k)]; };
   const rowsOfClaim = (c: Claim) => c.hypotheses.length + 5; // 가설들 + 지지1,2 + 반박 + 보류 + 저장
   function claimTab(c: Claim): string {
     if (!isClaimOpen(s, c)) return '<div class="ndetail note">아직 조사가 끝나지 않은 질문이다.</div>';
     const dr = draftOf(c), cc = Math.min(cur(), rowsOfClaim(c) - 1);
     let r = 0;
     const row = (html: string, dis = false) => `<button class="row${r === cc ? ' sel' : ''}${dis ? ' dis' : ''}" data-row="${r++}">${html}</button>`;
-    const hyps = c.hypotheses.map((h) => {
+    const hyps = hypsOf(c).map((h) => {
       const locked = !!h.requiresFlag && !hasFlag(s, h.requiresFlag);
       return row(`${dr.hyp === h.id ? '◉' : '○'} ${esc(locked ? '(아직 열리지 않은 가설)' : h.label)}`, locked);
     }).join('');
@@ -118,7 +121,7 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
     if (!c || !isClaimOpen(s, c)) return;
     const dr = draftOf(c), i = Math.min(cur(), rowsOfClaim(c) - 1), n = c.hypotheses.length;
     msg = '';
-    if (i < n) { const h = c.hypotheses[i]; if (!h.requiresFlag || hasFlag(s, h.requiresFlag)) dr.hyp = h.id; }
+    if (i < n) { const h = hypsOf(c)[i]; if (!h.requiresFlag || hasFlag(s, h.requiresFlag)) dr.hyp = h.id; }
     else if (i < n + 3) picker = { slot: (['support0', 'support1', 'rebuttal0'] as const)[i - n], cursor: 0 };
     else if (i === n + 3) { clearConclusion(s, c.claimId); drafts[c.claimId] = { hyp: null, support: [], rebuttal: [] }; msg = '결론을 보류했다.'; }
     else if (canSaveConclusion(dr.hyp, dr.rebuttal)) {

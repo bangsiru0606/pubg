@@ -21,7 +21,7 @@ const shot = async (name: string) => {
   }
   await page.setViewportSize({ width: 1920, height: 1080 });
 };
-const fresh = async () => { await page.goto(url); await page.waitForFunction(() => (window as any).__cw?.scene?.player); };
+const fresh = async () => { await page.goto(url); await page.waitForFunction(() => (window as any).__cw?.scene?.player); await page.waitForFunction(() => typeof (window as any).__cw.scene.jumpToScene === 'function'); };
 const jump = async (n: number) => { await fresh(); await page.waitForSelector('#title'); await cw('cw.quick()'); await cw(`cw.scene.jumpToScene(${n})`); await wait(900); };
 const closeAll = async () => { for (let i = 0; i < 4; i++) await page.keyboard.press('Escape'); await wait(100); };
 

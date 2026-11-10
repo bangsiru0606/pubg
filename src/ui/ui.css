@@ -248,14 +248,3 @@
 .ending .eres b { color: var(--gold); }
 .ending .grade td { padding: 0 6px 0 0; }
 
-/* ---------- 디버그 메뉴 (개발 서버 전용) ---------- */
-.dbg { position: absolute; left: 6px; top: 6px; width: 250px; background: rgba(10,10,14,.96); border: 1px solid #e05050; padding: 4px; z-index: 99; font-size: 8px; }
-.dbg button { margin: 1px; background: #2a2d33; border: 1px solid #555; padding: 0 4px; cursor: pointer; }
-.dbg .dbgt { color: #e05050; } .dbg pre { white-space: pre-wrap; margin: 2px 0 0; max-height: 150px; overflow: auto; font-size: 7px; }
-
-/* 종이 위의 진술 3단계 (대비 확보) */
-.ndetail .st-unconfirmed { color: #5f594b; border-bottom-color: #7a7365; }
-.ndetail .st-contradiction { color: #9a2a1e; }
-.ndetail .st-revised s { color: #6e6757; } .ndetail .st-revised b { color: #24501f; border-bottom-color: #3f7a38; }
-.ndetail .st-revised::before { color: #2f6b2c; }
-.ndetail .tag { color: #f1e8d0; }

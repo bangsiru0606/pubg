@@ -2,7 +2,7 @@
 // 각 씬에서 거치는 조사 지점·대사 노드·퍼즐을 그대로 적용하므로, 단서 검증 상태·진술·플래그가 실제 플레이와 같다.
 // 6단계 코어 테스트의 "모든 조사 지점과 대사를 거친 상태"도 이 함수(buildProgress(7))를 쓴다.
 import real from '../data/dialogue.json';
-import { acquireEvidence, createGameState, enterNode, puzzles, setFlag, submitPuzzle, type Dialogues, type GameState } from '../core';
+import { acquireEvidence, createGameState, enterNode, presentEvidence, puzzles, setFlag, submitPuzzle, type Dialogues, type GameState } from '../core';
 import { areas } from './interaction';
 
 const D = real.dialogues as unknown as Dialogues;
@@ -36,7 +36,12 @@ export function applyScene(s: GameState, scene: number, secure = true) {
     return;
   }
   const st = SCENE_STEPS[scene - 1];
-  for (const d of st.dialogues ?? []) for (const n of Object.values(D[d].nodes)) enterNode(s, n);
+  for (const d of st.dialogues ?? []) {
+    for (const n of Object.values(D[d].nodes)) enterNode(s, n);
+    // 철저한 플레이어처럼: 가진 단서로 제시할 수 있는 규칙은 제시한다 (진술이 모순 단계로 바뀐다)
+    for (const [nodeId, n] of Object.entries(D[d].nodes))
+      for (const r of n.present ?? []) if (r.evidenceIds.every((id) => s.evidenceIds.includes(id))) presentEvidence(s, D[d], d, nodeId, r.evidenceIds);
+  }
   for (const [a, id] of st.examines ?? []) applyExamine(s, a, id);
   for (const f of st.flags ?? []) setFlag(s, f);
   for (const p of st.puzzles ?? []) submitPuzzle(s, p, puzzles.find((q) => q.id === p)!.correctSlots);

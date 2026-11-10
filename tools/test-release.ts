@@ -11,7 +11,7 @@ new AdmZip('release/ConfessionWard_v1.0_web.zip').extractAllTo(dir, true);
 const url = pathToFileURL(join(dir, 'ConfessionWard_v1.0_web', 'index.html')).href;
 
 const html = readFileSync(join(dir, 'ConfessionWard_v1.0_web', 'index.html'), 'utf8');
-const leaked = ['〔시험용', '시험용 대사', '__cw', '디버그 메뉴', '__CW_DEBUG__', 'debugmenu', 'dbgstate', '씬 점프'].filter((m) => html.includes(m));
+const leaked = ['〔시험용', '시험용 대사', '__cw', '디버그 메뉴', '__CW_DEBUG__', 'debugmenu', 'dbgstate', '씬 점프', 'jumpToScene', 'buildProgress', 'installJump', 'SCENE_STEPS', 'dbgt'].filter((m) => html.includes(m));
 
 const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });

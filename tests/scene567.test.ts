@@ -173,3 +173,13 @@ describe('씬 점프 상태 (디버그 메뉴 = 정상 플레이와 같은 상�
     expect(state.verifiedEvidenceIds).not.toContain('E12_ledger');
   });
 });
+
+describe('씬 점프 진술 상태', () => {
+  it('씬 5 시작 시점: 백선우 진술은 모순, 오미란 진술은 수정 (정상 플레이와 같다)', () => {
+    const { state } = buildProgress(5);
+    expect(state.statements.baek_s_natural.stage).toBe('contradiction');
+    expect(state.statements.oh_s_first.stage).toBe('revised');
+    expect(state.statements.choi_s_prayer.stage).toBe('contradiction'); // 방송표
+    expect(state.statements.haneul_s_denial.stage).toBe('unconfirmed'); // 정하늘의 부정은 모순으로 바뀌지 않는다
+  });
+});

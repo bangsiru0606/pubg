@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import assetList from '../../public/assets/assets.json';
 import { openNamePopup } from '../ui/namepopup';
-import { buildProgress } from '../explore/playthrough';
 import {
   acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, puzzles, setFlag, type GameState,
 } from '../core';
@@ -61,7 +60,7 @@ export class ExploreScene extends Phaser.Scene {
   }
 
   // ---------- 구역 구성 ----------
-  private buildArea(id: string, spawnX: number) {
+  buildArea(id: string, spawnX: number) {
     const flip = this.player?.flipX ?? flipFor('player', false); // 처음엔 오른쪽을 본다
     this.children.removeAll(true);
     this.camPan = null;
@@ -252,7 +251,7 @@ export class ExploreScene extends Phaser.Scene {
   continueGame(st: GameState) { this.state = st; setPlayerName(st.playerName); this.started = true; this.buildArea(st.currentSceneId, st.playerX); }
 
   /** 씬 7: 시작 시점을 저장해 두고(엔딩 D 재도전용) 최종 보고서를 연다 */
-  private startReport() {
+  startReport() {
     setPrompt(null);
     this.reportCheckpoint = JSON.stringify(this.state);
     saveGame(this.state, undefined, 'report');
@@ -278,16 +277,6 @@ export class ExploreScene extends Phaser.Scene {
     this.startReport();
   }
 
-  /** 개발 모드 디버그 메뉴: 씬 N 시작 지점으로 이동 (정상 플레이와 같은 상태, src/explore/playthrough.ts) */
-  jumpToScene(n: number) {
-    setPrompt(null); this.locked = false; this.camPan = null;
-    if (n === 1) { this.state = createGameState(); setPlayerName(this.state.playerName); this.started = false; this.buildArea(START.area, START.x); void this.runOpening(); return; }
-    const { state, area, x } = buildProgress(n, { name: this.state?.playerName });
-    this.state = state; setPlayerName(state.playerName); this.started = true;
-    this.buildArea(area, x);
-    if (n === 7) this.startReport();
-  }
-
   openTitle() {
     this.started = false;
     openTitle({ canContinue: loadGame() !== null, onNew: () => this.newGame(), onContinue: () => { const st = loadGame(); if (st) this.continueGame(st); else this.newGame(); } });
@@ -304,7 +293,7 @@ export class ExploreScene extends Phaser.Scene {
     }));
   }
 
-  private async runOpening() {
+  async runOpening() {
     this.locked = true; clearInput(); this.camPan = null;
     const cam = this.cameras.main, g = GROUND_Y;
     for (const [name, d] of Object.entries(OPENING.actors)) { // 등장 전에는 사무실에 없다

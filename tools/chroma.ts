@@ -3,10 +3,11 @@
 import sharp from 'sharp';
 
 export interface ChromaOptions { key?: [number, number, number]; solid?: number; soft?: number }
+const SPILL_MIN = 50;
 const KEY: [number, number, number] = [0, 255, 0];
 
 /** 키 색과의 거리 d: d <= solid → 완전 투명, solid < d < soft → 알파 비례, d >= soft → 불투명 */
-export function keyAlpha(r: number, g: number, b: number, key = KEY, solid = 70, soft = 130): number {
+export function keyAlpha(r: number, g: number, b: number, key = KEY, solid = 55, soft = 100): number {
   const d = Math.hypot(r - key[0], g - key[1], b - key[2]);
   return d <= solid ? 0 : d >= soft ? 1 : (d - solid) / (soft - solid);
 }
@@ -42,7 +43,7 @@ export async function despillEdges(png: Buffer, radius = 2): Promise<Buffer> {
     for (let dy = -radius; dy <= radius && !near; dy++) for (let dx = -radius; dx <= radius; dx++) if (clear(x + dx, y + dy)) { near = true; break; }
     if (!near) continue;
     const cap = Math.max(data[i], data[i + 2]);
-    if (data[i + 1] > cap) out[i + 1] = cap;
+    if (data[i + 1] - cap >= SPILL_MIN) out[i + 1] = cap; // 뚜렷한 초록 번짐만 (어두운 올리브·연두 계열 색은 건드리지 않는다)
   }
   return sharp(out, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
 }

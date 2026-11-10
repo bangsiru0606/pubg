@@ -1,0 +1,234 @@
+[
+ {
+  "id": "P01_scene_rebuild",
+  "type": "SpatialPlacement",
+  "flagOnSolve": "flag_scene_rebuilt",
+  "sourceEvidenceIds": [
+   "E02_altar_blood",
+   "E03_preliminary_exam",
+   "E04_wristband_fragment"
+  ],
+  "verifiedEvidenceIds": [
+   "E02_altar_blood",
+   "E03_preliminary_exam"
+  ],
+  "slots": [
+   "impactPosition",
+   "finalPosition",
+   "movedObjects"
+  ],
+  "correctSlots": {
+   "impactPosition": [
+    "altar_floor"
+   ],
+   "finalPosition": [
+    "desk_chair"
+   ],
+   "movedObjects": [
+    "body",
+    "chair"
+   ]
+  },
+  "distractors": [
+   "movedObjects:syringe",
+   "impactPosition:desk_side"
+  ],
+  "conflicts": {
+   "impactPosition:desk_side": "책상 옆 충돌은 기도대 아래 혈흔 위치와 맞지 않는다.",
+   "impactPosition:desk_chair": "처음부터 의자에 있었다면 '바닥에서 확인'한 예비 검안 메모와 맞지 않는다.",
+   "finalPosition:altar_floor": "최종 보고서는 '의자에서 발견'이라고 적었다.",
+   "finalPosition:desk_side": "최종 보고서는 '의자에서 발견'이라고 적었다.",
+   "movedObjects:syringe": "주사기는 후두부 상처의 위치를 설명하지 못한다."
+  },
+  "hintTexts": [
+   "혈흔 위치와 두 기록의 발견 위치를 다시 비교해 보세요.",
+   "후보 하나를 제거했습니다.",
+   "한 칸을 채웠습니다."
+  ]
+ },
+ {
+  "id": "P02_night_timeline",
+  "type": "Timeline",
+  "flagOnSolve": "flag_night_timeline",
+  "sourceEvidenceIds": [
+   "E05_access_log",
+   "E06_torn_sleeve"
+  ],
+  "verifiedEvidenceIds": [
+   "E05_access_log",
+   "E06_torn_sleeve"
+  ],
+  "slots": [
+   "t2234",
+   "t2241",
+   "t2246",
+   "t2251"
+  ],
+  "correctSlots": {
+   "t2234": [
+    "key_lost"
+   ],
+   "t2241": [
+    "door_open"
+   ],
+   "t2246": [
+    "thud"
+   ],
+   "t2251": [
+    "return_room"
+   ]
+  },
+  "distractors": [
+   "*:sermon"
+  ],
+  "conflicts": {
+   "*:sermon": "설교 방송은 예약 재생이라 사람의 동선이 아니다. 시간이 충돌한다.",
+   "t2241:key_lost": "마스터키가 사라진 뒤에야 문이 열릴 수 있다.",
+   "t2234:door_open": "22:34 시점에는 아직 문이 열린 기록이 없다."
+  },
+  "hintTexts": [
+   "출입 기록과 채소연의 진술 시각을 확인해 보세요.",
+   "후보 하나를 제거했습니다.",
+   "한 칸을 채웠습니다."
+  ]
+ },
+ {
+  "id": "P03_revision_diff",
+  "type": "DocumentDiff",
+  "flagOnSolve": "flag_revision_found",
+  "sourceEvidenceIds": [
+   "E07_report_revision"
+  ],
+  "verifiedEvidenceIds": [
+   "E07_report_revision"
+  ],
+  "slots": [
+   "marked"
+  ],
+  "correctSlots": {
+   "marked": [
+    "position_changed",
+    "laceration_deleted",
+    "breathing_changed"
+   ]
+  },
+  "distractors": [
+   "marked:spelling_fix",
+   "marked:sentence_order"
+  ],
+  "conflicts": {
+   "marked:spelling_fix": "맞춤법 수정은 문장의 의미를 바꾸지 않는다.",
+   "marked:sentence_order": "문장 순서 변경은 사실 관계를 바꾸지 않는다."
+  },
+  "hintTexts": [
+   "의미가 달라진 항목만 표시하세요. 발견 위치와 상태를 보세요.",
+   "후보 하나를 제거했습니다.",
+   "한 칸을 채웠습니다."
+  ]
+ },
+ {
+  "id": "P04_approval_chain",
+  "type": "Connection",
+  "flagOnSolve": "flag_approval_chain",
+  "sourceEvidenceIds": [
+   "E10_consent_forms",
+   "E11_transfer_order"
+  ],
+  "verifiedEvidenceIds": [
+   "E10_consent_forms",
+   "E11_transfer_order"
+  ],
+  "slots": [
+   "doc_selection",
+   "doc_approval",
+   "doc_execution"
+  ],
+  "correctSlots": {
+   "doc_selection": [
+    "lee_hyejeong"
+   ],
+   "doc_approval": [
+    "lee_hansin"
+   ],
+   "doc_execution": [
+    "baek_sunwoo"
+   ]
+  },
+  "distractors": [
+   "doc_selection:lee_hansin"
+  ],
+  "conflicts": {
+   "doc_selection:lee_hansin": "선정 권한과 승인 권한이 충돌한다. 문서의 작성 권한을 다시 확인하세요.",
+   "doc_approval:lee_hyejeong": "선정 권한과 승인 권한이 충돌한다. 문서의 작성 권한을 다시 확인하세요.",
+   "doc_execution:lee_hansin": "승인자는 시술·이송 실행자가 아니다.",
+   "doc_execution:lee_hyejeong": "선정 담당은 시술·이송 실행자가 아니다."
+  },
+  "hintTexts": [
+   "영문 약자와 문서의 권한·수정 계정을 함께 보세요.",
+   "후보 하나를 제거했습니다.",
+   "한 칸을 채웠습니다."
+  ]
+ },
+ {
+  "id": "P05_patient_code",
+  "type": "LogicGrid",
+  "flagOnSolve": "flag_claim_d_open",
+  "sourceEvidenceIds": [
+   "E12_ledger",
+   "E13_identity_map",
+   "E14_belongings_diary"
+  ],
+  "verifiedEvidenceIds": [
+   "E12_ledger",
+   "E13_identity_map",
+   "E14_belongings_diary",
+   "E15_transport_manifest"
+  ],
+  "slots": [
+   "ageMatch",
+   "bloodMatch",
+   "admissionMatch",
+   "belongingMatch",
+   "linkedSources",
+   "identity"
+  ],
+  "correctSlots": {
+   "ageMatch": [
+    "eunji",
+    "unknown"
+   ],
+   "bloodMatch": [
+    "eunji",
+    "yujin"
+   ],
+   "admissionMatch": [
+    "eunji"
+   ],
+   "belongingMatch": [
+    "eunji"
+   ],
+   "linkedSources": [
+    "E12_ledger",
+    "E13_identity_map",
+    "E14_belongings_diary"
+   ],
+   "identity": [
+    "eunji"
+   ]
+  },
+  "distractors": [
+   "identity:yujin"
+  ],
+  "conflicts": {
+   "identity:yujin": "혈액형은 일치하지만 입원번호가 다릅니다.",
+   "identity:unknown": "나이는 일치하지만 혈액형과 입원번호가 다릅니다.",
+   "identity:haneul": "나이와 혈액형이 모두 다릅니다.",
+   "admissionMatch:yujin": "입원번호 앞자리가 EW-08이 아닙니다."
+  },
+  "hintTexts": [
+   "나이·혈액형만으로는 후보가 둘 남습니다. 입원번호와 유품 표식을 보세요.",
+   "후보 하나를 제거했습니다.",
+   "한 칸을 채웠습니다."
+  ]
+ }
+]

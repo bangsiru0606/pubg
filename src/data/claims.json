@@ -1,0 +1,183 @@
+[
+ {
+  "claimId": "claim_a",
+  "question": "원장의 직접 사인은 무엇인가?",
+  "requiredDistinctSourceTypes": 2,
+  "hypotheses": [
+   {
+    "id": "a1_natural",
+    "label": "지병에 의한 심정지",
+    "isCorrect": false,
+    "supportEvidenceIds": [],
+    "rebuttalEvidenceIds": [],
+    "refutedBy": [
+     "E03_preliminary_exam",
+     "E07_report_revision"
+    ],
+    "temptation": "사후 수정된 공식 기록이 심장 질환 사망으로 적혀 있다."
+   },
+   {
+    "id": "a2_poison",
+    "label": "독성 물질에 의한 중독",
+    "isCorrect": false,
+    "supportEvidenceIds": [],
+    "rebuttalEvidenceIds": [],
+    "refutedBy": [
+     "E02_altar_blood",
+     "E03_preliminary_exam"
+    ],
+    "temptation": "정하늘의 직업과 불안한 태도가 선입견을 만든다."
+   },
+   {
+    "id": "a3_collision",
+    "label": "기도대 충돌로 인한 후두부 손상",
+    "isCorrect": true,
+    "supportEvidenceIds": [
+     "E02_altar_blood",
+     "E03_preliminary_exam"
+    ],
+    "rebuttalEvidenceIds": [
+     "E07_report_revision"
+    ],
+    "refutedBy": [],
+    "requiresFlag": "flag_scene_rebuilt"
+   }
+  ]
+ },
+ {
+  "claimId": "claim_b",
+  "question": "정하늘의 행위는 무엇이었는가?",
+  "requiredDistinctSourceTypes": 2,
+  "hypotheses": [
+   {
+    "id": "b1_premeditated",
+    "label": "계획적으로 원장을 살해했다",
+    "isCorrect": false,
+    "supportEvidenceIds": [],
+    "rebuttalEvidenceIds": [],
+    "refutedBy": [
+     "E05_access_log",
+     "E09_sedative_gap",
+     "E08_miran_revised"
+    ],
+    "temptation": "22:41 출입 기록이 침입을 보여 준다."
+   },
+   {
+    "id": "b2_absent",
+    "label": "원장실에 없었다",
+    "isCorrect": false,
+    "supportEvidenceIds": [],
+    "rebuttalEvidenceIds": [],
+    "refutedBy": [
+     "E04_wristband_fragment",
+     "E05_access_log"
+    ],
+    "temptation": "정하늘 본인이 그 방에 들어간 적 없다고 부정한다."
+   },
+   {
+    "id": "b3_selfdefense",
+    "label": "은지와 자신을 구하려 침입했고 강제 진정에서 벗어나다 원장을 밀쳤다",
+    "isCorrect": true,
+    "supportEvidenceIds": [
+     "E04_wristband_fragment",
+     "E09_sedative_gap",
+     "E08_miran_revised"
+    ],
+    "rebuttalEvidenceIds": [
+     "E05_access_log"
+    ],
+    "refutedBy": []
+   }
+  ]
+ },
+ {
+  "claimId": "claim_c",
+  "question": "누가 자연사로 위조했는가?",
+  "requiredDistinctSourceTypes": 2,
+  "hypotheses": [
+   {
+    "id": "c1_haneul",
+    "label": "정하늘이 혼자 위조했다",
+    "isCorrect": false,
+    "supportEvidenceIds": [],
+    "rebuttalEvidenceIds": [],
+    "refutedBy": [
+     "E06_torn_sleeve",
+     "E07_report_revision"
+    ],
+    "temptation": "현장에 있었던 사람은 정하늘이다."
+   },
+   {
+    "id": "c2_miran",
+    "label": "오미란이 처음부터 끝까지 위조했다",
+    "isCorrect": false,
+    "supportEvidenceIds": [],
+    "rebuttalEvidenceIds": [],
+    "refutedBy": [
+     "E07_report_revision",
+     "E08_miran_revised"
+    ],
+    "temptation": "최초 발견자이며 거짓말을 했다."
+   },
+   {
+    "id": "c3_baek_lee",
+    "label": "백선우와 이혜정이 기록과 현장을 함께 정리했다",
+    "isCorrect": true,
+    "supportEvidenceIds": [
+     "E07_report_revision",
+     "E11_transfer_order",
+     "E08_miran_revised"
+    ],
+    "rebuttalEvidenceIds": [
+     "E06_torn_sleeve"
+    ],
+    "refutedBy": []
+   }
+  ]
+ },
+ {
+  "claimId": "claim_d",
+  "question": "박은지에게 무슨 일이 있었는가?",
+  "requiredDistinctSourceTypes": 2,
+  "requiresFlag": "flag_claim_d_open",
+  "hypotheses": [
+   {
+    "id": "d1_discharged",
+    "label": "치료를 마치고 자발적으로 퇴원했다",
+    "isCorrect": false,
+    "supportEvidenceIds": [],
+    "rebuttalEvidenceIds": [],
+    "refutedBy": [
+     "E12_ledger",
+     "E14_belongings_diary"
+    ],
+    "temptation": "병원은 치료 중이라고만 말했다."
+   },
+   {
+    "id": "d2_transferred",
+    "label": "다른 병원으로 정상 전원됐다",
+    "isCorrect": false,
+    "supportEvidenceIds": [],
+    "rebuttalEvidenceIds": [],
+    "refutedBy": [
+     "E15_transport_manifest"
+    ],
+    "temptation": "이혜정이 전원 사실을 암시했다."
+   },
+   {
+    "id": "d3_p271",
+    "label": "P-271로 분류되어 불법 수술 중 사망했다",
+    "isCorrect": true,
+    "supportEvidenceIds": [
+     "E12_ledger",
+     "E13_identity_map",
+     "E14_belongings_diary"
+    ],
+    "rebuttalEvidenceIds": [
+     "E15_transport_manifest"
+    ],
+    "refutedBy": []
+   }
+  ]
+ }
+]

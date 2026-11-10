@@ -65,13 +65,6 @@
      "closeup": "office_desk"
     },
     {
-     "type": "npc",
-     "id": "eunho",
-     "x": 495,
-     "name": "박은호",
-     "dialogueId": "eunho_intro"
-    },
-    {
      "type": "transition",
      "id": "door_out",
      "x": 540,
@@ -80,7 +73,8 @@
      "spawnX": 0,
      "kind": "door",
      "requires": "intro_done",
-     "cutscene": "hospital_intro"
+     "cutscene": "hospital_intro",
+     "art": "door"
     }
    ],
    "npcSprite": {
@@ -88,6 +82,11 @@
    },
    "npcFacing": {
     "eunho": "left"
+   },
+   "bg": {
+    "wall": "wall",
+    "floor": "floor",
+    "topband": "floor_topband"
    }
   },
   "floor1": {
@@ -114,7 +113,7 @@
      "x": 585,
      "label": "[원장실] 들어가기",
      "to": "room_director",
-     "spawnX": 360,
+     "spawnX": 410,
      "kind": "door",
      "requires": "office_access_granted"
     },
@@ -132,7 +131,7 @@
      "x": 1440,
      "label": "[지하로 내려가기]",
      "to": "b1",
-     "spawnX": 0,
+     "spawnX": 50,
      "kind": "stairs",
      "requires": "@basement_open"
     },
@@ -142,7 +141,7 @@
      "x": 1620,
      "label": "[2층 올라가기]",
      "to": "floor2",
-     "spawnX": 0,
+     "spawnX": 50,
      "kind": "stairs",
      "requires": "flag_scene_rebuilt",
      "lockedDialogue": "mono_stairs_locked"
@@ -172,7 +171,7 @@
      "x": 360,
      "label": "복도로 나가기",
      "to": "floor1",
-     "spawnX": 585,
+     "spawnX": 635,
      "kind": "door"
     },
     {
@@ -217,7 +216,7 @@
      "x": 0,
      "label": "[1층 내려가기]",
      "to": "floor1",
-     "spawnX": 1620,
+     "spawnX": 1570,
      "kind": "stairs"
     },
     {
@@ -226,7 +225,7 @@
      "x": 270,
      "label": "[201호] 들어가기",
      "to": "room_choi",
-     "spawnX": 0,
+     "spawnX": 50,
      "kind": "door"
     },
     {
@@ -235,7 +234,7 @@
      "x": 540,
      "label": "[202호] 들어가기",
      "to": "room_han",
-     "spawnX": 0,
+     "spawnX": 50,
      "kind": "door"
     },
     {
@@ -244,7 +243,7 @@
      "x": 810,
      "label": "[203호] 들어가기",
      "to": "room_jeong",
-     "spawnX": 0,
+     "spawnX": 50,
      "kind": "door"
     },
     {
@@ -253,7 +252,7 @@
      "x": 1350,
      "label": "[3층 올라가기]",
      "to": "floor3",
-     "spawnX": 0,
+     "spawnX": 50,
      "kind": "stairs",
      "requires": "flag_night_timeline",
      "lockedDialogue": "mono_floor3_locked"
@@ -280,7 +279,7 @@
      "x": 0,
      "label": "복도로 나가기",
      "to": "floor2",
-     "spawnX": 270,
+     "spawnX": 320,
      "kind": "door"
     },
     {
@@ -304,7 +303,7 @@
      "x": 0,
      "label": "복도로 나가기",
      "to": "floor2",
-     "spawnX": 540,
+     "spawnX": 590,
      "kind": "door"
     },
     {
@@ -328,7 +327,7 @@
      "x": 0,
      "label": "복도로 나가기",
      "to": "floor2",
-     "spawnX": 810,
+     "spawnX": 760,
      "kind": "door"
     },
     {
@@ -359,7 +358,7 @@
      "x": 0,
      "label": "[2층 내려가기]",
      "to": "floor2",
-     "spawnX": 1350,
+     "spawnX": 1300,
      "kind": "stairs"
     },
     {
@@ -368,7 +367,7 @@
      "x": 315,
      "label": "[부원장실] 들어가기",
      "to": "room_baek",
-     "spawnX": 0,
+     "spawnX": 50,
      "kind": "door"
     },
     {
@@ -377,7 +376,7 @@
      "x": 630,
      "label": "[간호사실] 들어가기",
      "to": "room_oh",
-     "spawnX": 0,
+     "spawnX": 50,
      "kind": "door"
     },
     {
@@ -386,7 +385,7 @@
      "x": 945,
      "label": "[이혜정실] 들어가기",
      "to": "room_lee",
-     "spawnX": 0,
+     "spawnX": 50,
      "kind": "door"
     }
    ]
@@ -403,7 +402,7 @@
      "x": 0,
      "label": "복도로 나가기",
      "to": "floor3",
-     "spawnX": 315,
+     "spawnX": 365,
      "kind": "door"
     },
     {
@@ -436,7 +435,7 @@
      "x": 0,
      "label": "복도로 나가기",
      "to": "floor3",
-     "spawnX": 630,
+     "spawnX": 580,
      "kind": "door"
     },
     {
@@ -470,7 +469,7 @@
      "x": 0,
      "label": "복도로 나가기",
      "to": "floor3",
-     "spawnX": 945,
+     "spawnX": 895,
      "kind": "door"
     },
     {
@@ -505,7 +504,7 @@
      "x": 0,
      "label": "[1층으로 올라가기]",
      "to": "floor1",
-     "spawnX": 1440,
+     "spawnX": 1390,
      "kind": "stairs"
     },
     {
@@ -562,5 +561,84 @@
     }
    ]
   }
+ },
+ "opening": {
+  "_comment": "씬 1 오프닝 연출 (craft_on GameBootstrap): 이름 입력 → 책상 근접 조사 → 노크 → 카메라가 문으로 → 박은호 등장 → 걸어옴 → 대화·편지 → 퇴장 → 조작 해제 → 힌트. 순서·시간은 여기서만 정한다.",
+  "closeup": "office_desk",
+  "actors": {
+   "eunho": {
+    "sprite": "eunho",
+    "x": 540,
+    "facing": "left"
+   }
+  },
+  "steps": [
+   {
+    "do": "dialogue",
+    "id": "intro_knock"
+   },
+   {
+    "do": "camera",
+    "to": "actor:eunho",
+    "smooth": 0.04,
+    "settle": true
+   },
+   {
+    "do": "appear",
+    "actor": "eunho"
+   },
+   {
+    "do": "wait",
+    "sec": 0.8
+   },
+   {
+    "do": "walk",
+    "actor": "eunho",
+    "gap": 56,
+    "speed": 135,
+    "follow": true
+   },
+   {
+    "do": "face",
+    "actor": "player",
+    "dir": "right"
+   },
+   {
+    "do": "wait",
+    "sec": 1.2
+   },
+   {
+    "do": "camera",
+    "to": "player",
+    "smooth": 0.08,
+    "settle": true
+   },
+   {
+    "do": "dialogue",
+    "id": "eunho_intro",
+    "docs": true
+   },
+   {
+    "do": "walk",
+    "actor": "eunho",
+    "toX": 540,
+    "speed": 135
+   },
+   {
+    "do": "hide",
+    "actor": "eunho"
+   },
+   {
+    "do": "unlock"
+   },
+   {
+    "do": "hints",
+    "texts": [
+     "방향키(←, →) 또는 A, D로 움직이자",
+     "Tab을 눌러 확보한 단서를 확인하자"
+    ],
+    "sec": 4
+   }
+  ]
  }
 }

@@ -69,7 +69,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   }
   function render() {
     // 초상이 아직 없는 인물은 회색 실루엣 placeholder (한지수·박은호 그림을 대신 쓰지 않는다)
-    const portrait = node.portrait ? `<img class="portrait" src="assets/illust/${node.portrait}.png" alt="">`
+    const portrait = node.noPortrait ? '' : node.portrait ? `<img class="portrait" src="assets/illust/${node.portrait}.png" alt="">`
       : node.speaker !== 'han_jisu' ? '<div class="portrait ph"><i></i><b></b></div>' : '';
     box.className = 'dlg' + (portrait ? ' has-portrait' : '');
     let opts = '';

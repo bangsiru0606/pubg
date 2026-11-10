@@ -50,7 +50,8 @@ export interface StatementRecord { text: string; speaker: string; stage: Stateme
 
 export interface DialogueNode {
   speaker: string; portrait?: string; text: string;
-  source?: 'spec' | 'new'; // 기획서 문장이면 spec, 새로 쓴 문장이면 new
+  noPortrait?: boolean;       // 초상·실루엣을 아예 그리지 않는다 (노크 구간)
+  source?: 'spec' | 'new' | 'craft_on'; // 기획서 문장이면 spec, 새로 쓴 문장이면 new
   next?: string;
   choices?: { text: string; next: string; requiresFlag?: string; requiresFlags?: string[]; hideIfFlag?: string }[];
   statement?: { id: string };   // 이 문장은 검증 대상 진술 (9.3)
@@ -78,6 +79,7 @@ export interface GameState {
   wrongCountByPuzzle: Record<string, number>;
   evidenceSecured: boolean;
   reportTarget: ReportTarget | null;
+  playerName: string;         // 새 게임에서 입력한 이름 (이어하기에서도 유지)
   visitedAreaIds: string[];
   playerX: number;            // 이어하기용 마지막 위치
   retryClaimIds: string[];    // 엔딩 D 재도전: 해결하지 못한 질문(관련 단서를 먼저 보여 준다)

@@ -7,6 +7,10 @@ export const CONTROLS: [string, string][] = [
   ['↑ ↓', '선택지 이동'], ['1~9', '선택지 번호'], ['Esc', '닫기 · 취소'], ['마우스', '근접 조사 · 퍼즐 드래그 · 클릭'],
 ];
 
+let closeCurrent: (() => void) | null = null;
+/** 열려 있는 타이틀을 닫는다 (시험용 훅에서 사용) */
+export const closeTitleNow = () => closeCurrent?.();
+
 export function openTitle(opts: { canContinue: boolean; onNew: () => void; onContinue: () => void }) {
   const box = el('div', 'modal title'); box.id = 'title';
   root().append(box);
@@ -16,7 +20,8 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
     { label: '조작법', run: () => { showControls = !showControls; render(); } },
   ];
   let sel = 0, showControls = false;
-  const close = () => { popModal('title'); box.remove(); };
+  const close = () => { popModal('title'); box.remove(); closeCurrent = null; };
+  closeCurrent = close;
   function render() {
     box.innerHTML = `<div class="tt">병원의 고해</div><div class="ts">Confession Ward</div>
       <div class="tm">${items.map((it, i) => `<button class="opt${i === sel ? ' sel' : ''}" data-i="${i}">${esc(it.label)}</button>`).join('')}</div>

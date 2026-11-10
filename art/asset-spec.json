@@ -22,5 +22,6 @@
     "Resources/Art/Office/calendar.png", "Resources/Art/Office/calendar_detail.png",
     "Resources/Art/Office/item_letter.png"
   ],
+  "masks": ["Resources/Art/Office/hat.png", "Resources/Art/Office/calendar.png"],
   "unused": ["Resources/Art/Office/newspaper.png", "Resources/Art/Office/newspaper_detail.png"]
 }

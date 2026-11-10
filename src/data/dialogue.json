@@ -925,6 +925,24 @@
      "portrait": "player_neutral"
     }
    }
+  },
+  "intro_knock": {
+   "start": "k1",
+   "nodes": {
+    "k1": {
+     "speaker": "unknown",
+     "text": "똑똑똑",
+     "source": "craft_on",
+     "noPortrait": true,
+     "next": "k2"
+    },
+    "k2": {
+     "speaker": "han_jisu",
+     "text": "들어오세요.",
+     "source": "craft_on",
+     "noPortrait": true
+    }
+   }
   }
  }
 }

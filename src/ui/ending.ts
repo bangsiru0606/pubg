@@ -1,6 +1,6 @@
 // 엔딩: (A 만) 마지막 대본 → 엔딩 카드 + 결과 세 줄 → 추리 등급 → 선택.
 // D: 보고서 다시 쓰기(씬 7 시작 시점으로) · 처음부터 · 타이틀로.  그 밖: 처음부터 · 타이틀로.
-import { gradeOf, resolveEnding, resolveEndingLines, type GameState } from '../core';
+import { characterName, gradeOf, resolveEnding, resolveEndingLines, type GameState } from '../core';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
 
@@ -25,7 +25,7 @@ export function openEnding(s: GameState, h: { onRetry: () => void; onRestart: ()
     const kind = pages[pi];
     if (kind === 'talk') {
       const [who, text] = talk[pi];
-      box.innerHTML = `<div style="margin-top:80px;text-align:center"><div style="color:#e2c98a">${esc(who)}</div><div style="margin-top:6px;font-size:12px">“${esc(text)}”</div></div><div class="foot">Enter 계속</div>`;
+      box.innerHTML = `<div style="margin-top:80px;text-align:center"><div style="color:#e2c98a">${esc(characterName(who))}</div><div style="margin-top:6px;font-size:12px">“${esc(text)}”</div></div><div class="foot">Enter 계속</div>`;
     } else if (kind === 'card') {
       box.innerHTML = `<div class="etitle">${esc(ending.title)}</div><div class="ecard">“${esc(ending.card)}”</div>
         <div class="eres">${KEYS.map(([k, name]) => `<p><b>${name}</b> — ${esc(lines[k].text)}</p>`).join('')}</div><div class="foot">Enter 계속</div>`;

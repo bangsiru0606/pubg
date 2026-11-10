@@ -37,7 +37,7 @@ const noIds = async (where: string) => {
   const m = t.match(ID_RE);
   check(!m, `${where}: 내부 ID 노출 없음${m ? ' → ' + m[0] : ''}`);
 };
-const startNew = async () => { await page.waitForSelector('#title'); await press('Enter'); await page.waitForSelector('#title', { state: 'detached' }); }; // 타이틀: 새 게임
+const startQuick = async () => { await page.waitForSelector('#title'); await cw('cw.quick()'); await page.waitForSelector('#title', { state: 'detached' }); }; // 시스템 시험·분기 시험: 오프닝 없이 시작
 async function enterArea(x: number, expect: string) {
   await teleport(x); await wait(60);
   await press('Enter');
@@ -46,7 +46,7 @@ async function enterArea(x: number, expect: string) {
 
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
-await startNew();
+await startQuick();
 check((await area()) === 'office', '시작 구역은 사무실');
 
 // =====================================================================
@@ -59,12 +59,10 @@ await page.waitForSelector('#closeup');
 await page.locator('.hot').first().hover();
 check(await page.locator('.hot').first().locator('.hl').isVisible(), '마우스 호버 시 이름표 하이라이트');
 await shot('stage3_closeup');
-await press('ArrowRight'); await press('Enter');
+await press('ArrowRight'); await press('ArrowRight'); await press('Enter'); // 선택 없음 → 모자 → 캘린더
 check(await page.locator('#closeup-detail').isVisible(), '키보드로 확대 보기 (←→ Enter)');
-await wait(60);
-await press('Enter'); await press('Enter'); // 한 줄 독백 (타이핑 완성 → 끝)
-await page.waitForFunction(() => !document.querySelector('#dialogue'));
-await press('Escape'); await press('Escape');
+check((await page.locator('#closeup-detail .dbody').innerText()).includes('8월 17일'), '확대 보기: 설명은 오른쪽 칸');
+await press('Enter'); await press('Escape'); // 상세 닫기 → 근접 조사 닫기
 check((await page.locator('#closeup').count()) === 0, 'Esc 로 근접 조사 종료');
 
 await cw("cw.openDialogue('test_eunho_intro')");
@@ -142,44 +140,132 @@ check((await page.locator('#notebook').count()) === 0, 'Tab 으로 수첩 닫기
 // =====================================================================
 // B. 이야기 시험 (새 게임, 실제 대사): 씬 1 → 씬 2 → P01 → 2층 계단 개방
 // =====================================================================
+const NAME = '서윤'; // 기본 이름(한지수)과 다른 이름: 화면에 기본 이름이 남으면 안 된다
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
-await startNew();
-check((await area()) === 'office', '[이야기] 새 게임은 사무실에서 시작');
+const noDefault = async (where: string) => { const t = await page.locator('#ui').innerText(); check(!t.includes('한지수'), `${where}: 기본 이름 “한지수” 가 남아 있지 않다`); };
 const mash = async () => { for (let i = 0; i < 80; i++) { if (!(await page.locator('#dialogue').count())) return; await press('Enter'); await wait(30); } };
 const docText = async () => (await page.locator('#viewer').innerText()).replace(/\s+/g, ' ');
 const closeViewer = async () => { await press('Enter'); await page.waitForFunction(() => !document.querySelector('#viewer')); };
 
-// ---- 씬 1 ----
-await teleport(540); await wait(60);
-check((await promptText()) === '', '[씬 1] 의뢰를 듣기 전에는 문이 잠겨 있다');
-await teleport(11 * 45 - 25); await wait(60);
-check((await promptText()).includes('대화하기'), '[씬 1] 박은호 앞에서 "대화하기" 프롬프트');
+// ---- 타이틀 → 이름 입력 ----
+await page.waitForSelector('#title');
+await shot('stage7_fix_title');
+await press('Enter'); // 새 게임
+await page.waitForSelector('#namepopup');
+const inp = page.locator('#nameinput');
+check((await inp.getAttribute('placeholder')) === 'ex. 한지수', '[이름] 안내 문구 “ex. 한지수”');
+await shot('stage7_fix_name');
+// 입력 중에는 게임 키가 동작하지 않는다 (A/D, 방향키, Tab, 스페이스)
+const x00 = await cw<number>('cw.scene.player.x');
+await page.keyboard.type('ad d'); await press('ArrowRight'); await press('ArrowLeft'); await press('Tab');
+check((await inp.inputValue()) === 'ad d', '[이름] 입력창에 글자와 스페이스가 그대로 들어간다');
+check((await page.locator('#notebook').count()) === 0 && (await cw<number>('cw.scene.player.x')) === x00, '[이름] 입력 중 A/D·방향키·Tab 이 게임에 전달되지 않는다');
+await inp.fill('');
+await page.keyboard.type('가나다라마바사아자차');
+check((await inp.inputValue()).length === 8, '[이름] 8자까지만 입력된다');
+// 한글 입력(IME) 조합 중의 Enter 는 확정이 아니다
+await inp.evaluate((el) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, keyCode: 229, bubbles: true, cancelable: true })));
+await wait(80);
+check((await page.locator('#namepopup').count()) === 1, '[이름] IME 조합 중 Enter 로는 확정되지 않는다');
+await inp.fill('  ' + NAME + '  ');
 await press('Enter');
-await page.waitForSelector('#dialogue');
+
+// ---- 오프닝: 책상 근접 조사 ----
+await page.waitForSelector('#closeup', { timeout: 3000 });
+check((await cw<string>('cw.state.playerName')) === NAME, '[이름] 앞뒤 공백을 지운 이름이 저장된다');
+check((await page.locator('#closeup .title').innerText()).includes('출근한 아침, 책상을 살펴본다 (마우스로 조사)'), '[오프닝] 근접 조사 안내 문구');
+check((await page.locator('#closeup .hot').count()) === 2, '[오프닝] 소품은 모자와 캘린더만 (신문 제외)');
+const hat = page.locator('#closeup .hot').first();
+const hb = (await hat.boundingBox())!;
+const bright = (loc: typeof hat) => loc.locator('img').evaluate((el) => getComputedStyle(el).filter);
+check((await bright(hat)).includes('0.8'), '[근접 조사] 평소에는 소품이 밝기 80%');
+await page.mouse.move(hb.x + 2, hb.y + 2); // 투명 모서리: 반응하지 않는다
 await wait(60);
-const px = await cw<number>('cw.scene.player.x');
-check(Math.abs(px - 495) >= 56, '[씬 1] 대화 시작 시 중심 간격 56px 이상');
-check(await cw<boolean>('!cw.scene.playerFacesLeft()'), '[씬 1] 대화 시작 시 서로 마주 봄 (플레이어는 오른쪽을 본다)');
-await press('Enter'); // 타이핑 완성
+check(!(await hat.evaluate((el) => el.classList.contains('on'))), '[근접 조사] 그림이 없는 여백에서는 반응하지 않는다');
+await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+await wait(60);
+check((await bright(hat)).includes('brightness(1)') && (await hat.locator('.hl').isVisible()), '[근접 조사] 마우스를 올리면 밝기 100% + 이름표');
+check(!(await hat.evaluate((el) => getComputedStyle(el).filter)).includes('drop-shadow'), '[근접 조사] 빛 번짐 테두리가 없다');
+await shot('stage7_fix_hover');
+await page.mouse.click(hb.x + 2, hb.y + 2);
+check((await page.locator('#closeup-detail').count()) === 0, '[근접 조사] 여백을 눌러도 상세 화면이 열리지 않는다');
+await page.mouse.click(hb.x + hb.width / 2, hb.y + hb.height / 2);
+await page.waitForSelector('#closeup-detail');
+const det = async (label: string) => {
+  const a = (await page.locator('#closeup-detail .dart img').boundingBox())!, t = (await page.locator('#closeup-detail .dtext').boundingBox())!;
+  check(a.x + a.width <= t.x + 1, `[근접 조사] ${label}: 확대 그림은 왼쪽, 글은 오른쪽 칸 (겹치지 않음)`);
+  const fits = await page.locator('#closeup-detail .dbody').evaluate((el) => el.scrollHeight <= el.clientHeight + 1);
+  check(fits, `[근접 조사] ${label}: 설명 글이 모두 보인다`);
+};
+await det('모자 1920×1080');
+check((await page.locator('#closeup-detail .dbody').innerText()).includes('오래 쓴 모자다.'), '[근접 조사] 모자 설명');
+await shot('stage7_fix_hat_1920');
+await page.setViewportSize({ width: 1280, height: 720 }); await wait(250);
+await det('모자 1280×720');
+await shot('stage7_fix_hat_1280');
+await press('Enter'); await press('ArrowRight'); await press('Enter'); // 상세 닫기 → 캘린더 선택 → 상세
+await page.waitForSelector('#closeup-detail');
+await det('캘린더 1280×720');
+check((await page.locator('#closeup-detail .dbody').innerText()).includes('8월 17일. 은호 씨와 약속한 날이다.'), '[근접 조사] 캘린더 문구');
+await shot('stage7_fix_calendar_1280');
+await page.setViewportSize({ width: 1920, height: 1080 }); await wait(250);
+await det('캘린더 1920×1080');
+await press('Enter'); await press('Escape'); // 상세 닫기 → 근접 조사 닫기
+check(await cw<boolean>('cw.state.evidenceIds.length === 0'), '[오프닝] 캘린더·모자는 단서로 등록되지 않는다');
+
+// ---- 오프닝: 조작 잠금 → 노크 ----
+check(await cw<boolean>('cw.scene.locked'), '[오프닝] 근접 조사를 닫으면 조작이 잠긴다');
+const x0 = await cw<number>('cw.scene.player.x');
+await page.keyboard.down('ArrowRight'); await wait(300); await page.keyboard.up('ArrowRight');
+await press('Tab');
+check((await cw<number>('cw.scene.player.x')) === x0 && (await page.locator('#notebook').count()) === 0, '[오프닝] 잠긴 동안 이동·Tab 이 동작하지 않는다');
+await page.waitForSelector('#dialogue');
+await wait(100);
+check((await page.locator('#dialogue .name').innerText()) === '???', '[오프닝] 노크: 화자 “???”');
+await wait(150); // 타이핑이 끝난 뒤
+check((await page.locator('#dialogue .text').innerText()) === '똑똑똑' && (await page.locator('#dialogue .portrait').count()) === 0, '[오프닝] “똑똑똑” — 초상을 숨긴다');
+await shot('stage7_fix_knock');
+await press('Enter');
+await wait(150);
+check((await page.locator('#dialogue .name').innerText()) === NAME && (await page.locator('#dialogue .text').innerText()) === '들어오세요.', '[오프닝] 플레이어: “들어오세요.” (화자 이름은 입력한 이름)');
+await press('Enter'); // 대사 끝 → 연출
+await wait(150);
+check(await cw<boolean>("!cw.scene.actors.get('eunho').visible"), '[오프닝] 카메라가 움직이는 동안 박은호는 아직 사무실에 없다');
+await page.waitForFunction(() => (window as any).__cw.scene.actors.get('eunho').visible, null, { timeout: 8000 });
+check(true, '[오프닝] 카메라가 문에 멈춘 뒤 박은호가 나타난다');
+const doorX = await cw<number>("cw.scene.actors.get('eunho').x");
+check(doorX === 540, '[오프닝] 박은호는 문 앞에 나타난다');
+await shot('stage7_fix_enter');
+await page.waitForFunction(() => (window as any).__cw.scene.actors.get('eunho').x < 500, null, { timeout: 5000 });
+await wait(300);
+await shot('stage7_fix_walk');
+await page.waitForSelector('#dialogue', { timeout: 15000 });
+await wait(60);
+const gap = (await cw<number>("cw.scene.actors.get('eunho').x")) - (await cw<number>('cw.scene.player.x'));
+check(Math.abs(gap - 56) <= 1, '[오프닝] 박은호는 플레이어 앞 56px 까지 걸어온다');
+check(await cw<boolean>('!cw.scene.playerFacesLeft()') && await cw<boolean>("cw.scene.actors.get('eunho').flipX === true"), '[오프닝] 서로 마주 본다');
+await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('병원은 은지가 치료 중이라고만 합니다'), '[씬 1] 첫 대사는 기획서 문장');
+check((await page.locator('#dialogue .name').innerText()) === '박은호', '[씬 1] 박은호 화자');
 await noIds('[씬 1] 대화창');
+await noDefault('[씬 1] 대화창');
 await shot('stage4_scene1_dialogue');
 await mash();
 await page.waitForSelector('#viewer');
-check((await docText()).includes('하늘 언니가 다음 명단에 내 이름이 있다고 했어'), '[씬 1] 편지 전문(E01)이 HTML 로 표시된다');
+check((await docText()).includes('하늘 언니가 다음 명단에 내 이름이 있다고 했어') && (await docText()).includes('입원번호 EW-0827'), '[씬 1] 편지 전문(E01)과 봉투 정보가 HTML 로 표시된다');
 check((await page.locator('#viewer .docbg').count()) === 1, '[씬 1] 편지 일러스트(item_letter)가 배경');
 await noIds('[씬 1] 편지');
 await shot('stage4_letter');
+check(await cw<boolean>('cw.scene.locked'), '[오프닝] 편지를 보는 동안에도 조작은 잠겨 있다');
 await closeViewer();
 check(await cw<boolean>("cw.state.evidenceIds.includes('E01_last_letter') && cw.state.evidenceIds.length === 1"), '[씬 1] E01 획득');
-
-await teleport(67.5); await wait(60); await press('Enter');
-await page.waitForSelector('#closeup');
-await press('ArrowRight'); await press('Enter'); await wait(60); await press('Enter');
-check((await page.locator('#dialogue .text').innerText()).includes('8월 17일. 은호 씨와 약속한 날이다.'), '[씬 1] 캘린더 문구');
-await mash(); await press('Escape'); await press('Escape');
-check(await cw<boolean>('cw.state.evidenceIds.length === 1'), '[씬 1] 캘린더는 단서로 등록되지 않는다');
+await page.waitForFunction(() => !(window as any).__cw.scene.locked, null, { timeout: 8000 });
+check(await cw<boolean>("!cw.scene.actors.get('eunho').visible"), '[오프닝] 박은호는 문으로 걸어 나가 사라진다');
+check((await page.locator('.hintbanner').innerText()).includes('방향키(←, →) 또는 A, D로 움직이자'), '[오프닝] 튜토리얼 힌트 1');
+await wait(4300);
+check((await page.locator('.hintbanner').innerText()).includes('Tab을 눌러 확보한 단서를 확인하자'), '[오프닝] 튜토리얼 힌트 2');
+check(await cw<boolean>('cw.scene.started'), '[오프닝] 오프닝이 끝나면 자동 저장이 시작된다');
 
 await teleport(540); await wait(60);
 check((await promptText()).includes('들어가기'), '[씬 1] 의뢰 후 문이 열린다');
@@ -190,6 +276,7 @@ await wait(500); await noIds('[컷신]');
 await press('Enter');
 await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor1' && !(window as any).__cw.scene.busy, null, { timeout: 4000 });
 check(true, '[씬 2] 컷신 후 1층');
+check((await promptText()) === '', '[진행] 도착 위치는 다른 전환 지점의 상호작용 범위 밖');
 
 // ---- 씬 2 ----
 await page.keyboard.down('Shift'); await page.keyboard.down('ArrowRight');
@@ -290,8 +377,13 @@ await mash();
 
 await teleport(360); await wait(60); await press('Enter');
 await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor1' && !(window as any).__cw.scene.busy);
-await teleport(1620); await wait(60); await press('Enter');
+await press('Enter'); await press('Enter'); await press('Enter'); await wait(150); // 대상이 없을 때 누른 Enter 가 쌓여 있으면 안 된다
+await teleport(1620); await wait(1200);
+await shot('stage7_fix_stairs');
+check((await area()) === 'floor1' && (await promptText()).includes('올라가기'), '[진행] 계단 앞에 서 있기만 해서는 구역이 바뀌지 않는다 (프롬프트만 뜬다)');
+await press('Enter');
 await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor2' && !(window as any).__cw.scene.busy);
+check((await promptText()) === '', '[진행] 2층 도착 위치는 계단·문의 상호작용 범위 밖');
 check(true, '[진행] P01 해결 후 1층 → 2층 계단이 열린다');
 
 await press('Tab'); await page.waitForSelector('#notebook');
@@ -633,7 +725,7 @@ await press('Enter'); // 제출한다
 
 // 엔딩 A
 await page.waitForSelector('#ending');
-check((await page.locator('#ending').innerText()).includes('은지를 찾은 건 아니네요.'), '[엔딩 A] 마지막 대본: 박은호·한지수 대화');
+check((await page.locator('#ending').innerText()).includes('은지를 찾은 건 아니네요.'), '[엔딩 A] 마지막 대본: 박은호·플레이어 대화');
 await press('Enter'); await press('Enter'); await press('Enter');
 const card = await page.locator('#ending').innerText();
 check(card.includes('기록된 고해') && card.includes('고해는 죄를 없애지 않는다. 다만 누가 무엇을 했는지 기록하게 한다.'), '[엔딩 A] 엔딩 카드');
@@ -657,7 +749,7 @@ check((await page.locator('#title .ctrl').innerText()).includes('Tab'), '[타이
 const jump = async () => {
   await page.goto(url);
   await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
-  await startNew();
+  await startQuick();
   await cw('cw.ff(true)');
   await page.waitForSelector('#dialogue', { timeout: 5000 });
 };

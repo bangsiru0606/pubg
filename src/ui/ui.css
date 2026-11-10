@@ -71,14 +71,7 @@
 .closeup { background: #000; }
 .closeup .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.7); }
 .closeup .title { position: absolute; left: 0; right: 0; top: 4px; text-align: center; color: #e2c98a; text-shadow: 0 0 2px #000; }
-.hot { position: absolute; transform: translate(-50%, -50%); cursor: pointer; background: none; border: 0; padding: 0; filter: brightness(.8); }
-.hot img { display: block; width: 100%; height: auto; }
-.hot:hover, .hot.sel { filter: brightness(1.25) drop-shadow(0 0 3px #e2c98a); }
-.hot .hl { position: absolute; left: 50%; top: -12px; transform: translateX(-50%); background: rgba(0,0,0,.75); padding: 0 4px; white-space: nowrap; display: none; }
-.hot:hover .hl, .hot.sel .hl { display: block; }
 .exit { position: absolute; right: 6px; bottom: 6px; background: #2f4030; border: 1px solid #8a7f68; padding: 1px 8px; cursor: pointer; }
-.detail { position: absolute; inset: 0; background: rgba(0,0,0,.88); display: flex; align-items: center; justify-content: center; z-index: 3; }
-.detail img { max-height: 262px; max-width: 470px; }
 .viewer { padding: 10px 16px; font-size: 11px; line-height: 1.5; }
 
 .viewer .docbg { position: absolute; right: 8px; top: 8px; height: 254px; width: auto; opacity: .35; pointer-events: none; }
@@ -117,7 +110,6 @@
 .puzzle .chip.on { border-color: #b9c98a; }
 .puzzle .submit { position: absolute; right: 0; top: 26px; background: #2f4030; border: 1px solid #8a7f68; padding: 1px 10px; cursor: pointer; }
 
-.detail.withdlg img { max-height: 150px; margin-bottom: 112px; }
 
 .dlg .portrait.ph { width: 60px; height: 100px; }
 .ph i { position: absolute; left: 18px; top: 8px; width: 26px; height: 30px; border-radius: 50%; background: #6d7378; }
@@ -193,3 +185,28 @@
 .lay-logic .ptasks { top: 108px; }
 .lay-logic .submit { top: 72px; }
 .ltab td:first-child { text-align: left; }
+
+/* 이름 입력 */
+.namepop { background: #0c0d10; display: flex; align-items: center; justify-content: center; }
+.namepop .np { width: 300px; padding: 16px 20px; background: #1d1f24; border: 1px solid #55503f; text-align: center; }
+.namepop .nl { color: #e2c98a; font-size: 12px; margin-bottom: 8px; }
+.namepop input { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 4px 6px; text-align: center; background: #f1ead6; color: #222; border: 2px solid #8a7f68; outline: none; pointer-events: auto; user-select: text; }
+.namepop input:focus { border-color: #e2c98a; background: #fff7dc; }
+.namepop .nh { margin-top: 6px; font-size: 8px; color: #8f8873; }
+
+/* 근접 조사 (craft_on 식): 평소 80%, 올리면 100% + 반투명 검은 이름표. 빛 번짐 없음 */
+.hot { position: absolute; transform: translate(-50%, -50%); cursor: default; }
+.hot img { position: absolute; display: block; max-width: none; height: auto; filter: brightness(.8); pointer-events: none; }
+.hot.on { cursor: pointer; }
+.hot.on img, .hot.sel img { filter: brightness(1); }
+.hot .hl { position: absolute; left: 50%; top: -13px; transform: translateX(-50%); background: rgba(0,0,0,.65); padding: 0 5px; white-space: nowrap; display: none; pointer-events: none; }
+.hot.on .hl, .hot.sel .hl { display: block; }
+.detail { position: absolute; inset: 0; background: rgba(8,8,10,.94); display: flex; z-index: 3; }
+.detail .dart { flex: 0 0 52%; display: flex; align-items: center; justify-content: center; padding: 8px; box-sizing: border-box; }
+.detail .dart img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.detail .dtext { flex: 1; display: flex; flex-direction: column; padding: 14px 16px 8px 4px; min-height: 0; box-sizing: border-box; }
+.detail .dtext h3 { margin: 0 0 6px; color: #e2c98a; font-size: 14px; }
+.detail .dbody { flex: 1; min-height: 0; overflow-y: auto; font-size: 11px; line-height: 1.55; pointer-events: auto; }
+.detail .dfoot { color: #8f8873; font-size: 8px; padding-top: 4px; }
+
+.hintbanner { position: absolute; left: 50%; top: 30px; transform: translateX(-50%); background: rgba(14,16,20,.92); border: 1px solid #e2c98a; padding: 3px 12px; white-space: nowrap; pointer-events: none; z-index: 6; }

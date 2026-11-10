@@ -1,8 +1,8 @@
 // 데이터 ID 참조 무결성 검사: npm run validate
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import real from '../src/data/dialogue.json' with { type: 'json' };
 import fixture from '../src/data/dialogue.test-fixture.json' with { type: 'json' };
-import { areas } from '../src/explore/interaction';
+import { INTERACT_RANGE, areas } from '../src/explore/interaction';
 import { characters, claims, conflictPairs, endingLines, endings, evidenceById, evidenceList, puzzles } from '../src/core/data';
 import type { Dialogue } from '../src/core/types';
 
@@ -29,6 +29,7 @@ for (const [aid, a] of Object.entries(areas)) {
       const t = areas[it.to];
       if (!t) { err(`${w}: 없는 구역 ${it.to}`); continue; }
       if (it.spawnX < t.minX || it.spawnX > t.maxX) err(`${w}: spawnX 가 ${it.to} 범위 밖`);
+      for (const u of t.interactables) if (u.type === 'transition' && Math.abs(it.spawnX - u.x) <= INTERACT_RANGE) err(`${w}: 도착 위치 ${it.spawnX} 가 ${it.to}/${u.id} 의 상호작용 범위(${INTERACT_RANGE}px) 안`);
       if (it.cutscene && !existsSync(`public/assets/illust/${it.cutscene}.png`)) err(`${w}: 없는 컷신 ${it.cutscene}`);
     }
     if (it.requires && !knownFlags.has(it.requires)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.requires}`);
@@ -42,6 +43,12 @@ for (const [aid, a] of Object.entries(areas)) {
     }
   }
 }
+// 플레이어 이름은 {player} 토큰으로만 쓴다: 대사·엔딩·단서·퍼즐 데이터에 기본 이름이 하드코딩되어 있으면 오류 (정의는 characters.json 한 곳)
+{
+  const defaultName = characters.find((c) => c.id === 'han_jisu')!.name;
+  const dataFiles = ['dialogue.json', 'dialogue.test-fixture.json', 'endings.json', 'evidence.json', 'puzzles.json', 'claims.json'];
+  for (const f of dataFiles) if (readFileSync(`src/data/${f}`, 'utf8').includes(defaultName)) err(`${f}: 플레이어 이름 "${defaultName}" 하드코딩 — {player} 토큰을 쓸 것`);
+}
 const charIds = new Set(characters.map((c) => c.id));
 for (const c of characters) if (c.portrait && !existsSync(`public/assets/illust/${c.portrait}_neutral.png`)) err(`characters/${c.id}: 초상 ${c.portrait} 없음`);
 for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues }) as [string, Dialogue][]) {
@@ -49,7 +56,7 @@ for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues 
   for (const r of d.restart ?? []) if (!d.nodes[r.node]) err(`dialogue ${did}: restart 노드 없음 ${r.node}`);
   for (const [nid, n] of Object.entries(d.nodes)) {
     const w = `dialogue ${did}/${nid}`;
-    if (real.dialogues[did as keyof typeof real.dialogues] && n.source !== 'spec' && n.source !== 'new') err(`${w}: source(spec|new) 표시 없음`);
+    if (real.dialogues[did as keyof typeof real.dialogues] && !['spec', 'new', 'craft_on'].includes(n.source ?? '')) err(`${w}: source(spec|new) 표시 없음`);
     if (!charIds.has(n.speaker)) err(`${w}: 없는 인물 ${n.speaker}`);
     if (n.portrait && !existsSync(`public/assets/illust/${n.portrait}.png`)) err(`${w}: 없는 초상 ${n.portrait}`);
     const refs = [n.next, ...(n.choices ?? []).map((c) => c.next), ...(n.present ?? []).map((p) => p.next)].filter(Boolean) as string[];

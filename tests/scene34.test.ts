@@ -151,7 +151,7 @@ describe('P02 시간 배열', () => {
 
 describe('씬 3·4 대사 출처', () => {
   it('모든 노드에 source 가 있다', () => {
-    for (const d of Object.values(D)) for (const n of Object.values(d.nodes)) expect(['spec', 'new']).toContain(n.source);
+    for (const d of Object.values(D)) for (const n of Object.values(d.nodes)) expect(['spec', 'new', 'craft_on']).toContain(n.source);
   });
 });
 

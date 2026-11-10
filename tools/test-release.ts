@@ -24,6 +24,11 @@ await page.waitForFunction(() => (window as any).__game?.scene.getScene('Explore
 await page.waitForSelector('#title'); // 타이틀 → 새 게임
 await page.keyboard.press('Enter');
 await page.waitForSelector('#title', { state: 'detached' });
+// 새 게임: 이름 입력(기본 이름) → 근접 조사(Esc) → 오프닝 연출을 Enter 로 끝까지
+await page.waitForSelector('#namepopup'); await page.keyboard.press('Enter');
+await page.waitForSelector('#closeup'); await page.keyboard.press('Escape');
+const scene = () => page.evaluate(() => { const s = (window as any).__game.scene.getScene('Explore'); return s.locked || !s.started; });
+for (let i = 0; i < 400 && (await scene()); i++) { await page.keyboard.press('Enter'); await page.waitForTimeout(120); }
 const px = () => page.evaluate(() => (window as any).__game.scene.getScene('Explore').player.x as number);
 const x0 = await px();
 await page.keyboard.down('ArrowRight');

@@ -5,7 +5,7 @@
       "start": "n1",
       "nodes": {
         "n1": { "speaker": "park_eunho", "portrait": "eunho_worried", "text": "〔시험용 대사〕 박은호가 의뢰를 설명한다.", "next": "n2" },
-        "n2": { "speaker": "han_jisu", "portrait": "player_question", "text": "〔시험용 대사〕 한지수가 대답을 고른다.",
+        "n2": { "speaker": "han_jisu", "portrait": "player_question", "text": "〔시험용 대사〕 {player}가 대답을 고른다.",
                 "choices": [{ "text": "의뢰를 받아들인다", "next": "n3" }, { "text": "더 묻는다", "next": "n2b" }] },
         "n2b": { "speaker": "park_eunho", "portrait": "eunho_fear", "text": "〔시험용 대사〕 박은호가 한마디 더 한다.", "next": "n3" },
         "n3": { "speaker": "park_eunho", "portrait": "eunho_neutral", "text": "〔시험용 대사〕 편지를 건넨다.",

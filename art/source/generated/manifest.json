@@ -1,0 +1,65 @@
+[
+  {
+    "file": "characters/baek/idle_0.png",
+    "size": [672, 1152],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": ["Art/Player/idle_0.png", "Art/ParkEunho/idle_0.png"],
+    "prompt": "Use case: stylized-concept\nAsset type: 2D side-view exploration character sprite for the Korean mystery game ‘병원의 고해’\nPrimary request: Create Baek Seon-woo, a Korean male hospital vice director in his mid-40s, standing in a neutral idle pose and facing screen-right. Neatly combed-back black hair, thin metal-frame glasses, gray business suit under a white doctor’s coat, dark necktie, and one very small muted orange circular cult-emblem pin on the coat chest. Upright posture, hands lightly clasped in front, emotionally blank expression.\nInput images: Image 1 and Image 2 are the exact established pixel-character style references. Match their chunky pixel scale, anatomy, simplified faces, outline thickness, palette size, shading steps, and sprite proportions.\nScene/backdrop: perfectly flat solid chroma-key green #00FF00 across every background pixel\nStyle/medium: intentionally low-resolution-looking pixel art, large crisp pixel clusters, thick near-black outline, limited 3–5 tone shading, same roughness and detail density as the references; do not make it smoother or more detailed\nComposition/framing: 7:12 portrait canvas; full body; character centered near the bottom with both feet on the bottom baseline; headroom matching references; right-facing side/three-quarter profile\nLighting/mood: restrained, flat game-sprite lighting\nColor palette: muted hospital gray, faded white, charcoal, skin tones; muted orange only for the tiny pin\nConstraints: exact canvas 672x1152; no floor, no shadow, no scenery; background must be pure uniform #00FF00; do not use any green or lime on the character; one character only; no readable text, numbers, logos, signature, or watermark\nAvoid: anti-aliased/vector-smooth edges, high-detail pixel art, painterly rendering, extra props, exaggerated expression, left-facing pose"
+  },
+  {
+    "file": "characters/baek/idle_1.png",
+    "size": [672, 1152],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": ["Art/Player/idle_0.png", "Art/ParkEunho/idle_0.png", "generated/characters/baek/idle_0.png"],
+    "prompt": "Use case: stylized-concept\nAsset type: second idle animation frame for a 2D exploration sprite\nPrimary request: Reproduce Baek Seon-woo from Image 3 as the exact same character, clothing, glasses, pin, proportions, right-facing angle, hands-clasped pose, expression, pixel scale, outline, palette, and framing. Make only the tiniest breathing-frame change: lower both shoulders by the visual equivalent of 1–2 source pixels. Everything else must remain unchanged.\nInput images: Images 1–2 are established game pixel-style references; Image 3 is the identity and frame-lock reference.\nScene/backdrop: perfectly flat solid #00FF00\nStyle/medium: chunky low-resolution pixel art with thick near-black outline and limited shading, matching Image 3\nComposition/framing: full body centered low, feet on bottom baseline, 7:12 portrait\nConstraints: exact canvas 672x1152; same person and outfit; screen-right facing; no floor or shadow; no green/lime on character; no text, logo, signature, watermark\nAvoid: any pose, face, hand, clothing, camera, crop, or accessory change beyond the 1–2-pixel shoulder drop"
+  },
+  {
+    "file": "portraits/baek_neutral.png",
+    "size": [768, 1072],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": ["Art/Portraits/player_neutral.png", "Art/Portraits/eunho_neutral.png"],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait for the Korean mystery game ‘병원의 고해’\nPrimary request: Baek Seon-woo, Korean male hospital vice director in his mid-40s, chest-up portrait. Neatly combed-back black hair, thin metal-frame glasses, gray suit under a white doctor’s coat, dark tie, tiny muted-orange circular cult-emblem pin on coat chest. Calm, polite, emotionally neutral expression.\nInput images: Both images define the exact established portrait style, chest-up scale, eye height, anatomy, muted painterly treatment, and detail density.\nScene/backdrop: simple nearly black charcoal background like the references, not transparent\nStyle/medium: restrained semi-realistic digital painting, subtle calm brushwork, muted colors, same finish and facial rendering as references\nComposition/framing: 768x1072 portrait; chest-up; centered; eye level and subject size matching references; slight three-quarter turn while generally facing viewer\nLighting/mood: soft low-key hospital-drama lighting, controlled and cold\nColor palette: desaturated charcoal, cool gray, faded white; muted orange only on tiny pin\nConstraints: one person; no readable text, numbers, logos, signature, watermark; no gore; no resemblance to a real person\nAvoid: photorealism, anime, glossy concept art, bright colors, dramatic pose, smile"
+  },
+  {
+    "file": "portraits/baek_cold.png",
+    "size": [768, 1072],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": ["Art/Portraits/player_neutral.png", "Art/Portraits/eunho_neutral.png", "generated/portraits/baek_neutral.png"],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Keep Baek Seon-woo from Image 3 exactly the same person, age, face structure, combed-back black hair, thin metal glasses, gray suit, white doctor coat, dark tie, small muted-orange pin, chest-up scale, camera, background, lighting, and rendering. Change only his expression to cold pressure: eyes slightly narrowed, gaze steady, mouth controlled and unsmiling.\nInput images: Images 1–2 define the game portrait style; Image 3 is the exact identity/composition lock.\nScene/backdrop: same simple near-black charcoal background as Image 3\nStyle/medium: same restrained semi-realistic muted digital painting as Image 3\nComposition/framing: 768x1072, identical chest-up crop and eye level\nConstraints: change only expression; no readable text, logo, signature, watermark; no real-person resemblance\nAvoid: changing head angle, glasses, hairstyle, clothing, pin, lighting, crop, age, facial identity; no anger grimace or theatrical emotion"
+  },
+  {
+    "file": "portraits/baek_tense.png",
+    "size": [768, 1072],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": ["Art/Portraits/player_neutral.png", "Art/Portraits/eunho_neutral.png", "generated/portraits/baek_neutral.png"],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Keep Baek Seon-woo from Image 3 exactly the same person, age, face structure, combed-back black hair, thin metal glasses, gray suit, white doctor coat, dark tie, small muted-orange pin, chest-up scale, camera, background, lighting, and rendering. Change only his expression to restrained unease: lips pressed firmly together and gaze diverted just slightly away, subtle tension around the eyes.\nInput images: Images 1–2 define the game portrait style; Image 3 is the exact identity/composition lock.\nScene/backdrop: same simple near-black charcoal background as Image 3\nStyle/medium: same restrained semi-realistic muted digital painting as Image 3\nComposition/framing: 768x1072, identical chest-up crop and eye level\nConstraints: change only expression and slight eye direction; no readable text, logo, signature, watermark; no real-person resemblance\nAvoid: changing head angle, glasses, hairstyle, clothing, pin, lighting, crop, age, facial identity; no overt fear or melodrama"
+  },
+  {
+    "file": "backgrounds/lobby_wall.png",
+    "size": [1536, 1024],
+    "kind": "wall",
+    "facing": null,
+    "chromaKey": false,
+    "refs": ["Resources/Art/Office/wall.png", "Resources/Art/Cutscenes/hospital_intro.png"],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating 2D pixel-art wall tile for a side-view game environment\nPrimary request: An empty first-floor convalescent-hospital lobby wall: faded low-saturation teal paint on the upper wall, gray wainscot protection panels below, and one thin continuous metal handrail running horizontally along the wall.\nInput images: Image 1 defines the exact existing wall texture, pixel cluster scale, limited shading, roughness, and muted palette. Image 2 defines the hospital’s cold faded teal-gray atmosphere only.\nScene/backdrop: blank wall surface only\nStyle/medium: established chunky pixel-art environment style, limited tones, same block size and rough texture as Image 1; not smoother or more detailed\nComposition/framing: 1536x1024 landscape; straight-on side view; horizontally seamless tile with matching left and right edges\nLighting/mood: flat dim institutional interior light\nColor palette: faded teal, cool gray, aged off-white\nConstraints: empty wall; seamless horizontal repeat; no door, window, furniture, signs, readable text, numbers, logos, people, signature, or watermark\nAvoid: perspective convergence, isolated props, ornate trim, modern pristine surfaces, green chroma background"
+  },
+  {
+    "file": "backgrounds/lobby_floor.png",
+    "size": [1792, 640],
+    "kind": "floor",
+    "facing": null,
+    "chromaKey": false,
+    "refs": ["Resources/Art/Office/floor.png"],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating 2D pixel-art floor tile for a side-view game environment\nPrimary request: Worn hospital vinyl tile floor in a checker pattern of cool gray and faded cream.\nInput images: Image 1 defines the established pixel cluster size, bold dark divisions, limited shading steps, horizontal tiling logic, roughness, and detail density.\nScene/backdrop: floor surface only, viewed obliquely from the side\nStyle/medium: chunky pixel-art environment tile, limited muted palette and hard pixel edges, same level of finish as reference\nComposition/framing: 1792x640 wide landscape; oblique side-view floor plane; horizontally seamless repeating tile with matching left and right edges\nLighting/mood: dim flat institutional lighting, worn slight sheen\nColor palette: aged cool gray and faded cream, low saturation\nConstraints: no objects, walls, shadows, people, text, logos, signature, watermark; must tile horizontally\nAvoid: wood, green-tinted flooring, perspective focal point, smooth vector rendering, photoreal texture"
+  }
+]

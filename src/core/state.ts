@@ -1,4 +1,4 @@
-import { evidenceById, puzzles } from './data';
+import { DEFAULT_PLAYER_NAME, evidenceById, puzzles } from './data';
 import type { Evidence, GameState } from './types';
 
 export function createGameState(): GameState {
@@ -6,7 +6,7 @@ export function createGameState(): GameState {
     currentSceneId: 'office', evidenceIds: [], verifiedEvidenceIds: [], solvedPuzzleIds: [], flags: [],
     selectedHypothesisByClaim: {}, submittedEvidenceByClaim: {}, submittedRebuttalByClaim: {},
     hintCountByPuzzle: {}, wrongCountByPuzzle: {}, evidenceSecured: false, reportTarget: null,
-    visitedAreaIds: [], playerX: 180, retryClaimIds: [], statements: {}, presentedKeys: [],
+    visitedAreaIds: [], playerName: DEFAULT_PLAYER_NAME, playerX: 180, retryClaimIds: [], statements: {}, presentedKeys: [],
   };
 }
 

@@ -4,6 +4,7 @@ import { acquireEvidence, claims, createGameState, enterNode, getNode, puzzles, 
 import { dialogues, isTestBuild } from './explore/content';
 import { ExploreScene } from './scenes/ExploreScene';
 import { openDialogue } from './ui/dialogue';
+import { closeTitleNow } from './ui/title';
 import { initHud } from './ui/hud';
 
 export const W = 480;
@@ -63,7 +64,7 @@ if (isTestBuild) {
     void scene.go('b1', 0);
   };
   (window as unknown as Record<string, unknown>).__cw = {
-    get state() { return scene.state; }, scene, ff, saveConclusion, claims,
+    get state() { return scene.state; }, scene, ff, quick: () => { closeTitleNow(); scene.newGame(true); }, saveConclusion, claims,
     openDialogue: (id: string) => openDialogue(scene.state, id),
   };
 }

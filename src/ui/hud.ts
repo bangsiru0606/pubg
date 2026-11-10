@@ -1,5 +1,6 @@
+import { fmtName } from '../core';
 // HUD: 상호작용 프롬프트, 토스트, 전환 페이드. #ui 컨테이너 안에 만든다.
-export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+export const esc = (s: string) => fmtName(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 export function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', html = ''): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
@@ -30,6 +31,25 @@ export function setPrompt(p: { label: string; action: string } | null) {
   prompt.dataset.key = key;
   prompt.innerHTML = `<div class="lbl">${esc(p.label)}</div><div><kbd>Enter</kbd>${esc(p.action)}</div>`;
   prompt.classList.remove('hidden');
+}
+
+let hintBox: HTMLElement | null = null;
+let hintQueue: { text: string; ms: number }[] = [];
+let hintBusy = false;
+/** 튜토리얼 힌트를 차례로 띄운다 (craft_on TutorialHintUI) */
+export function queueHints(texts: string[], sec = 4) {
+  hintQueue.push(...texts.map((text) => ({ text, ms: sec * 1000 })));
+  if (hintBusy) return;
+  hintBusy = true;
+  hintBox ??= el('div', 'hintbanner hidden');
+  if (!hintBox.isConnected) root().append(hintBox);
+  const next = () => {
+    const h = hintQueue.shift();
+    if (!h) { hintBox!.classList.add('hidden'); hintBusy = false; return; }
+    hintBox!.textContent = h.text; hintBox!.classList.remove('hidden');
+    window.setTimeout(next, h.ms);
+  };
+  next();
 }
 
 export function showToast(msg: string, ms = 2500) {

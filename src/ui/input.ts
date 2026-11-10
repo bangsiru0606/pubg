@@ -1,13 +1,16 @@
 // 키보드 입력 + 모달 스택. 모달이 열려 있으면 키는 맨 위 모달만 받는다. 모든 화면은 키보드만으로 조작 가능해야 한다.
 const held = new Set<string>();
 const queue: string[] = [];
-interface Modal { id: string; onKey: (e: KeyboardEvent) => void }
+interface Modal { id: string; onKey: (e: KeyboardEvent) => void; raw?: boolean } // raw: 글자 입력창 — 스페이스·방향키·Enter 의 기본 동작을 막지 않는다
 const modals: Modal[] = [];
 
 const norm = (k: string) => (k.length === 1 ? k.toLowerCase() : k);
 export const isHeld = (k: string) => held.has(k);
 export const isModalOpen = () => modals.length > 0;
 export const topModalId = () => modals[modals.length - 1]?.id ?? null;
+/** 눌러 둔 키 상태를 모두 비운다 (장면 연출 뒤 잠금을 풀 때) */
+export const clearInput = () => { held.clear(); queue.length = 0; };
+export const isEnterHeld = () => held.has('Enter');
 export const consumePress = (k: string) => { const i = queue.indexOf(k); if (i < 0) return false; queue.length = 0; return true; };
 
 export function pushModal(m: Modal) { held.clear(); queue.length = 0; modals.push(m); }
@@ -24,7 +27,7 @@ export const setTabHandler = (f: () => void) => { onTab = f; };
 window.addEventListener('keydown', (e) => {
   const top = modals[modals.length - 1];
   if (top) {
-    if (['Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Enter', 'Escape'].includes(e.key)) e.preventDefault();
+    if (top.raw ? e.key === 'Tab' : ['Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Enter', 'Escape'].includes(e.key)) e.preventDefault();
     top.onKey(e);
     return;
   }

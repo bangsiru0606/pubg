@@ -60,6 +60,11 @@
    "id": "broadcast",
    "name": "방송",
    "portrait": null
+  },
+  {
+   "id": "unknown",
+   "name": "???",
+   "portrait": null
   }
  ]
 }

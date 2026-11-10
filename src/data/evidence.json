@@ -153,7 +153,15 @@
   "sourceType": "record",
   "acquiredSceneId": "b1",
   "sourceCharacterId": "",
-  "timestamp": "2주 전"
+  "timestamp": "2주 전",
+  "body": [
+   "P-271 / B형 / 27세",
+   "선정: LHJ",
+   "승인: LHS",
+   "진행: BSW",
+   "상태: 처리 완료",
+   "일자: 2주 전"
+  ]
  },
  {
   "id": "E13_identity_map",
@@ -162,7 +170,10 @@
   "sourceType": "record",
   "acquiredSceneId": "b1",
   "sourceCharacterId": "",
-  "timestamp": "2주 전"
+  "timestamp": "2주 전",
+  "body": [
+   "환자번호 EW-0827 / P-271"
+  ]
  },
  {
   "id": "E14_belongings_diary",
@@ -171,7 +182,13 @@
   "sourceType": "physical",
   "acquiredSceneId": "b1",
   "sourceCharacterId": "park_eunji",
-  "timestamp": "2주 전"
+  "timestamp": "2주 전",
+  "body": [
+   "유품 보관함: 노란 실팔찌 · 박은지 이름이 적힌 목걸이 · 찢긴 일기장 마지막 장",
+   "",
+   "“하늘 언니가 명단을 봤다. 언니는 나를 데리고 나가겠다고 했지만 문은 밤마다 잠긴다. 혹시 내가 먼저 불려가면, 언니 잘못이 아니라고 오빠에게 말해 주고 싶다.”"
+  ],
+  "afterView": "diary_closed"
  },
  {
   "id": "E15_transport_manifest",
@@ -180,7 +197,12 @@
   "sourceType": "record",
   "acquiredSceneId": "b1",
   "sourceCharacterId": "baek_sunwoo",
-  "timestamp": "2주 전"
+  "timestamp": "2주 전",
+  "body": [
+   "수용 병원: (공란)",
+   "화물 분류: 생체 보존물",
+   "결재: 백선우 · 관리번호: 이혜정"
+  ]
  },
  {
   "id": "E16_secure_receipt",

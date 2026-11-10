@@ -3,9 +3,9 @@ import map from '../data/map.json';
 import spec from '../../art/asset-spec.json';
 import { condMet, hasFlag, type GameState } from '../core';
 
-interface Gate { requires?: string; requiresEvidence?: string[]; hideWhen?: string }
+interface Gate { requires?: string; requiresEvidence?: string[]; hideWhen?: string; showWhen?: string }
 export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string }
-export interface Npc extends Gate { type: 'npc'; id: string; x: number; name: string; dialogueId: string; autoTrigger?: { x: number; width: number } }
+export interface Npc extends Gate { type: 'npc'; id: string; x: number; name: string; dialogueId: string; autoTrigger?: { x: number; width: number }; autoWhen?: string[]; silent?: boolean } // autoWhen: 모든 플래그가 서면 한 번 자동 시작, silent: 그림·프롬프트 없는 장면 사건
 export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[] }
 export type Interactable = Transition | Npc | Examine;
 export interface Prop { id: string; x: number; w: number; h: number; color: string; label: string; showWhen?: string }
@@ -29,7 +29,7 @@ export function isAvailable(it: Interactable, s: GameState): boolean {
   return !it.requires || condMet(s, it.requires);
 }
 /** 이미 사라진 대상(예: 자리를 뜬 NPC) */
-export const isHidden = (it: Interactable, s: GameState) => !!it.hideWhen && hasFlag(s, it.hideWhen);
+export const isHidden = (it: Interactable, s: GameState) => (!!it.hideWhen && hasFlag(s, it.hideWhen)) || (!!it.showWhen && !hasFlag(s, it.showWhen)) || (it.type === 'npc' && !!it.silent);
 
 /** 프롬프트 문구 (craft_on 규칙: NPC 대화하기, 조사 조사하기, 문/계단은 라벨 그대로) */
 export function promptOf(it: Interactable): { label: string; action: string } {
@@ -52,9 +52,11 @@ export function nearest(area: AreaDef, x: number, s: GameState, range = INTERACT
 /** 자동 트리거 구역: 한 번만 발동 */
 export const triggerKey = (areaId: string, npcId: string) => `trigger_fired:${areaId}:${npcId}`;
 export function autoTriggered(areaId: string, area: AreaDef, x: number, s: GameState): Npc | null {
-  for (const it of area.interactables)
-    if (it.type === 'npc' && it.autoTrigger && !isHidden(it, s) && !hasFlag(s, triggerKey(areaId, it.id)) &&
-        Math.abs(x - it.autoTrigger.x) <= it.autoTrigger.width / 2) return it;
+  for (const it of area.interactables) {
+    if (it.type !== 'npc' || hasFlag(s, triggerKey(areaId, it.id))) continue;
+    if (it.autoWhen && it.autoWhen.every((f) => hasFlag(s, f)) && !(it.hideWhen && hasFlag(s, it.hideWhen))) return it;
+    if (it.autoTrigger && !isHidden(it, s) && Math.abs(x - it.autoTrigger.x) <= it.autoTrigger.width / 2) return it;
+  }
   return null;
 }
 

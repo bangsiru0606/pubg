@@ -1,5 +1,5 @@
 import { claims, endingLines, endings } from './data';
-import { solvedClaimIds } from './deduction';
+import { resolveAll, solvedClaimIds } from './deduction';
 import type { Ending, EndingLine, EndingLineKey, GameState, LineWhen } from './types';
 
 /**
@@ -37,4 +37,30 @@ export function resolveEndingLines(s: GameState): Record<EndingLineKey, EndingLi
   const solved = new Set(solvedClaimIds(s));
   const pick = (k: EndingLineKey) => endingLines[k].find((l) => matches(l.when, s, solved))!;
   return { haneul: pick('haneul'), organization: pick('organization'), eunho: pick('eunho') };
+}
+
+export interface ClaimGrade { claimId: string; solved: boolean; rebuttalHit: boolean; score: number }
+export interface Grade {
+  claims: ClaimGrade[]; total: number; max: number; letter: 'S' | 'A' | 'B' | 'C';
+  wrongTotal: number; hintedPuzzles: number; maxHintLevel: number; // 힌트는 엔딩이 아니라 등급에만 표시한다
+}
+/** 엔딩 후 추리 등급: 질문별 해결 여부, 반박 근거 적중, 퍼즐 오답·힌트 사용 */
+export function gradeOf(s: GameState): Grade {
+  const rs = resolveAll(s);
+  const cg = rs.map((r) => ({ claimId: r.claimId, solved: r.solved, rebuttalHit: r.rebuttalPoint === 1, score: r.score }));
+  const total = cg.reduce((a, c) => a + c.score, 0), max = claims.length * 3;
+  const hints = Object.values(s.hintCountByPuzzle);
+  return {
+    claims: cg, total, max, letter: total === max ? 'S' : total >= 10 ? 'A' : total >= 7 ? 'B' : 'C',
+    wrongTotal: Object.values(s.wrongCountByPuzzle).reduce((a, b) => a + b, 0),
+    hintedPuzzles: hints.filter((h) => h > 0).length, maxHintLevel: Math.max(0, ...hints),
+  };
+}
+
+/** 엔딩 D 재도전: 해결하지 못한 질문과 관련된 단서 ID (가설 지지·반박·반증 자료의 합집합 — 어느 것이 정답인지는 구분하지 않는다) */
+export function relatedEvidenceIds(claimIds: string[]): Set<string> {
+  const out = new Set<string>();
+  for (const c of claims) if (claimIds.includes(c.claimId))
+    for (const h of c.hypotheses) [...h.supportEvidenceIds, ...h.rebuttalEvidenceIds, ...h.refutedBy].forEach((id) => out.add(id));
+  return out;
 }

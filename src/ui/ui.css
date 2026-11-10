@@ -154,3 +154,42 @@
 .puzzle .zs { display: block; font-size: 7px; color: #a9a290; }
 .puzzle .psub { font-size: 8px; font-weight: 400; color: #b8b09c; margin-left: 6px; }
 .lay-lightbox .ptitle { white-space: nowrap; }
+
+/* P05 논리표 */
+.lay-logic .pleft { width: 468px; }
+.ltab { width: 100%; border-collapse: collapse; font-size: 9px; }
+.ltab th { text-align: left; color: #e2c98a; border-bottom: 1px solid #55503f; padding: 0 3px; }
+.ltab td { padding: 1px 3px; border-bottom: 1px solid #2a2d33; }
+.ltab tr.zone { cursor: pointer; background: none; border: 0; position: static; }
+.ltab tr.zone:hover { background: rgba(226,201,138,.15); }
+.lay-logic .tray { height: 14px; margin-top: 1px; }
+.lay-logic .ptasks { top: 92px; right: 6px; }
+.lay-logic .chip { font-size: 8px; padding: 0 3px; margin: 0 2px 1px 0; }
+.lay-logic .trow { margin-bottom: 1px; font-size: 8px; }
+.lay-logic .pright { left: 6px; right: 70px; top: 206px; height: 56px; font-size: 8px; }
+.lay-logic .pright ul { display: none; }
+.lay-logic .src { display: inline-block; width: auto; margin-right: 3px; }
+.lay-logic .submit { top: 100px; }
+.quote { color: #cfe0c8; font-size: 8px; margin: 1px 0; }
+
+/* 타이틀 · 최종 보고서 · 엔딩 */
+.title { background: #0c0d10; text-align: center; }
+.title .tt { margin-top: 36px; font-size: 26px; color: #e2c98a; font-weight: 700; }
+.title .ts { color: #8f8873; margin-bottom: 14px; }
+.title .tm { width: 140px; margin: 0 auto; }
+.title .tm .opt { text-align: center; }
+.title .ctrl { width: 220px; margin: 10px auto 0; text-align: left; font-size: 9px; }
+.title kbd { background: #3a4a58; padding: 0 3px; border-radius: 2px; font: inherit; display: inline-block; min-width: 50px; text-align: center; }
+.report { padding: 6px 10px; }
+.report h3 { margin: 0 0 4px; color: #e2c98a; font-size: 12px; }
+.report .rrow { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 1px 4px; cursor: pointer; }
+.report .rrow.sel { background: #3a4a58; color: #fff; }
+.report .sum p { margin: 0 0 3px; }
+.ending { padding: 10px 16px; overflow: hidden; }
+.ending .etitle { color: #e2c98a; font-size: 16px; font-weight: 700; text-align: center; margin-top: 12px; }
+.ending .ecard { text-align: center; margin: 8px 20px 10px; font-size: 11px; color: #f0e8d0; }
+.ending .eres p { margin: 0 0 3px; }
+.ending .grade td { padding: 0 6px 0 0; }
+.lay-logic .ptasks { top: 108px; }
+.lay-logic .submit { top: 72px; }
+.ltab td:first-child { text-align: left; }

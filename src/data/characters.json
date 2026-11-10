@@ -1,16 +1,65 @@
 {
  "_comment": "화면에는 name 만 보인다. portrait 는 public/assets/illust 의 초상 파일 접두어(없으면 null — 7단계에서 제작).",
  "characters": [
-  { "id": "han_jisu", "name": "한지수", "portrait": "player" },
-  { "id": "park_eunho", "name": "박은호", "portrait": "eunho" },
-  { "id": "park_eunji", "name": "박은지", "portrait": null },
-  { "id": "lee_hanshin", "name": "이한신", "portrait": null },
-  { "id": "jeong_haneul", "name": "정하늘", "portrait": null },
-  { "id": "baek_sunwoo", "name": "백선우", "portrait": null },
-  { "id": "oh_miran", "name": "오미란", "portrait": null },
-  { "id": "lee_hyejeong", "name": "이혜정", "portrait": null },
-  { "id": "choi_okja", "name": "최옥자", "portrait": null },
-  { "id": "han_yujin", "name": "한유진", "portrait": null },
-  { "id": "chae_soyeon", "name": "채소연", "portrait": null }
+  {
+   "id": "han_jisu",
+   "name": "한지수",
+   "portrait": "player"
+  },
+  {
+   "id": "park_eunho",
+   "name": "박은호",
+   "portrait": "eunho"
+  },
+  {
+   "id": "park_eunji",
+   "name": "박은지",
+   "portrait": null
+  },
+  {
+   "id": "lee_hanshin",
+   "name": "이한신",
+   "portrait": null
+  },
+  {
+   "id": "jeong_haneul",
+   "name": "정하늘",
+   "portrait": null
+  },
+  {
+   "id": "baek_sunwoo",
+   "name": "백선우",
+   "portrait": null
+  },
+  {
+   "id": "oh_miran",
+   "name": "오미란",
+   "portrait": null
+  },
+  {
+   "id": "lee_hyejeong",
+   "name": "이혜정",
+   "portrait": null
+  },
+  {
+   "id": "choi_okja",
+   "name": "최옥자",
+   "portrait": null
+  },
+  {
+   "id": "han_yujin",
+   "name": "한유진",
+   "portrait": null
+  },
+  {
+   "id": "chae_soyeon",
+   "name": "채소연",
+   "portrait": null
+  },
+  {
+   "id": "broadcast",
+   "name": "방송",
+   "portrait": null
+  }
  ]
 }

@@ -2,6 +2,7 @@ import { createGameState } from './state';
 import type { GameState } from './types';
 
 const KEY = 'confession_ward_save_v1';
+const slotKey = (slot: string) => (slot === 'main' ? KEY : `${KEY}_${slot}`);
 export interface KeyValueStore { getItem(k: string): string | null; setItem(k: string, v: string): void; }
 
 /** localStorage 를 쓸 수 없으면(차단·private) null. 호출 측은 저장 없이 계속 진행한다. */
@@ -9,14 +10,14 @@ export function defaultStore(): KeyValueStore | null {
   try { return globalThis.localStorage ?? null; } catch { return null; }
 }
 
-export function saveGame(s: GameState, store: KeyValueStore | null = defaultStore()): boolean {
-  try { if (!store) return false; store.setItem(KEY, JSON.stringify(s)); return true; } catch { return false; }
+export function saveGame(s: GameState, store: KeyValueStore | null = defaultStore(), slot = 'main'): boolean {
+  try { if (!store) return false; store.setItem(slotKey(slot), JSON.stringify(s)); return true; } catch { return false; }
 }
 
 /** 저장본이 없거나 깨졌으면 null */
-export function loadGame(store: KeyValueStore | null = defaultStore()): GameState | null {
+export function loadGame(store: KeyValueStore | null = defaultStore(), slot = 'main'): GameState | null {
   try {
-    const raw = store?.getItem(KEY);
+    const raw = store?.getItem(slotKey(slot));
     if (!raw) return null;
     const o = JSON.parse(raw);
     if (typeof o !== 'object' || o === null) return null;

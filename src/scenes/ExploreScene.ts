@@ -1,15 +1,18 @@
 import Phaser from 'phaser';
 import {
-  acquireEvidence, hasFlag, isBasementOpen, shownEvidence, puzzles, setFlag, type GameState,
+  acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, shownEvidence, puzzles, setFlag, type GameState,
 } from '../core';
 import {
   GROUND_Y, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, promptOf, themes,
   triggerKey, talkStand, type Examine, type Interactable, type Npc, type Transition,
 } from '../explore/interaction';
 import { openCloseup } from '../ui/closeup';
+import { openEnding, unsolvedClaimIds } from '../ui/ending';
+import { openReport } from '../ui/report';
+import { openTitle } from '../ui/title';
 import { openCutscene } from '../ui/cutscene';
 import { openPuzzle } from '../ui/puzzle';
-import { hasDialogue, openDialogue } from '../ui/dialogue';
+import { hasDialogue, openDialogue, setThenHandler } from '../ui/dialogue';
 import { fadeThrough, setPrompt, showToast } from '../ui/hud';
 import { consumePress, isHeld, isModalOpen, setTabHandler } from '../ui/input';
 import { openNotebook } from '../ui/notebook';
@@ -27,6 +30,8 @@ export class ExploreScene extends Phaser.Scene {
   busy = false; // 전환 중
   private minX = 0;
   private maxX = 0;
+  started = false;                 // 타이틀에서 새 게임/이어하기를 고른 뒤에만 자동 저장한다
+  private reportCheckpoint = '';  // 씬 7 시작 시점 저장본(엔딩 D 재도전용)
   private npcSprites = new Map<string, Phaser.GameObjects.Sprite>();
 
   constructor() { super('Explore'); }
@@ -43,7 +48,8 @@ export class ExploreScene extends Phaser.Scene {
     anim('player_walk', 'player', ['walk_0', 'walk_1', 'walk_2', 'walk_3'], 8);
     anim('player_idle', 'player', ['idle_0', 'idle_1'], 2);
     anim('eunho_idle', 'eunho', ['idle_0', 'idle_1'], 2);
-    setTabHandler(() => { if (!this.busy && !isModalOpen()) openNotebook(this.state, () => {}); });
+    setTabHandler(() => { if (this.started && !this.busy && !isModalOpen()) openNotebook(this.state, () => {}); });
+    setThenHandler((t) => { if (t === 'report') this.startReport(); });
     this.buildArea(START.area, START.x);
   }
 
@@ -54,6 +60,7 @@ export class ExploreScene extends Phaser.Scene {
     this.areaId = id;
     this.npcSprites.clear();
     this.state.currentSceneId = id;
+    this.state.playerX = spawnX;
     if (!this.state.visitedAreaIds.includes(id)) this.state.visitedAreaIds.push(id);
     const a = areas[id], g = GROUND_Y, w = a.maxX - a.minX;
     this.minX = a.minX; this.maxX = a.maxX;
@@ -76,6 +83,7 @@ export class ExploreScene extends Phaser.Scene {
     }
     for (const it of a.interactables) if (!isHidden(it, this.state)) this.drawInteractable(a, it);
 
+    if (this.started) saveGame(this.state);
     this.player = this.add.sprite(spawnX, g, 'player_idle_0').setOrigin(0.5, 1).setFlipX(flip).setDepth(6).play('player_idle');
     const cam = this.cameras.main;
     cam.setBounds(a.minX, 0, w, 270);
@@ -159,7 +167,7 @@ export class ExploreScene extends Phaser.Scene {
     const next = ids.slice();
     const step = () => {
       const id = next.shift();
-      if (id) { openViewer(this.state, id, step); return; }
+      if (id) { openViewer(this.state, id, () => { const f = evidenceById.get(id)?.afterView; if (f) setFlag(this.state, f); step(); }); return; }
       this.refresh();
       this.autoOpenPuzzle();
     };
@@ -195,11 +203,49 @@ export class ExploreScene extends Phaser.Scene {
   private talk(npc: Npc) {
     setPrompt(null);
     if (!hasDialogue(npc.dialogueId)) { showToast(`${npc.name}: (대사는 아직 없다)`); return; }
-    const st = talkStand(this.player.x, npc.x, this.minX, this.maxX); // 서로 마주 보고 최소 거리 확보
-    this.player.x = st.x; this.player.setFlipX(flipFor('player', st.playerFacesLeft)); // 서로 마주 본다
-    const ns = this.npcSprites.get(npc.id);
-    if (ns) ns.setFlipX(flipFor(areas[this.areaId].npcSprite![npc.id], !st.playerFacesLeft));
+    if (!npc.silent) { // 장면 사건(silent)은 서지 않는다
+      const st = talkStand(this.player.x, npc.x, this.minX, this.maxX); // 서로 마주 보고 최소 거리 확보
+      this.player.x = st.x; this.player.setFlipX(flipFor('player', st.playerFacesLeft));
+      const ns = this.npcSprites.get(npc.id);
+      if (ns) ns.setFlipX(flipFor(areas[this.areaId].npcSprite![npc.id], !st.playerFacesLeft));
+    }
     openDialogue(this.state, npc.dialogueId, (got) => this.showDocs(got.filter((id) => shownEvidence(this.state, id)?.body)));
+  }
+
+  // ---------- 시작·씬 7·엔딩 ----------
+  newGame() { this.state = createGameState(); this.started = true; this.buildArea(START.area, START.x); }
+  continueGame(st: GameState) { this.state = st; this.started = true; this.buildArea(st.currentSceneId, st.playerX); }
+
+  /** 씬 7: 시작 시점을 저장해 두고(엔딩 D 재도전용) 최종 보고서를 연다 */
+  private startReport() {
+    setPrompt(null);
+    this.reportCheckpoint = JSON.stringify(this.state);
+    saveGame(this.state, undefined, 'report');
+    openReport(this.state, () => this.showEnding());
+  }
+
+  private showEnding() {
+    const unsolved = unsolvedClaimIds(this.state);
+    openEnding(this.state, {
+      onRetry: () => this.retryReport(unsolved),
+      onRestart: () => this.newGame(),
+      onTitle: () => this.openTitle(),
+    });
+  }
+
+  /** 엔딩 D: 씬 7 시작 시점으로 돌아가 보고서를 다시 쓴다. 미해결 질문과 관련된 단서를 수첩에서 먼저 보여 준다. */
+  private retryReport(unsolved: string[]) {
+    const saved = this.reportCheckpoint ? (JSON.parse(this.reportCheckpoint) as GameState) : loadGame(undefined, 'report');
+    if (!saved) { this.newGame(); return; }
+    saved.retryClaimIds = unsolved;
+    this.state = saved;
+    this.buildArea(saved.currentSceneId, saved.playerX);
+    this.startReport();
+  }
+
+  openTitle() {
+    this.started = false;
+    openTitle({ canContinue: loadGame() !== null, onNew: () => this.newGame(), onContinue: () => { const st = loadGame(); if (st) this.continueGame(st); else this.newGame(); } });
   }
 
   /** 같은 자리에서 구역을 다시 그린다 (NPC 퇴장, 소품 등장 반영) */

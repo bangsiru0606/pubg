@@ -2,7 +2,7 @@
 // 키보드: ←→ 탭, ↑↓ 이동, Enter 실행, Esc/Tab 닫기. 마우스: 클릭.
 import {
   CONFLICT_MESSAGE, characterName, MAX_SUPPORT_SLOTS, canSaveConclusion, claims, clearConclusion, shownEvidence, findConflicts, hasFlag,
-  isClaimOpen, isVerified, saveConclusion, type Claim, type GameState,
+  isClaimOpen, isVerified, relatedEvidenceIds, saveConclusion, type Claim, type GameState,
 } from '../core';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
@@ -17,10 +17,10 @@ const STAGE_LABEL = { unconfirmed: '미확인', contradiction: '모순', revised
 interface Draft { hyp: string | null; support: string[]; rebuttal: string[] }
 const VISIBLE_ROWS = 14;
 
-export function openNotebook(s: GameState, onClose: () => void) {
+export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
   const box = el('div', 'modal'); box.id = 'notebook';
   root().append(box);
-  let tab = 0;
+  let tab = startTab;
   const cursor: Record<string, number> = {};
   const drafts: Record<string, Draft> = {};
   let msg = '';
@@ -35,15 +35,21 @@ export function openNotebook(s: GameState, onClose: () => void) {
   const setCur = (v: number) => { cursor[TABS[tab].id] = v; };
   const close = () => { popModal('notebook'); box.remove(); onClose(); };
 
+  const orderedIds = () => {
+    const rel = s.retryClaimIds.length ? relatedEvidenceIds(s.retryClaimIds) : null;
+    return rel ? [...s.evidenceIds.filter((x) => rel.has(x)), ...s.evidenceIds.filter((x) => !rel.has(x))] : s.evidenceIds;
+  };
   // ---- 탭 본문 ----
   function evidenceTab(): string {
-    const ids = s.evidenceIds;
+    // 엔딩 D 재도전: 해결하지 못한 질문과 관련된 단서를 먼저 보여 준다 (어느 것이 정답인지는 표시하지 않는다)
+    const rel = s.retryClaimIds.length ? relatedEvidenceIds(s.retryClaimIds) : null;
+    const ids = orderedIds();
     if (!ids.length) return '<div class="nlist"></div><div class="ndetail note">아직 얻은 단서가 없다.</div>';
     const c = Math.min(cur(), ids.length - 1);
     const start = Math.max(0, Math.min(c - Math.floor(VISIBLE_ROWS / 2), ids.length - VISIBLE_ROWS));
     const rows = ids.slice(start, start + VISIBLE_ROWS).map((id, k) => {
       const i = start + k, e = shownEvidence(s, id)!;
-      return `<button class="row${i === c ? ' sel' : ''}" data-row="${i}"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${esc(e.title)}${isVerified(s, id) ? '' : ' <span class="unver">·미검증</span>'}</button>`;
+      return `<button class="row${i === c ? ' sel' : ''}" data-row="${i}"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${rel?.has(id) ? '<span class="tag">미해결 질문 관련</span>' : ''}${esc(e.title)}${isVerified(s, id) ? '' : ' <span class="unver">·미검증</span>'}</button>`;
     }).join('');
     const e = shownEvidence(s, ids[c])!;
     const ver = isVerified(s, e.id) ? '<span class="ver">검증됨</span>' : '<span class="unver">미검증 (퍼즐을 풀어야 근거로 제출할 수 있다)</span>';
@@ -108,7 +114,7 @@ export function openNotebook(s: GameState, onClose: () => void) {
   // ---- 동작 ----
   function activate() {
     const t = TABS[tab], c = claimOf(t.id);
-    if (t.id === 'evidence') { const id = s.evidenceIds[Math.min(cur(), s.evidenceIds.length - 1)]; if (id) openViewer(s, id); return; }
+    if (t.id === 'evidence') { const ids = orderedIds(); const id = ids[Math.min(cur(), ids.length - 1)]; if (id) openViewer(s, id); return; }
     if (!c || !isClaimOpen(s, c)) return;
     const dr = draftOf(c), i = Math.min(cur(), rowsOfClaim(c) - 1), n = c.hypotheses.length;
     msg = '';

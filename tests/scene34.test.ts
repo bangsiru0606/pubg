@@ -43,7 +43,7 @@ describe('씬 3 병동', () => {
   });
   it('P02 열림 조건: 최옥자·채소연 대화 + 방송표 (E05 와 무관)', () => {
     const w = P('P02_night_timeline').openWhen!;
-    expect(w.flags).toEqual(['choi_done', 'chae_done', 'broadcast_seen']);
+    expect(w.flags).toEqual(['choi_done', 'han_done', 'chae_done', 'broadcast_seen']); // 한유진 대화는 지하 이전 필수 (12.3.3)
     expect(w.evidence ?? []).toEqual([]);
   });
   it('E05 는 3층에서 얻고, P02 를 이미 풀었으면 얻는 즉시 검증', () => {

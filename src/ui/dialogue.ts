@@ -10,6 +10,10 @@ type Item = { label: string; run: () => void; disabled?: boolean };
 
 export function hasDialogue(id: string) { return !!dialogues[id]; }
 
+/** 대화가 끝난 뒤 이어지는 장면(Dialogue.then)을 처리하는 쪽 (탐색 장면이 등록한다) */
+let thenHandler: (then: string) => void = () => {};
+export const setThenHandler = (f: (then: string) => void) => { thenHandler = f; };
+
 export function openDialogue(s: GameState, dialogueId: string, onClose: (acquired: string[]) => void = () => {}) {
   const d: Dialogue = dialogues[dialogueId];
   const box = el('div', 'dlg'); box.id = 'dialogue';
@@ -23,7 +27,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   const got: string[] = [];
   let picker: { cursor: number; chosen: Set<string>; list: string[] } | null = null;
 
-  const close = () => { clearInterval(timer); popModal('dialogue'); box.remove(); onClose(got); };
+  const close = () => { clearInterval(timer); popModal('dialogue'); box.remove(); onClose(got); if (d.then) thenHandler(d.then); };
 
   function go(next: string) { nodeId = next; enter(); }
   function enter() {
@@ -77,7 +81,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
         }), `<button class="opt${picker.cursor === picker.list.length ? ' sel' : ''}" data-pi="${picker.list.length}">[제시하기] (${picker.chosen.size}개 선택)</button>`]
           .slice(Math.max(0, Math.min(picker.cursor - 2, picker.list.length + 1 - 5)), Math.max(0, Math.min(picker.cursor - 2, picker.list.length + 1 - 5)) + 5).join('');
     } else if (!typing) {
-      const single = items.length === 1;
+      const single = items.length === 1 && !availableChoices(s, node).length; // 선택지가 하나뿐이어도 문장은 보여 준다
       opts = single ? `<div class="cont">▼ Enter</div>` :
         items.map((it, i) => `<button class="opt${i === sel ? ' sel' : ''}${it.disabled ? ' dis' : ''}" data-i="${i}">${i + 1}. ${esc(it.label)}</button>`).join('');
     }

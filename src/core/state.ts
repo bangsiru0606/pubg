@@ -6,7 +6,7 @@ export function createGameState(): GameState {
     currentSceneId: 'office', evidenceIds: [], verifiedEvidenceIds: [], solvedPuzzleIds: [], flags: [],
     selectedHypothesisByClaim: {}, submittedEvidenceByClaim: {}, submittedRebuttalByClaim: {},
     hintCountByPuzzle: {}, wrongCountByPuzzle: {}, evidenceSecured: false, reportTarget: null,
-    visitedAreaIds: [], statements: {}, presentedKeys: [],
+    visitedAreaIds: [], playerX: 180, retryClaimIds: [], statements: {}, presentedKeys: [],
   };
 }
 

@@ -1,5 +1,5 @@
 import { evidenceById } from './data';
-import { acquireEvidence, isBasementOpen, setFlag } from './state';
+import { acquireEvidence, chooseEvidencePreservation, isBasementOpen, setFlag } from './state';
 import type { Dialogue, DialogueNode, Dialogues, GameState } from './types';
 
 export const MSG_NO_CONFLICT = '이 자료는 지금 발언과 직접 충돌하지 않는다.';
@@ -25,6 +25,7 @@ export function enterNode(s: GameState, node: DialogueNode): { acquired: string[
     if (st) { st.stage = 'revised'; st.revisedText = node.text; }
   }
   for (const id of node.onEnter?.contradict ?? []) { const st = s.statements[id]; if (st?.stage === 'unconfirmed') st.stage = 'contradiction'; }
+  if (node.onEnter?.preserve) chooseEvidencePreservation(s, node.onEnter.preserve === 'secure');
   for (const id of node.onEnter?.acquire ?? []) if (acquireEvidence(s, id)) acquired.push(id);
   for (const f of node.onEnter?.setFlags ?? []) setFlag(s, f);
   return { acquired };
@@ -61,4 +62,4 @@ export function condMet(s: GameState, cond: string): boolean {
 export const startNodeOf = (s: GameState, d: Dialogue) => d.restart?.find((r) => condMet(s, r.when))?.node ?? d.start;
 
 export const availableChoices = (s: GameState, node: DialogueNode) =>
-  (node.choices ?? []).filter((c) => !c.requiresFlag || s.flags.includes(c.requiresFlag));
+  (node.choices ?? []).filter((c) => (!c.requiresFlag || s.flags.includes(c.requiresFlag)) && (c.requiresFlags ?? []).every((f) => s.flags.includes(f)) && !(c.hideIfFlag && s.flags.includes(c.hideIfFlag)));

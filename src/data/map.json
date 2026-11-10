@@ -535,6 +535,30 @@
      "x": 945,
      "name": "운송표",
      "evidenceId": "E15_transport_manifest"
+    },
+    {
+     "type": "npc",
+     "id": "haneul_b1",
+     "x": 150,
+     "name": "정하늘",
+     "dialogueId": "jeong_haneul_final",
+     "showWhen": "diary_closed",
+     "hideWhen": "haneul_confessed",
+     "autoWhen": [
+      "diary_closed"
+     ]
+    },
+    {
+     "type": "npc",
+     "id": "scene6",
+     "x": 0,
+     "name": "",
+     "dialogueId": "eunho_message",
+     "silent": true,
+     "autoWhen": [
+      "haneul_confessed",
+      "flag_claim_d_open"
+     ]
     }
    ]
   }

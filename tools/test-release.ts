@@ -21,12 +21,17 @@ page.on('pageerror', (e) => errors.push(String(e)));
 page.on('requestfailed', (r) => errors.push(`requestfailed ${r.url()}`));
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__game?.scene.getScene('Explore')?.player, null, { timeout: 10000 });
+await page.waitForSelector('#title'); // 타이틀 → 새 게임
+await page.keyboard.press('Enter');
+await page.waitForSelector('#title', { state: 'detached' });
 const px = () => page.evaluate(() => (window as any).__game.scene.getScene('Explore').player.x as number);
 const x0 = await px();
 await page.keyboard.down('ArrowRight');
 await page.waitForTimeout(600);
 await page.keyboard.up('ArrowRight');
 const x1 = await px();
+// 제출 빌드에서도 타이틀·최종 보고서·엔딩 UI 코드가 들어 있고 시험 훅은 없어야 한다
+const hook = await page.evaluate(() => typeof (window as any).__cw);
 const canvas = await page.evaluate(() => { const c = document.querySelector('canvas'); return c ? [c.width, c.height] : null; });
 await browser.close();
 
@@ -34,6 +39,7 @@ const fail: string[] = [];
 if (leaked.length) fail.push(`테스트 전용 내용이 제출 빌드에 포함됨: ${leaked.join(', ')}`);
 if (errors.length) fail.push(`콘솔 오류 ${errors.length}건: ${errors.join(' | ')}`);
 if (!canvas || canvas[0] !== 480 || canvas[1] !== 270) fail.push(`캔버스 이상: ${canvas}`);
+if (hook !== 'undefined') fail.push('시험 훅(__cw) 이 제출 빌드에 노출됨');
 if (!(x1 > x0)) fail.push(`이동 안 됨: ${x0} → ${x1}`);
 if (fail.length) { console.error('FAIL\n' + fail.join('\n')); process.exit(1); }
 console.log(`OK file:// 콘솔 오류 0, 캔버스 ${canvas}, x ${x0.toFixed(1)} → ${x1.toFixed(1)}`);

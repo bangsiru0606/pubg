@@ -37,6 +37,7 @@ const noIds = async (where: string) => {
   const m = t.match(ID_RE);
   check(!m, `${where}: 내부 ID 노출 없음${m ? ' → ' + m[0] : ''}`);
 };
+const startNew = async () => { await page.waitForSelector('#title'); await press('Enter'); await page.waitForSelector('#title', { state: 'detached' }); }; // 타이틀: 새 게임
 async function enterArea(x: number, expect: string) {
   await teleport(x); await wait(60);
   await press('Enter');
@@ -45,6 +46,7 @@ async function enterArea(x: number, expect: string) {
 
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
+await startNew();
 check((await area()) === 'office', '시작 구역은 사무실');
 
 // =====================================================================
@@ -142,6 +144,7 @@ check((await page.locator('#notebook').count()) === 0, 'Tab 으로 수첩 닫기
 // =====================================================================
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
+await startNew();
 check((await area()) === 'office', '[이야기] 새 게임은 사무실에서 시작');
 const mash = async () => { for (let i = 0; i < 80; i++) { if (!(await page.locator('#dialogue').count())) return; await press('Enter'); await wait(30); } };
 const docText = async () => (await page.locator('#viewer').innerText()).replace(/\s+/g, ' ');
@@ -255,7 +258,7 @@ await page.mouse.move(zn!.x + zn!.width / 2, zn!.y + zn!.height / 2, { steps: 8 
 await page.mouse.up();
 await wait(100);
 check((await page.locator('#puzzle [data-zone="desk_chair"] [data-token="finalPosition"]').count()) === 1, '[P01] 마우스 드래그로 토큰 배치');
-await click('#puzzle [data-chip="body"]'); await click('#puzzle [data-chip="chair"]');
+await click('#puzzle [data-chip="movedObjects|body"]'); await click('#puzzle [data-chip="movedObjects|chair"]');
 await click('#puzzle [data-submit]');
 await wait(60);
 const warn = await page.locator('#puzzle .warn').innerText();
@@ -310,7 +313,7 @@ const until = async (text: string) => {
   }
   return false;
 };
-const focusOn = async (sel: string) => { for (let i = 0; i < 16 && (await page.locator(sel).count()) === 0; i++) await press('ArrowRight'); };
+const focusOn = async (sel: string) => { for (let i = 0; i < 40 && (await page.locator(sel).count()) === 0; i++) await press('ArrowRight'); };
 const focusOnRow = async (name: string) => {
   for (let i = 0; i < 16; i++) {
     if ((await page.locator('#notebook .row.sel').first().innerText()).includes(name)) return;
@@ -363,6 +366,11 @@ await talkTo(370);
 await until('…더 말하면 저도 없어져요.');
 await press('Enter'); await wait(80);
 check((await page.locator('#dialogue').count()) === 0, '[씬 3] 반복 추궁해도 대화가 늘어나지 않는다');
+await exitRoom('floor2');
+
+await enterRoom(540, 'room_han');
+await talkTo(150); await mash();
+check(await cw<boolean>("cw.state.statements.han_s_bracelet?.stage === 'unconfirmed' && cw.state.flags.includes('han_done')"), '[씬 3] 한유진: 진술 등록(단서 ID 없음), P02 열림 조건에 포함');
 await exitRoom('floor2');
 
 // 방송표 → P02
@@ -429,14 +437,14 @@ check(await cw<boolean>("cw.state.evidenceIds.includes('E07_report_revision') &&
 await page.waitForSelector('#puzzle', { timeout: 3000 });
 check(true, '[P03] E03 + E07 이 있으면 자동 개방');
 await noIds('[P03] 초기 화면');
-await click('#puzzle [data-chip="position_changed"]'); await click('#puzzle [data-chip="laceration_deleted"]'); await click('#puzzle [data-chip="spelling_fix"]');
+await click('#puzzle [data-chip="marked|position_changed"]'); await click('#puzzle [data-chip="marked|laceration_deleted"]'); await click('#puzzle [data-chip="marked|spelling_fix"]');
 await click('#puzzle [data-submit]'); await wait(60);
 check((await page.locator('#puzzle .warn').count()) === 1 && !(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P03_revision_diff')")), '[P03] 맞춤법 항목을 고르면 정답으로 인정하지 않고 충돌 표시');
 await noIds('[P03] 오답 화면');
 await shot('stage5_p03');
 await page.mouse.move(5, 5);
-await focusOn('#puzzle .chip.foc[data-chip="spelling_fix"]'); await press('Enter'); // 해제
-await focusOn('#puzzle .chip.foc[data-chip="breathing_changed"]'); await press('Enter');
+await focusOn('#puzzle .chip.foc[data-chip="marked|spelling_fix"]'); await press('Enter'); // 해제
+await focusOn('#puzzle .chip.foc[data-chip="marked|breathing_changed"]'); await press('Enter');
 await focusOn('#puzzle .submit.foc'); await press('Enter'); await wait(100);
 check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P03_revision_diff') && cw.state.verifiedEvidenceIds.includes('E07_report_revision')"), '[P03] 정답(키보드) → E07 검증');
 await press('Enter'); await page.waitForSelector('#dialogue'); await mash();
@@ -513,6 +521,203 @@ await teleport(0); await wait(60); await press('Enter');
 await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor1' && !(window as any).__cw.scene.busy);
 await teleport(1440); await wait(60);
 check((await promptText()).includes('지하로 내려가기'), '[진행] 1층 지하 계단 프롬프트가 활성화된다');
+
+
+// =====================================================================
+// 씬 5~7: 지하 → P05 → 정하늘 최종 대면 → 증거 보존 선택 → 최종 보고서 → 엔딩 A
+// =====================================================================
+await press('Enter');
+await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'b1' && !(window as any).__cw.scene.busy);
+check(true, '[씬 5] 지하 계단으로 내려간다');
+await teleport(270); await wait(60); await press('Enter');
+await page.waitForSelector('#viewer');
+check((await docText()).includes('P-271 / B형 / 27세') && (await docText()).includes('상태: 처리 완료'), '[씬 5] 장부 원문(E12)');
+await noIds('[씬 5] 장부');
+await closeViewer();
+await teleport(405); await wait(60); await press('Enter');
+await page.waitForSelector('#viewer');
+check((await docText()).includes('EW-0827 / P-271'), '[씬 5] 코드 연결표(E13): EW-0827 ↔ P-271');
+await closeViewer();
+await teleport(945); await wait(60); await press('Enter');
+await page.waitForSelector('#viewer');
+check((await docText()).includes('생체 보존물') && (await docText()).includes('(공란)'), '[씬 5] 운송표(E15): 수용 병원 공란, 생체 보존물');
+await closeViewer();
+check((await page.locator('#puzzle').count()) === 0, '[씬 5] 보관함을 보기 전에는 P05 가 열리지 않는다');
+await teleport(810); await wait(60); await press('Enter');
+await page.waitForSelector('#viewer');
+check((await docText()).includes('노란 실팔찌') && (await docText()).includes('언니 잘못이 아니라고'), '[씬 5] 유품 보관함(E14): 노란 실팔찌, 일기 마지막 장');
+await closeViewer();
+await page.waitForSelector('#puzzle', { timeout: 3000 });
+check(true, '[P05] 장부·연결표·보관함·운송표가 모이면 자동 개방');
+check((await page.locator('#puzzle').innerText()).includes('한유진의 진술') && (await page.locator('#puzzle').innerText()).includes('노란 실팔찌'), '[P05] 한유진 진술(ID)로 유품과 대조');
+await noIds('[P05] 초기 화면');
+await shot('stage6_p05_start');
+
+// P05 오답: 후보 표에서 한유진을 고른다 (혈액형은 같다)
+for (const k of ['ageMatch|eunji', 'ageMatch|unknown', 'bloodMatch|eunji', 'bloodMatch|yujin', 'admissionMatch|eunji', 'belongingMatch|eunji',
+  'linkedSources|E12_ledger', 'linkedSources|E13_identity_map', 'linkedSources|E14_belongings_diary', 'linkedSources|han_s_bracelet']) await click(`#puzzle [data-chip="${k}"]`);
+const tk5 = await page.locator('#puzzle [data-token="identity"]').first().boundingBox();
+const row5 = await page.locator('#puzzle tr[data-zone="yujin"]').first().boundingBox();
+await page.mouse.move(tk5!.x + tk5!.width / 2, tk5!.y + tk5!.height / 2); await page.mouse.down();
+await page.mouse.move(row5!.x + 30, row5!.y + row5!.height / 2, { steps: 8 }); await page.mouse.up(); await wait(100);
+await click('#puzzle [data-submit]'); await wait(60);
+check((await page.locator('#puzzle .warn').innerText()).includes('혈액형은 일치하지만'), '[P05] 오답: 충돌 조건만 표시 (혈액형은 일치하지만 입원번호가 다릅니다)');
+check(!(await page.locator('#puzzle .warn').innerText()).includes('박은지'), '[P05] 오답 표시에 정답 이름이 없다');
+await noIds('[P05] 오답 화면');
+await shot('stage6_p05');
+// 일기장만으로는 확정할 수 없다: 연결 자료를 일기장(보관함)만 남기면 오답
+await click('#puzzle [data-chip="linkedSources|E12_ledger"]'); await click('#puzzle [data-chip="linkedSources|E13_identity_map"]'); await click('#puzzle [data-chip="linkedSources|han_s_bracelet"]');
+await page.mouse.move(5, 5);
+for (let i = 0; i < 40 && (await page.locator('#puzzle .tk.foc[data-token="identity"]').count()) === 0; i++) await press('ArrowLeft');
+await press('Enter'); await press('ArrowLeft'); await press('Enter'); // 후보 행 → 박은지
+await focusOn('#puzzle .submit.foc'); await press('Enter'); await wait(100);
+check(await cw<boolean>("!cw.state.solvedPuzzleIds.includes('P05_patient_code')"), '[P05] 정답 후보라도 일기장(유품)만 연결하면 확정되지 않는다');
+await click('#puzzle [data-chip="linkedSources|E12_ledger"]'); await click('#puzzle [data-chip="linkedSources|E13_identity_map"]'); await click('#puzzle [data-chip="linkedSources|han_s_bracelet"]');
+await page.mouse.move(5, 5);
+await focusOn('#puzzle .submit.foc'); await press('Enter'); await wait(100);
+check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P05_patient_code') && cw.state.verifiedEvidenceIds.includes('E12_ledger') && cw.state.verifiedEvidenceIds.includes('E15_transport_manifest') && cw.state.flags.includes('flag_claim_d_open')"), '[P05] 해결 → E12~E15 검증, 질문 D 개방');
+await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); await press('Enter'); await press('Enter'); // P05 결과 독백
+
+// 정하늘 최종 대면 (일기장을 닫은 뒤 계단 쪽에서 등장, 2층 재방문 없음)
+await page.waitForSelector('#dialogue', { timeout: 3000 });
+check((await area()) === 'b1', '[씬 5] 정하늘은 지하에서 나타난다 (2층 재방문 없음)');
+await until('명단에서 제 이름도 봤어요');
+check((await page.locator('#dialogue .opt').count()) === 3, '[씬 5] 정하늘 최종 대면: 선택지 3개');
+await noIds('[씬 5] 정하늘 대면');
+await shot('stage6_haneul');
+const optCount = async (n: number) => { for (let i = 0; i < 25 && (await page.locator('#dialogue .opt').count()) !== n; i++) { await press('Enter'); await wait(40); } };
+await press('1'); await optCount(2);
+check((await page.locator('#dialogue .opt').count()) === 2, '[씬 5] 들은 선택지는 사라진다');
+await press('1'); await optCount(1); await press('1'); await optCount(1);
+check((await page.locator('#dialogue .opt').innerText()).includes('계속'), '[씬 5] 세 선택지를 모두 듣고 나서 이어진다');
+await press('Enter');
+check(await until('당신이 민 힘으로 원장은 죽었습니다.'), '[씬 5] “당신이 민 힘으로 원장은 죽었습니다.”');
+check(await until('제 손이 없어지는 건 아니니까.'), '[씬 5] 정하늘은 정당방위로 면죄를 주장하지 않는다');
+check(await until('특별 치료 대상자 이송까지 15분 남았습니다.'), '[씬 5] 방송: 이송까지 15분');
+
+// 씬 6: 증거 보존 선택
+await press('Enter'); // 대화 끝 → 씬 6
+await page.waitForSelector('#dialogue'); await wait(60);
+check(await until('뭐든 찾았으면 먼저 보내 주세요.'), '[씬 6] 박은호 메시지');
+await press('Enter');
+check(await until('이 선택은 되돌릴 수 없다.'), '[씬 6] 선택 전에 “원본 자료가 회수될 수 있고, 되돌릴 수 없다”를 명확히 경고');
+check((await page.locator('#dialogue .opt').count()) === 2 && (await page.locator('#dialogue').innerText()).includes('원본 자료가 회수될 수 있다'), '[씬 6] 선택 B 항목에도 회수 경고');
+await noIds('[씬 6] 선택');
+await shot('stage6_choice');
+await press('1'); // 선택 A
+await wait(60); await press('Enter');
+check(await cw<boolean>("cw.state.evidenceSecured && cw.state.evidenceIds.includes('E16_secure_receipt')"), '[씬 6] 선택 A: E16 + 증거 보존');
+await press('Enter'); // 대화 끝 → 씬 7
+
+// 씬 7: 최종 보고서
+await page.waitForSelector('#report', { timeout: 3000 });
+check(true, '[씬 7] 최종 보고서 시작');
+// 시험 편의: 결론은 시험 훅으로 저장한다 (수첩에서 키보드로 저장하는 경로는 위에서 질문 A 로 이미 검증)
+await cw(`(() => { const s = cw.state;
+  const ok = (id, sup, reb) => cw.saveConclusion(s, id, cw.claims.find((c) => c.claimId === id).hypotheses.find((h) => h.isCorrect).id, sup, reb);
+  ok('claim_a', ['E02_altar_blood', 'E03_preliminary_exam'], ['E07_report_revision']);
+  ok('claim_b', ['E04_wristband_fragment', 'E08_miran_revised'], ['E05_access_log']);
+  ok('claim_c', ['E07_report_revision', 'E08_miran_revised'], ['E06_torn_sleeve']);
+  ok('claim_d', ['E12_ledger', 'E14_belongings_diary'], ['E15_transport_manifest']); })()`);
+await press('ArrowUp'); await press('ArrowDown'); // 다시 그리기
+await press('ArrowDown', 3); await press('ArrowDown'); // 보고 대상 행
+await press('ArrowRight'); await press('ArrowRight'); // 박은호만 → 외부 수사기관 포함
+await press('ArrowDown'); await press('Enter'); // 작성 내용 확인
+await page.waitForFunction(() => document.querySelector('#report .sum'));
+const sum = await page.locator('#report').innerText();
+check(sum.includes('보고 대상: 외부 수사기관에도 보고한다') && sum.includes('기도대 충돌로 인한 후두부 손상'), '[씬 7] 제출 전 요약: 고른 결론과 보고 대상을 문장으로 다시 보여 준다');
+check(!/정답|오답|해결|엔딩|맞았|틀렸/.test(sum), '[씬 7] 요약은 정답·해결 여부·예상 엔딩을 암시하지 않는다');
+await noIds('[씬 7] 요약');
+await shot('stage6_report');
+await press('Enter'); // 제출한다
+
+// 엔딩 A
+await page.waitForSelector('#ending');
+check((await page.locator('#ending').innerText()).includes('은지를 찾은 건 아니네요.'), '[엔딩 A] 마지막 대본: 박은호·한지수 대화');
+await press('Enter'); await press('Enter'); await press('Enter');
+const card = await page.locator('#ending').innerText();
+check(card.includes('기록된 고해') && card.includes('고해는 죄를 없애지 않는다. 다만 누가 무엇을 했는지 기록하게 한다.'), '[엔딩 A] 엔딩 카드');
+check(card.includes('정하늘') && card.includes('조직') && card.includes('박은호'), '[엔딩 A] 결과 세 줄(정하늘/조직/박은호)');
+await noIds('[엔딩 A] 카드');
+await shot('stage6_ending_a');
+await press('Enter');
+const gr = await page.locator('#ending').innerText();
+check(gr.includes('추리 등급 S') && gr.includes('반박 근거 적중') && gr.includes('힌트가 열린 퍼즐'), '[엔딩 A] 추리 등급: 질문별 해결·반박 적중·힌트 횟수');
+check(!gr.includes('보고서 다시 쓰기'), '[엔딩 A] 다른 엔딩은 “처음부터”와 “타이틀로”만');
+await press('ArrowDown'); await press('Enter');
+await page.waitForSelector('#title');
+check((await page.locator('#title').innerText()).includes('이어하기'), '[타이틀] 엔딩 후 타이틀로 돌아오고, 저장이 있으면 이어하기가 보인다');
+check((await page.locator('#title').innerText()).includes('조작법'), '[타이틀] 새 게임 / 이어하기 / 조작법');
+await press('ArrowDown', 2); await press('Enter');
+check((await page.locator('#title .ctrl').innerText()).includes('Tab'), '[타이틀] 조작법 화면');
+
+// =====================================================================
+// 분기 시험 (씬 5 까지 건너뛴 상태에서 시작): 선택 B → 엔딩 C
+// =====================================================================
+const jump = async () => {
+  await page.goto(url);
+  await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
+  await startNew();
+  await cw('cw.ff(true)');
+  await page.waitForSelector('#dialogue', { timeout: 5000 });
+};
+const finishReport = async (opts: { good: string[]; target: 'external' | 'eunho_only' }) => {
+  await page.waitForSelector('#report', { timeout: 5000 });
+  await cw(`(() => { const s = cw.state; const G = { claim_a: [['E02_altar_blood', 'E03_preliminary_exam'], ['E07_report_revision']], claim_b: [['E04_wristband_fragment', 'E08_miran_revised'], ['E05_access_log']],
+    claim_c: [['E07_report_revision', 'E08_miran_revised'], ['E06_torn_sleeve']], claim_d: [['E12_ledger', 'E14_belongings_diary'], ['E15_transport_manifest']] };
+    for (const [id, [sup, reb]] of Object.entries(G)) { const c = cw.claims.find((x) => x.claimId === id);
+      if (${JSON.stringify(opts.good)}.includes(id)) cw.saveConclusion(s, id, c.hypotheses.find((h) => h.isCorrect).id, sup, reb);
+      else cw.saveConclusion(s, id, c.hypotheses.find((h) => !h.isCorrect).id, [], ['E02_altar_blood']); } })()`);
+  await press('ArrowUp'); await press('ArrowDown');
+  await press('ArrowDown', 3); await press('ArrowDown');
+  await press('ArrowRight'); if (opts.target === 'external') await press('ArrowRight');
+  await press('ArrowDown'); await press('Enter');
+  await page.waitForFunction(() => document.querySelector('#report .sum'));
+  await press('Enter');
+  await page.waitForSelector('#ending');
+};
+await jump();
+await until('뭐든 찾았으면 먼저 보내 주세요.'); await press('Enter');
+await until('이 선택은 되돌릴 수 없다.');
+await press('2'); // [B] 즉시 대면
+check(await until('정말 지금 대면할까.'), '[씬 6] 선택 B: 한 번 더 되돌릴 수 없음을 확인');
+await press('2'); // 다시 생각한다
+check(await until('이 선택은 되돌릴 수 없다.'), '[씬 6] “다시 생각한다”로 돌아갈 수 있다 (확정 전)');
+await press('2'); await until('정말 지금 대면할까.'); await press('1'); // 대면한다
+check(await until('P-271은 박은지였습니다.'), '[씬 6] 선택 B 대면 대본');
+check(await until('불법 침입으로 얻은 자료는 증거가 될 수 없습니다.'), '[씬 6] 백선우 대사');
+check(await until('그리고 그 자료가 계속 그 자리에 있을 거라고 생각하셨나요?'), '[씬 6] 이혜정 대사');
+check(await until('병원 직원이 지하 자료를 회수해 갔다.'), '[씬 6] 대면 중 병원 직원이 지하 자료를 회수');
+check(await cw<boolean>('!cw.state.evidenceSecured && !cw.state.evidenceIds.includes("E16_secure_receipt")'), '[씬 6] 선택 B: 증거 보존 플래그 없음');
+await press('Enter');
+await finishReport({ good: ['claim_a', 'claim_b', 'claim_c', 'claim_d'], target: 'external' });
+check((await page.locator('#ending').innerText()).includes('빈 병원'), '[엔딩 C] 선택 B 이후에도 보고서를 제출할 수 있고 엔딩 C 가 된다');
+await shot('stage6_ending_c');
+await press('Enter');
+check(!(await page.locator('#ending').innerText()).includes('보고서 다시 쓰기'), '[엔딩 C] 처음부터 / 타이틀로만');
+
+// 엔딩 D → 보고서 다시 쓰기 → 엔딩 A
+await jump();
+await until('뭐든 찾았으면 먼저 보내 주세요.'); await press('Enter');
+await until('이 선택은 되돌릴 수 없다.');
+await press('1'); await wait(60); await press('Enter'); await press('Enter');
+await finishReport({ good: ['claim_c', 'claim_d'], target: 'external' }); // 질문 A·B 오답
+check((await page.locator('#ending').innerText()).includes('자연사'), '[엔딩 D] 질문 2개 오답');
+await press('Enter');
+check((await page.locator('#ending').innerText()).includes('보고서 다시 쓰기'), '[엔딩 D] 재도전 선택지');
+await shot('stage6_ending_d');
+await press('Enter'); // 보고서 다시 쓰기
+await page.waitForSelector('#report', { timeout: 3000 });
+check(await cw<boolean>("cw.state.retryClaimIds.length === 2 && cw.state.evidenceSecured && !cw.state.selectedHypothesisByClaim.claim_a"), '[엔딩 D] 씬 7 시작 시점으로 돌아간다 (이전 제출 내용은 없고, 미해결 질문 2개가 기록됨)');
+await press('Tab'); await page.waitForSelector('#notebook');
+const firstRow = await page.locator('#notebook .nlist .row').first().innerText();
+check(firstRow.includes('미해결 질문 관련'), '[엔딩 D] 수첩 단서 목록에서 미해결 질문과 관련된 단서가 먼저 보인다');
+check(!/정답|오답|맞는|틀린/.test(await page.locator('#notebook').innerText()), '[엔딩 D] 어느 단서가 정답인지는 표시하지 않는다');
+await noIds('[엔딩 D 재도전] 수첩');
+await press('Tab');
+await finishReport({ good: ['claim_a', 'claim_b', 'claim_c', 'claim_d'], target: 'external' });
+check((await page.locator('#ending').innerText()).includes('기록된 고해') || (await page.locator('#ending').innerText()).includes('은지를 찾은 건 아니네요.'), '[엔딩 D → A] 다시 쓴 보고서로 엔딩 A');
+
 
 await browser.close();
 check(errors.length === 0, `콘솔 오류 0 ${errors.join(' | ')}`);

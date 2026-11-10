@@ -13,6 +13,8 @@ const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 await page.goto(pathToFileURL(join(dir, 'ConfessionWard_v1.0_web', 'index.html')).href);
 await page.waitForFunction(() => (window as any).__game?.scene.getScene('Explore')?.player);
+await page.waitForSelector('#title'); await page.keyboard.press('Enter'); // 타이틀 → 새 게임
+await page.waitForTimeout(200);
 const hold = async (key: string, ms: number) => { await page.keyboard.down(key); await page.waitForTimeout(ms); };
 
 if (process.argv[2] === 'fix') {

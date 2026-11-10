@@ -1,5 +1,5 @@
 // 대화 오버레이 (바닥선 아래 112px). 타이핑 연출(Enter/클릭으로 즉시 완성), 선택지, 단서 제시(9.2), 진술 3단계(9.3).
-import { availableChoices, characterName, enterNode, evidenceById, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
+import { availableChoices, characterName, enterNode, shownEvidence, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
 import { dialogues } from '../explore/content';
 import { el, esc, root, showToast } from './hud';
 import { popModal, pushModal } from './input';
@@ -30,7 +30,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
     node = getNode(dialogues, dialogueId, nodeId);
     const { acquired } = enterNode(s, node);
     got.push(...acquired);
-    for (const id of acquired) showToast(`단서 획득: ${evidenceById.get(id)!.title}`);
+    for (const id of acquired) showToast(`단서 획득: ${shownEvidence(s, id)!.title}`);
     msg = ''; picker = null; shown = 0; typing = true; items = []; sel = 0;
     clearInterval(timer);
     timer = window.setInterval(() => { shown++; if (shown >= node.text.length) finishTyping(); else render(); }, CHAR_MS);
@@ -70,7 +70,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
     if (picker) {
       opts = '<div class="slotlbl">제시할 자료 — ↑↓ 이동 · Space 선택 · Enter 제시 · Esc 취소</div>' +
         picker.list.map((id, i) => {
-          const e = evidenceById.get(id)!;
+          const e = shownEvidence(s, id)!;
           return `<button class="opt${i === picker!.cursor ? ' sel' : ''}" data-pi="${i}"><span class="box">${picker!.chosen.has(id) ? '☑' : '☐'}</span><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${esc(e.title)}</button>`;
         }).join('');
     } else if (!typing) {

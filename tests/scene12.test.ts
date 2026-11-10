@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import real from '../src/data/dialogue.json';
-import { acquireEvidence, createGameState, enterNode, getNode, hasFlag, puzzleById, submitPuzzle, evidenceById, type Dialogues } from '../src/core';
+import { acquireEvidence, createGameState, enterNode, getNode, hasFlag, puzzleById, submitPuzzle, shownEvidence, type Dialogues } from '../src/core';
 import { areas, isAvailable, nearest } from '../src/explore/interaction';
 
 const D = real.dialogues as unknown as Dialogues;
@@ -55,9 +55,14 @@ describe('씬 1·2 진행 조건', () => {
     expect(hasFlag(s, 'flag_scene_rebuilt')).toBe(true);
   });
   it('E04 는 이름을 드러내지 않는다 (정하늘 노출 금지)', () => {
-    const e = evidenceById.get('E04_wristband_fragment')!;
+    const s = createGameState();
+    const e = shownEvidence(s, 'E04_wristband_fragment')!;
     expect(e.sourceCharacterId).toBe('');
     expect(JSON.stringify(e)).not.toContain('정하늘');
+    s.flags.push('haneul_met'); // 정하늘 1차 대면 후
+    const r = shownEvidence(s, 'E04_wristband_fragment')!;
+    expect(r.title).toBe('정하늘 손목띠 조각');
+    expect(r.sourceCharacterId).toBe('jeong_haneul');
   });
 });
 

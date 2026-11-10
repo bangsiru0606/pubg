@@ -1,6 +1,6 @@
 // 퍼즐 화면 (공통 틀 + 배치형 SpatialPlacement). 판정은 src/core 의 submitPuzzle 만 쓴다.
 // 마우스: 토큰을 평면도 위로 드래그(또는 토큰 클릭 → 위치 클릭). 키보드: ←→ 토큰 선택 → Enter 로 잡기 → ←→ 위치 → Enter 로 놓기.
-import { evidenceById, hintFor, puzzleById, submitPuzzle, type GameState, type PuzzleAnswer } from '../core';
+import { shownEvidence, hintFor, puzzleById, submitPuzzle, type GameState, type PuzzleAnswer } from '../core';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
 import { openViewer } from './viewer';
@@ -63,7 +63,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     const chips = markTask.options.filter((o) => !isRemoved(markTask.slot, o.id)).map((o) =>
       `<button class="chip${ans[markTask.slot].includes(o.id) ? ' on' : ''}${isFocus('chip', o.id) ? ' foc' : ''}" data-chip="${o.id}">${ans[markTask.slot].includes(o.id) ? '☑' : '☐'} ${esc(o.label)}</button>`).join('');
     const srcs = p.sourceEvidenceIds.filter((id) => s.evidenceIds.includes(id)).map((id) =>
-      `<button class="src${highlight.has(id) ? ' hl' : ''}${isFocus('src', id) ? ' foc' : ''}" data-src="${id}">${esc(evidenceById.get(id)!.title)}</button>`).join('');
+      `<button class="src${highlight.has(id) ? ' hl' : ''}${isFocus('src', id) ? ' foc' : ''}" data-src="${id}">${esc(shownEvidence(s, id)!.title)}</button>`).join('');
     const hintTxt = hintLevel ? `<div class="hint-t">힌트 ${hintLevel}단계: ${esc(p.hintTexts[hintLevel - 1])}</div>` : '';
     const body = solved
       ? '<div class="ok">원장실 평면도가 맞춰졌다. (Enter: 닫기)</div>'

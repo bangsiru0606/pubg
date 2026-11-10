@@ -1,5 +1,5 @@
 import { evidenceById, puzzles } from './data';
-import type { GameState } from './types';
+import type { Evidence, GameState } from './types';
 
 export function createGameState(): GameState {
   return {
@@ -26,6 +26,14 @@ export function acquireEvidence(s: GameState, id: string): boolean {
   const v = verifierOf(id);
   if (!v || s.solvedPuzzleIds.includes(v.id)) s.verifiedEvidenceIds.push(id);
   return true;
+}
+
+/** 현재 플래그에 맞게 표시 이름·설명을 갱신한 단서 (화면에는 항상 이것을 쓴다) */
+export function shownEvidence(s: GameState, id: string): Evidence | undefined {
+  const e = evidenceById.get(id);
+  if (!e?.reveal || !s.flags.includes(e.reveal.flag)) return e;
+  const { flag: _f, ...r } = e.reveal;
+  return { ...e, ...r };
 }
 
 export const isVerified = (s: GameState, id: string) => s.verifiedEvidenceIds.includes(id);

@@ -1,11 +1,11 @@
 // 단서 원문 보기 (ClueDetailView 대응). 수첩의 "원문 다시 열기"와 단서 획득 시 사용.
-import { evidenceById, isVerified, type GameState } from '../core';
+import { shownEvidence, isVerified, type GameState } from '../core';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
 import { TYPE_LABEL, areaName } from './labels';
 
 export function openViewer(s: GameState, evidenceId: string, onClose: () => void = () => {}) {
-  const e = evidenceById.get(evidenceId)!;
+  const e = shownEvidence(s, evidenceId)!;
   const box = el('div', 'modal viewer'); box.id = 'viewer';
   const ver = isVerified(s, evidenceId) ? '<span class="ver">검증됨</span>' : '<span class="unver">미검증</span>';
   const bg = e.illust ? `<img class="docbg" src="assets/illust/${e.illust}.png" alt="">` : '';

@@ -4,7 +4,8 @@ export interface Evidence {
   id: string; title: string; description: string; sourceType: SourceType;
   acquiredSceneId: string; sourceCharacterId: string; timestamp: string;
   body?: string[];   // 원문(문서 전문). HTML 로 표시한다
-  illust?: string;   // 원문 보기 배경 일러스트 (public/assets/illust/<이름>.png)
+  illust?: string;
+  reveal?: { flag: string; title?: string; description?: string; sourceCharacterId?: string }; // 플래그가 서면 표시 이름·설명이 바뀐다   // 원문 보기 배경 일러스트 (public/assets/illust/<이름>.png)
 }
 export interface Hypothesis {
   id: string; label: string; isCorrect: boolean;

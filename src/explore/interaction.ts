@@ -1,5 +1,6 @@
 // 탐색 규칙(순수 TS, Phaser·DOM 없음): 구역 데이터, 가장 가까운 대상 1개, 잠금 조건, 자동 트리거.
 import map from '../data/map.json';
+import spec from '../../art/asset-spec.json';
 import { hasFlag, isBasementOpen, type GameState } from '../core';
 
 interface Gate { requires?: string; requiresEvidence?: string[]; hideWhen?: string }
@@ -11,7 +12,7 @@ export interface Prop { id: string; x: number; w: number; h: number; color: stri
 export interface AreaDef {
   name: string; theme: string; minX: number; maxX: number;
   objects?: { id: string; tex: string; x: number; bottom: number }[];
-  interactables: Interactable[]; props?: Prop[]; npcSprite?: Record<string, string>; flipNpc?: string[];
+  interactables: Interactable[]; props?: Prop[]; npcSprite?: Record<string, string>; npcFacing?: Record<string, 'left' | 'right'>;
 }
 
 export const GROUND_Y = map.groundY;
@@ -59,7 +60,16 @@ export function autoTriggered(areaId: string, area: AreaDef, x: number, s: GameS
 }
 
 /** 대화 시작 시 서는 위치: 상대와 최소 TALK_DISTANCE 를 두고, 플레이어가 있던 쪽(겹쳤으면 왼쪽)에 선다. 맵 끝이면 반대쪽. */
-export const TALK_DISTANCE = 28;
+export const TALK_DISTANCE = 56; // 캐릭터 폭 53px 이므로 중심 간격 56px
+const facingOf = Object.fromEntries((spec.sequences as { id: string; facing: 'left' | 'right' }[]).map((q) => [q.id, q.facing]));
+/** 원본 그림이 바라보는 방향(asset-spec facing)을 고려해, 원하는 방향을 보게 하는 flipX 값. 플레이어·NPC 모두 이 함수만 쓴다. */
+export function flipFor(spriteId: string, wantLeft: boolean): boolean {
+  const f = facingOf[spriteId];
+  if (!f) throw new Error(`asset-spec 에 facing 이 없는 스프라이트: ${spriteId}`);
+  return wantLeft ? f === 'right' : f === 'left';
+}
+/** flipX 값으로 실제 바라보는 방향 계산 (테스트·검증용) */
+export const facesLeft = (spriteId: string, flipX: boolean) => (facingOf[spriteId] === 'left') !== flipX;
 export function talkStand(playerX: number, npcX: number, minX: number, maxX: number): { x: number; playerFacesLeft: boolean } {
   let side = playerX > npcX ? 1 : -1;
   if (npcX + side * TALK_DISTANCE < minX || npcX + side * TALK_DISTANCE > maxX) side = -side;

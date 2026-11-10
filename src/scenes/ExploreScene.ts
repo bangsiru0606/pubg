@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 import {
-  acquireEvidence, evidenceById, hasFlag, puzzles, setFlag, type GameState,
+  acquireEvidence, hasFlag, shownEvidence, puzzles, setFlag, type GameState,
 } from '../core';
 import {
-  GROUND_Y, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, fadeSeconds, isAvailable, isHidden, nearest, promptOf, themes,
+  GROUND_Y, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, promptOf, themes,
   triggerKey, talkStand, type Examine, type Interactable, type Npc, type Transition,
 } from '../explore/interaction';
 import { openCloseup } from '../ui/closeup';
@@ -49,7 +49,7 @@ export class ExploreScene extends Phaser.Scene {
 
   // ---------- 구역 구성 ----------
   private buildArea(id: string, spawnX: number) {
-    const flip = this.player?.flipX ?? false;
+    const flip = this.player?.flipX ?? flipFor('player', false); // 처음엔 오른쪽을 본다
     this.children.removeAll(true);
     this.areaId = id;
     this.npcSprites.clear();
@@ -92,7 +92,7 @@ export class ExploreScene extends Phaser.Scene {
       if (stairs) for (let i = 1; i < 5; i++) this.add.rectangle(it.x, g - i * 18, 56, 1, 0x000000, 0.35).setOrigin(0.5, 1).setDepth(4);
     } else if (it.type === 'npc') {
       const sprite = a.npcSprite?.[it.id];
-      if (sprite) this.npcSprites.set(it.id, this.add.sprite(it.x, g, `${sprite}_idle_0`).setOrigin(0.5, 1).setFlipX(!!a.flipNpc?.includes(it.id)).setDepth(5).play(`${sprite}_idle`));
+      if (sprite) this.npcSprites.set(it.id, this.add.sprite(it.x, g, `${sprite}_idle_0`).setOrigin(0.5, 1).setFlipX(flipFor(sprite, a.npcFacing?.[it.id] === 'left')).setDepth(5).play(`${sprite}_idle`));
       else { // 회색 실루엣 placeholder (몸 + 머리)
         this.add.rectangle(it.x, g, 30, 66, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
         this.add.rectangle(it.x, g - 66, 22, 24, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
@@ -109,7 +109,7 @@ export class ExploreScene extends Phaser.Scene {
     const speed = PLAYER_SPEED * (isHeld('Shift') ? RUN_MULTIPLIER : 1);
     const p = this.player;
     p.x = Phaser.Math.Clamp(p.x + dir * speed * (dt / 1000), this.minX, this.maxX);
-    if (dir !== 0) p.setFlipX(dir < 0);
+    if (dir !== 0) p.setFlipX(flipFor('player', dir < 0));
     const want = dir !== 0 ? 'player_walk' : 'player_idle';
     if (p.anims.currentAnim?.key !== want) p.play(want);
 
@@ -149,7 +149,7 @@ export class ExploreScene extends Phaser.Scene {
     const have = it.evidenceId ? this.state.evidenceIds.includes(it.evidenceId) : false;
     if (it.dialogueId && !have) { openDialogue(this.state, it.dialogueId, (got) => this.showDocs(got)); return; }
     if (it.evidenceId) {
-      if (acquireEvidence(this.state, it.evidenceId)) showToast(`단서 획득: ${evidenceById.get(it.evidenceId)!.title}`);
+      if (acquireEvidence(this.state, it.evidenceId)) showToast(`단서 획득: ${shownEvidence(this.state, it.evidenceId)!.title}`);
       this.showDocs([it.evidenceId]);
     }
   }
@@ -188,9 +188,10 @@ export class ExploreScene extends Phaser.Scene {
     setPrompt(null);
     if (!hasDialogue(npc.dialogueId)) { showToast(`${npc.name}: (대사는 아직 없다)`); return; }
     const st = talkStand(this.player.x, npc.x, this.minX, this.maxX); // 서로 마주 보고 최소 거리 확보
-    this.player.x = st.x; this.player.setFlipX(st.playerFacesLeft);
-    this.npcSprites.get(npc.id)?.setFlipX(!st.playerFacesLeft);
-    openDialogue(this.state, npc.dialogueId, (got) => this.showDocs(got.filter((id) => evidenceById.get(id)?.body)));
+    this.player.x = st.x; this.player.setFlipX(flipFor('player', st.playerFacesLeft)); // 서로 마주 본다
+    const ns = this.npcSprites.get(npc.id);
+    if (ns) ns.setFlipX(flipFor(areas[this.areaId].npcSprite![npc.id], !st.playerFacesLeft));
+    openDialogue(this.state, npc.dialogueId, (got) => this.showDocs(got.filter((id) => shownEvidence(this.state, id)?.body)));
   }
 
   /** 같은 자리에서 구역을 다시 그린다 (NPC 퇴장, 소품 등장 반영) */
@@ -205,6 +206,7 @@ export class ExploreScene extends Phaser.Scene {
     return fadeThrough(f.out, f.in, () => this.buildArea(to, spawnX)).then(() => { this.busy = false; });
   }
 
+  playerFacesLeft() { return facesLeft('player', this.player.flipX); }
   teleportX(x: number) { this.player.x = Phaser.Math.Clamp(x, this.minX, this.maxX); } // e2e 전용 훅에서만 사용
   hasFlag(f: string) { return hasFlag(this.state, f); }
 }

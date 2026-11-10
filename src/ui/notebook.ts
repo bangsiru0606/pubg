@@ -1,7 +1,7 @@
 // 사건 수첩 (Tab): 단서 / 진술 / 질문 A~D. 정답 여부는 어디에도 표시하지 않는다.
 // 키보드: ←→ 탭, ↑↓ 이동, Enter 실행, Esc/Tab 닫기. 마우스: 클릭.
 import {
-  CONFLICT_MESSAGE, characterName, MAX_SUPPORT_SLOTS, canSaveConclusion, claims, clearConclusion, evidenceById, findConflicts, hasFlag,
+  CONFLICT_MESSAGE, characterName, MAX_SUPPORT_SLOTS, canSaveConclusion, claims, clearConclusion, shownEvidence, findConflicts, hasFlag,
   isClaimOpen, isVerified, saveConclusion, type Claim, type GameState,
 } from '../core';
 import { el, esc, root } from './hud';
@@ -42,10 +42,10 @@ export function openNotebook(s: GameState, onClose: () => void) {
     const c = Math.min(cur(), ids.length - 1);
     const start = Math.max(0, Math.min(c - Math.floor(VISIBLE_ROWS / 2), ids.length - VISIBLE_ROWS));
     const rows = ids.slice(start, start + VISIBLE_ROWS).map((id, k) => {
-      const i = start + k, e = evidenceById.get(id)!;
+      const i = start + k, e = shownEvidence(s, id)!;
       return `<button class="row${i === c ? ' sel' : ''}" data-row="${i}"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${esc(e.title)}${isVerified(s, id) ? '' : ' <span class="unver">·미검증</span>'}</button>`;
     }).join('');
-    const e = evidenceById.get(ids[c])!;
+    const e = shownEvidence(s, ids[c])!;
     const ver = isVerified(s, e.id) ? '<span class="ver">검증됨</span>' : '<span class="unver">미검증 (퍼즐을 풀어야 근거로 제출할 수 있다)</span>';
     return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(e.title)}</h3>
       <div class="meta"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${ver}</div>
@@ -71,7 +71,7 @@ export function openNotebook(s: GameState, onClose: () => void) {
       const locked = !!h.requiresFlag && !hasFlag(s, h.requiresFlag);
       return row(`${dr.hyp === h.id ? '◉' : '○'} ${esc(locked ? '(아직 열리지 않은 가설)' : h.label)}`, locked);
     }).join('');
-    const slotName = (id?: string) => (id ? esc(evidenceById.get(id)!.title) : '<span class="slotlbl">(비어 있음)</span>');
+    const slotName = (id?: string) => (id ? esc(shownEvidence(s, id)!.title) : '<span class="slotlbl">(비어 있음)</span>');
     const slots = row(`지지 근거 1: ${slotName(dr.support[0])}`) + row(`지지 근거 2: ${slotName(dr.support[1])}`) + row(`반박 근거: ${slotName(dr.rebuttal[0])}`);
     const ok = canSaveConclusion(dr.hyp, dr.rebuttal);
     const buttons = row('[보류] 저장된 결론 지우기') + row('[결론 저장]', !ok);
@@ -87,14 +87,14 @@ export function openNotebook(s: GameState, onClose: () => void) {
     const list = pickerList(c);
     const rows = ['(비우기)', ...list.map((id) => id)].map((id, i) => {
       if (i === 0) return `<button class="row${picker!.cursor === 0 ? ' sel' : ''}" data-pk="0">(비우기)</button>`;
-      const e = evidenceById.get(id)!;
+      const e = shownEvidence(s, id)!;
       const why = pickBlock(id);
       return `<button class="row${picker!.cursor === i ? ' sel' : ''}${why ? ' dis' : ''}" data-pk="${i}"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${esc(e.title)}${used.has(id) ? ' ·사용 중' : ''}${why ? ` <span class="unver">·${why}</span>` : ''}</button>`;
     }).join('');
     return `<div class="picker"><div class="slotlbl">자료를 고른다 — ↑↓ · Enter · Esc</div>${rows}</div>`;
   }
   const pickerList = (_c: Claim) => s.evidenceIds.slice();
-  const pickBlock = (id: string) => (evidenceById.get(id)!.sourceType === 'context' ? '맥락' : !isVerified(s, id) ? '미검증' : '');
+  const pickBlock = (id: string) => (shownEvidence(s, id)!.sourceType === 'context' ? '맥락' : !isVerified(s, id) ? '미검증' : '');
 
   function render() {
     const t = TABS[tab];

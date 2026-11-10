@@ -154,8 +154,8 @@ await press('Enter');
 await page.waitForSelector('#dialogue');
 await wait(60);
 const px = await cw<number>('cw.scene.player.x');
-check(Math.abs(px - 495) >= 28, '[씬 1] 대화 시작 시 상대와 28px 이상 거리');
-check(await cw<boolean>('cw.scene.player.flipX === false'), '[씬 1] 대화 시작 시 서로 마주 봄');
+check(Math.abs(px - 495) >= 56, '[씬 1] 대화 시작 시 중심 간격 56px 이상');
+check(await cw<boolean>('!cw.scene.playerFacesLeft()'), '[씬 1] 대화 시작 시 서로 마주 봄 (플레이어는 오른쪽을 본다)');
 await press('Enter'); // 타이핑 완성
 check((await page.locator('#dialogue .text').innerText()).includes('병원은 은지가 치료 중이라고만 합니다'), '[씬 1] 첫 대사는 기획서 문장');
 await noIds('[씬 1] 대화창');

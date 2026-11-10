@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GROUND_Y, START, areas, autoTriggered, fadeSeconds, isAvailable, nearest, talkStand, triggerKey, type Transition } from '../src/explore/interaction';
+import { GROUND_Y, START, areas, autoTriggered, fadeSeconds, isAvailable, nearest, talkStand, flipFor, facesLeft, triggerKey, type Transition } from '../src/explore/interaction';
 import { createGameState, setFlag, submitPuzzle, puzzles } from '../src/core';
 
 const transitions = (id: string) => areas[id].interactables.filter((i): i is Transition => i.type === 'transition');
@@ -66,10 +66,30 @@ describe('상호작용 규칙', () => {
 });
 
 describe('대화 위치', () => {
-  it('최소 28px 를 두고 플레이어가 있던 쪽에 선다, 겹치면 왼쪽, 맵 끝이면 반대쪽', () => {
-    expect(talkStand(100, 180, -90, 630)).toEqual({ x: 152, playerFacesLeft: false });
-    expect(talkStand(300, 180, -90, 630)).toEqual({ x: 208, playerFacesLeft: true });
-    expect(talkStand(180, 180, -90, 630).x).toBe(152);
-    expect(talkStand(-80, -85, -90, 630).x).toBe(-57);
+  it('최소 56px 를 두고 플레이어가 있던 쪽에 선다, 겹치면 왼쪽, 맵 끝이면 반대쪽', () => {
+    expect(talkStand(100, 180, -90, 630)).toEqual({ x: 124, playerFacesLeft: false });
+    expect(talkStand(300, 180, -90, 630)).toEqual({ x: 236, playerFacesLeft: true });
+    expect(talkStand(180, 180, -90, 630).x).toBe(124);
+    expect(talkStand(-80, -85, -90, 630).x).toBe(-29);
+  });
+});
+
+describe('바라보는 방향', () => {
+  it('원본이 왼쪽을 보는 한지수: 오른쪽을 보려면 flip, 왼쪽을 보려면 flip 없음', () => {
+    expect(flipFor('player', false)).toBe(true);
+    expect(flipFor('player', true)).toBe(false);
+    expect(facesLeft('player', flipFor('player', false))).toBe(false);
+    expect(facesLeft('player', flipFor('player', true))).toBe(true);
+  });
+  it('원본이 오른쪽을 보는 박은호: 왼쪽을 보려면 flip', () => {
+    expect(flipFor('eunho', true)).toBe(true);
+    expect(flipFor('eunho', false)).toBe(false);
+    expect(facesLeft('eunho', flipFor('eunho', true))).toBe(true);
+  });
+  it('facing 이 없는 스프라이트는 오류', () => expect(() => flipFor('nobody', true)).toThrow());
+  it('대화 위치: 두 캐릭터가 서로를 바라본다 (플레이어 왼쪽 → 플레이어는 오른쪽, 상대는 왼쪽)', () => {
+    const st = talkStand(100, 180, -90, 630);
+    expect(facesLeft('player', flipFor('player', st.playerFacesLeft))).toBe(false);
+    expect(facesLeft('eunho', flipFor('eunho', !st.playerFacesLeft))).toBe(true);
   });
 });

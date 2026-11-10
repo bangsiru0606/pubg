@@ -59,6 +59,11 @@ for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues 
 // 지도의 NPC 대사 중 아직 없는 것은 허용(4단계에서 작성)
 const missing = Object.values(areas).flatMap((a) => a.interactables).filter((i) => i.type === 'npc' && !dialogueIds.has(i.dialogueId)).length;
 
+// asset-spec: 모든 sequence 에 facing 필수
+import spec from '../art/asset-spec.json' with { type: 'json' };
+for (const q of spec.sequences as { id: string; facing?: string }[]) if (q.facing !== 'left' && q.facing !== 'right') err(`asset-spec sequence ${q.id}: facing(left|right) 누락`);
+for (const a of Object.values(areas)) for (const sp of Object.values(a.npcSprite ?? {})) if (!(spec.sequences as { id: string }[]).some((q) => q.id === sp)) err(`map: npcSprite ${sp} 가 asset-spec 에 없음`);
+
 // evidence
 dup(evidenceList.map((e) => e.id), 'evidence');
 for (const e of evidenceList) if (!TYPES.includes(e.sourceType)) err(`${e.id}: sourceType ${e.sourceType}`);

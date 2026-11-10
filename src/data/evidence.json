@@ -52,7 +52,13 @@
   "timestamp": "사건 현장",
   "body": [
    "정ㅎ / 2병동 / 04"
-  ]
+  ],
+  "reveal": {
+   "flag": "haneul_met",
+   "title": "정하늘 손목띠 조각",
+   "description": "원장실에서 발견된 정하늘의 환자 손목띠 조각.",
+   "sourceCharacterId": "jeong_haneul"
+  }
  },
  {
   "id": "E05_access_log",

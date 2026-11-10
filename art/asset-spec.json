@@ -3,8 +3,8 @@
   "pxPerUnit": 45,
   "colours": 48,
   "sequences": [
-    { "id": "player", "src": "Art/Player", "frames": ["idle_0","idle_1","walk_0","walk_1","walk_2","walk_3"], "canvasHeight": 90, "colours": 64, "note": "캐릭터 2유닛 = 90px. 프레임 캔버스 전체를 같은 배율로 축소(잘라내지 않음, 하단 중앙 피벗)" },
-    { "id": "eunho",  "src": "Art/ParkEunho", "frames": ["idle_0","idle_1","walk_0","walk_1","walk_2","walk_3","walk_4","walk_5"], "canvasHeight": 90, "colours": 64 }
+    { "id": "player", "src": "Art/Player", "facing": "left", "frames": ["idle_0","idle_1","walk_0","walk_1","walk_2","walk_3"], "canvasHeight": 90, "colours": 64, "note": "캐릭터 2유닛 = 90px. 프레임 캔버스 전체를 같은 배율로 축소(잘라내지 않음, 하단 중앙 피벗)" },
+    { "id": "eunho",  "src": "Art/ParkEunho", "facing": "right", "frames": ["idle_0","idle_1","walk_0","walk_1","walk_2","walk_3","walk_4","walk_5"], "canvasHeight": 90, "colours": 64 }
   ],
   "sprites": [
     { "id": "door",           "src": "Resources/Art/Office/door.png",           "height": 117, "note": "2.6u" },

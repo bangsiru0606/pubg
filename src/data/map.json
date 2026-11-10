@@ -86,9 +86,9 @@
    "npcSprite": {
     "eunho": "eunho"
    },
-   "flipNpc": [
-    "eunho"
-   ]
+   "npcFacing": {
+    "eunho": "left"
+   }
   },
   "floor1": {
    "name": "1층 로비+복도",

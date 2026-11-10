@@ -33,6 +33,12 @@ function conflictsOf(p: Puzzle, a: PuzzleAnswer): string[] {
       const m = p.conflicts[`${slot}:${t}`] ?? p.conflicts[`*:${t}`];
       if (m) out.add(m);
     }
+  // "slot:!token": 정답에 있어야 할 항목이 빠졌을 때 충돌하는 자료
+  for (const slot of p.slots)
+    for (const t of p.correctSlots[slot]) {
+      const m = p.conflicts[`${slot}:!${t}`];
+      if (m && a[slot]?.length && !a[slot].includes(t)) out.add(m);
+    }
   return [...out];
 }
 

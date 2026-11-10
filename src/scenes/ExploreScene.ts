@@ -1,12 +1,14 @@
 import Phaser from 'phaser';
 import {
-  acquireEvidence, evidenceById, hasFlag, setFlag, type GameState,
+  acquireEvidence, evidenceById, hasFlag, puzzles, setFlag, type GameState,
 } from '../core';
 import {
-  GROUND_Y, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, fadeSeconds, isAvailable, nearest, promptOf, themes,
-  triggerKey, talkStand, type Interactable, type Npc,
+  GROUND_Y, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, fadeSeconds, isAvailable, isHidden, nearest, promptOf, themes,
+  triggerKey, talkStand, type Examine, type Interactable, type Npc, type Transition,
 } from '../explore/interaction';
 import { openCloseup } from '../ui/closeup';
+import { openCutscene } from '../ui/cutscene';
+import { openPuzzle } from '../ui/puzzle';
 import { hasDialogue, openDialogue } from '../ui/dialogue';
 import { fadeThrough, setPrompt, showToast } from '../ui/hud';
 import { consumePress, isHeld, isModalOpen, setTabHandler } from '../ui/input';
@@ -47,6 +49,7 @@ export class ExploreScene extends Phaser.Scene {
 
   // ---------- 구역 구성 ----------
   private buildArea(id: string, spawnX: number) {
+    const flip = this.player?.flipX ?? false;
     this.children.removeAll(true);
     this.areaId = id;
     this.npcSprites.clear();
@@ -67,9 +70,13 @@ export class ExploreScene extends Phaser.Scene {
       this.add.rectangle(a.minX, g, w, 2, 0x000000, 0.35).setOrigin(0, 0).setDepth(2);
     }
 
-    for (const it of a.interactables) this.drawInteractable(a, it);
+    for (const pr of a.props ?? []) {
+      if (pr.showWhen && !hasFlag(this.state, pr.showWhen)) continue; // 예: 백선우가 떠난 뒤 놓이는 청소 카트 (아트 전까지 placeholder)
+      this.add.rectangle(pr.x, g, pr.w, pr.h, Phaser.Display.Color.HexStringToColor(pr.color).color).setOrigin(0.5, 1).setDepth(4).setStrokeStyle(1, 0x000000, 0.6);
+    }
+    for (const it of a.interactables) if (!isHidden(it, this.state)) this.drawInteractable(a, it);
 
-    this.player = this.add.sprite(spawnX, g, 'player_idle_0').setOrigin(0.5, 1).setDepth(6).play('player_idle');
+    this.player = this.add.sprite(spawnX, g, 'player_idle_0').setOrigin(0.5, 1).setFlipX(flip).setDepth(6).play('player_idle');
     const cam = this.cameras.main;
     cam.setBounds(a.minX, 0, w, 270);
     cam.startFollow(this.player, true);
@@ -90,7 +97,7 @@ export class ExploreScene extends Phaser.Scene {
         this.add.rectangle(it.x, g, 30, 66, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
         this.add.rectangle(it.x, g - 66, 22, 24, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
       }
-    } else if (a.theme !== 'office' || !it.closeup) {
+    } else if ((a.theme !== 'office' || !it.closeup) && isAvailable(it, this.state)) {
       this.add.rectangle(it.x, g - 14, 12, 12, 0xe8d36a).setAngle(45).setDepth(5).setStrokeStyle(1, 0x000000, 0.6); // 조사 지점
     }
   }
@@ -117,26 +124,77 @@ export class ExploreScene extends Phaser.Scene {
 
   // ---------- 상호작용 ----------
   private interact(it: Interactable) {
-    if (!isAvailable(it, this.state)) return;
-    if (it.type === 'transition') this.go(it.to, it.spawnX);
-    else if (it.type === 'npc') this.talk(it);
-    else if (it.closeup) { setPrompt(null); openCloseup(it.closeup, () => {}); }
-    else if (it.evidenceId) {
-      const id = it.evidenceId;
-      if (acquireEvidence(this.state, id)) showToast(`단서 획득: ${evidenceById.get(id)!.title}`);
-      setPrompt(null);
-      openViewer(this.state, id);
+    if (!isAvailable(it, this.state)) {
+      if (it.type === 'transition' && it.lockedDialogue) { setPrompt(null); openDialogue(this.state, it.lockedDialogue); } // 잠긴 이유 한 줄 독백
+      return;
     }
+    if (it.type === 'transition') this.useTransition(it);
+    else if (it.type === 'npc') this.talk(it);
+    else if (it.closeup) { setPrompt(null); openCloseup(this.state, it.closeup, () => {}); }
+    else if (it.puzzleId) this.puzzle(it.puzzleId);
+    else if (it.evidenceId || it.dialogueId) this.examine(it);
+  }
+
+  private useTransition(it: Transition) {
+    const flag = it.cutscene ? `cutscene_done:${it.cutscene}` : '';
+    if (!it.cutscene || hasFlag(this.state, flag)) { void this.go(it.to, it.spawnX); return; }
+    setFlag(this.state, flag);
+    this.busy = true; setPrompt(null);
+    void fadeThrough(0.3, 0.3, () => openCutscene(it.cutscene!, () => { this.busy = false; void this.go(it.to, it.spawnX); }));
+  }
+
+  /** 조사 지점: 독백(dialogueId)이 있으면 독백 → 원문 보기, 없으면 바로 원문 보기. 이미 얻었으면 원문만 다시 연다. */
+  private examine(it: Examine) {
+    setPrompt(null);
+    const have = it.evidenceId ? this.state.evidenceIds.includes(it.evidenceId) : false;
+    if (it.dialogueId && !have) { openDialogue(this.state, it.dialogueId, (got) => this.showDocs(got)); return; }
+    if (it.evidenceId) {
+      if (acquireEvidence(this.state, it.evidenceId)) showToast(`단서 획득: ${evidenceById.get(it.evidenceId)!.title}`);
+      this.showDocs([it.evidenceId]);
+    }
+  }
+
+  /** 얻은 자료의 원문을 차례로 보여 준 뒤 화면을 갱신하고, 조건이 갖춰진 퍼즐을 자동으로 연다 */
+  private showDocs(ids: string[]) {
+    const next = ids.slice();
+    const step = () => {
+      const id = next.shift();
+      if (id) { openViewer(this.state, id, step); return; }
+      this.refresh();
+      this.autoOpenPuzzle();
+    };
+    step();
+  }
+
+  private autoOpenPuzzle() {
+    for (const p of puzzles) {
+      if (!p.tasks || this.state.solvedPuzzleIds.includes(p.id) || hasFlag(this.state, `puzzle_opened:${p.id}`)) continue;
+      if (!p.sourceEvidenceIds.every((id) => this.state.evidenceIds.includes(id))) continue;
+      setFlag(this.state, `puzzle_opened:${p.id}`);
+      this.puzzle(p.id);
+      return;
+    }
+  }
+
+  private puzzle(id: string) {
+    setPrompt(null);
+    if (this.state.solvedPuzzleIds.includes(id)) { openDialogue(this.state, 'mono_p01_solved'); return; }
+    openPuzzle(this.state, id, (solved) => {
+      if (solved) { this.refresh(); openDialogue(this.state, 'mono_p01_solved'); }
+    });
   }
 
   private talk(npc: Npc) {
     setPrompt(null);
+    if (!hasDialogue(npc.dialogueId)) { showToast(`${npc.name}: (대사는 아직 없다)`); return; }
     const st = talkStand(this.player.x, npc.x, this.minX, this.maxX); // 서로 마주 보고 최소 거리 확보
     this.player.x = st.x; this.player.setFlipX(st.playerFacesLeft);
     this.npcSprites.get(npc.id)?.setFlipX(!st.playerFacesLeft);
-    if (!hasDialogue(npc.dialogueId)) { showToast(`${npc.name}: (대사는 4단계부터 들어간다)`); return; }
-    openDialogue(this.state, npc.dialogueId, () => {});
+    openDialogue(this.state, npc.dialogueId, (got) => this.showDocs(got.filter((id) => evidenceById.get(id)?.body)));
   }
+
+  /** 같은 자리에서 구역을 다시 그린다 (NPC 퇴장, 소품 등장 반영) */
+  refresh() { if (!this.busy) this.buildArea(this.areaId, this.player.x); }
 
   /** 구역 전환 + 페이드. 이미 방문한 구역은 0.4초 이하. */
   go(to: string, spawnX: number): Promise<void> {

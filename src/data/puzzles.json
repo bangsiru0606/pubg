@@ -38,12 +38,139 @@
    "impactPosition:desk_chair": "처음부터 의자에 있었다면 '바닥에서 확인'한 예비 검안 메모와 맞지 않는다.",
    "finalPosition:altar_floor": "최종 보고서는 '의자에서 발견'이라고 적었다.",
    "finalPosition:desk_side": "최종 보고서는 '의자에서 발견'이라고 적었다.",
-   "movedObjects:syringe": "주사기는 후두부 상처의 위치를 설명하지 못한다."
+   "movedObjects:syringe": "주사기는 후두부 상처의 위치를 설명하지 못한다.",
+   "movedObjects:altar": "기도대 받침 아래 혈흔은 그대로 남아 있어 기도대를 옮긴 흔적이 없다.",
+   "movedObjects:!chair": "의자 다리에 끌린 자국이 남아 있다.",
+   "movedObjects:!body": "예비 검안 메모와 최종 보고서가 적은 원장의 위치가 서로 다르다."
   },
   "hintTexts": [
    "혈흔 위치와 두 기록의 발견 위치를 다시 비교해 보세요.",
    "후보 하나를 제거했습니다.",
    "한 칸을 채웠습니다."
+  ],
+  "title": "현장 위치 재구성 — 원장실 평면도",
+  "info": [
+   "기도대 받침 아래 혈흔 방향",
+   "의자 다리의 끌린 자국",
+   "예비 검안 메모: “바닥에서 확인”",
+   "최종 보고서: “의자에서 발견”"
+  ],
+  "zones": [
+   {
+    "id": "altar_floor",
+    "label": "기도대 옆 바닥",
+    "x": 24,
+    "y": 30,
+    "w": 22,
+    "h": 34
+   },
+   {
+    "id": "desk_side",
+    "label": "책상 옆 바닥",
+    "x": 48,
+    "y": 16,
+    "w": 18,
+    "h": 48
+   },
+   {
+    "id": "desk_chair",
+    "label": "책상 의자",
+    "x": 70,
+    "y": 40,
+    "w": 24,
+    "h": 24
+   }
+  ],
+  "fixtures": [
+   {
+    "id": "altar",
+    "label": "기도대",
+    "x": 4,
+    "y": 18,
+    "w": 18,
+    "h": 30
+   },
+   {
+    "id": "blood",
+    "label": "혈흔",
+    "x": 8,
+    "y": 50,
+    "w": 10,
+    "h": 8
+   },
+   {
+    "id": "desk",
+    "label": "책상",
+    "x": 68,
+    "y": 8,
+    "w": 28,
+    "h": 24
+   }
+  ],
+  "tasks": [
+   {
+    "slot": "impactPosition",
+    "label": "충돌 직후 원장의 위치",
+    "kind": "place",
+    "options": [
+     {
+      "id": "altar_floor",
+      "label": "기도대 옆 바닥"
+     },
+     {
+      "id": "desk_side",
+      "label": "책상 옆 바닥"
+     },
+     {
+      "id": "desk_chair",
+      "label": "책상 의자"
+     }
+    ],
+    "token": "원장 ①"
+   },
+   {
+    "slot": "finalPosition",
+    "label": "최종 보고서 작성 당시 원장의 위치",
+    "kind": "place",
+    "options": [
+     {
+      "id": "altar_floor",
+      "label": "기도대 옆 바닥"
+     },
+     {
+      "id": "desk_side",
+      "label": "책상 옆 바닥"
+     },
+     {
+      "id": "desk_chair",
+      "label": "책상 의자"
+     }
+    ],
+    "token": "원장 ②"
+   },
+   {
+    "slot": "movedObjects",
+    "label": "둘 사이에 이동된 대상",
+    "kind": "mark",
+    "options": [
+     {
+      "id": "body",
+      "label": "원장 시신"
+     },
+     {
+      "id": "chair",
+      "label": "의자"
+     },
+     {
+      "id": "altar",
+      "label": "기도대"
+     },
+     {
+      "id": "syringe",
+      "label": "주사기"
+     }
+    ]
+   }
   ]
  },
  {

@@ -1,1 +1,193 @@
-{ "dialogues": {} }
+{
+ "dialogues": {
+  "eunho_intro": {
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "park_eunho",
+     "text": "병원은 은지가 치료 중이라고만 합니다. 목소리를 들은 건 두 달 전이 마지막이에요.",
+     "source": "spec",
+     "portrait": "eunho_worried",
+     "next": "n2"
+    },
+    "n2": {
+     "speaker": "han_jisu",
+     "text": "저는 경찰이 아닙니다. 병원 문을 강제로 열 수도, 기록을 압수할 수도 없습니다.",
+     "source": "spec",
+     "portrait": "player_neutral",
+     "next": "n3"
+    },
+    "n3": {
+     "speaker": "park_eunho",
+     "text": "그래도 누군가는 은지가 거기 있는지 직접 봐야 합니다.",
+     "source": "spec",
+     "portrait": "eunho_worried",
+     "next": "n4"
+    },
+    "n4": {
+     "speaker": "han_jisu",
+     "text": "면회 위임장으로 복지 확인을 요청하겠습니다. 발견한 자료는 바로 외부에 복사해 두죠.",
+     "source": "spec",
+     "portrait": "player_reassure",
+     "next": "n5"
+    },
+    "n5": {
+     "speaker": "park_eunho",
+     "text": "은지가 마지막 통화에서 ‘하늘 언니가 도와줄 거야’라고 했어요. 그땐 친구가 생겼나 보다 했는데…",
+     "source": "spec",
+     "portrait": "eunho_fear",
+     "next": "n6"
+    },
+    "n6": {
+     "speaker": "park_eunho",
+     "text": "병원에서 뭔가 찾으시면 저한테 먼저 보내 주세요. 저도 은지를 위해 할 수 있는 건 해야 하니까요.",
+     "source": "new",
+     "portrait": "eunho_neutral",
+     "next": "n7"
+    },
+    "n7": {
+     "speaker": "park_eunho",
+     "text": "이게 은지가 마지막으로 보낸 편지입니다. 가기 전에 읽어 보세요.",
+     "source": "new",
+     "portrait": "eunho_neutral",
+     "onEnter": {
+      "acquire": [
+       "E01_last_letter"
+      ],
+      "setFlags": [
+       "intro_done"
+      ]
+     }
+    }
+   }
+  },
+  "baek_lobby": {
+   "start": "b1",
+   "nodes": {
+    "b1": {
+     "speaker": "baek_sunwoo",
+     "text": "오늘 새벽 원장님께서 지병으로 돌아가셨습니다. 면회는 다음 주로 미뤄 주십시오.",
+     "source": "spec",
+     "statement": {
+      "id": "baek_s_natural"
+     },
+     "next": "b2"
+    },
+    "b2": {
+     "speaker": "han_jisu",
+     "text": "박은지 씨의 가족 대리인으로 복지 확인을 요청했습니다. 살아 있는지 확인하는 데 일주일이 필요합니까?",
+     "source": "spec",
+     "portrait": "player_question",
+     "next": "b3"
+    },
+    "b3": {
+     "speaker": "baek_sunwoo",
+     "text": "안정을 위해 외부 접촉을 제한하는 환자입니다.",
+     "source": "spec",
+     "next": "b4"
+    },
+    "b4": {
+     "speaker": "han_jisu",
+     "text": "그 답을 서면으로 남겨 주시죠. 어느 병동에 있는지도 함께요.",
+     "source": "spec",
+     "portrait": "player_neutral",
+     "next": "b5"
+    },
+    "b5": {
+     "speaker": "baek_sunwoo",
+     "text": "…직원이 확인하는 동안 로비에서 기다리십시오.",
+     "source": "spec",
+     "next": "b6"
+    },
+    "b6": {
+     "speaker": "han_jisu",
+     "text": "백선우가 자리를 비우자 청소 카트가 열린 원장실 문 앞에 멈춰 섰다. 현장을 보존하기는커녕 이미 닦고 있다.",
+     "source": "new",
+     "portrait": "player_neutral",
+     "onEnter": {
+      "setFlags": [
+       "baek_left",
+       "office_access_granted"
+      ]
+     }
+    }
+   }
+  },
+  "mono_altar": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "상판은 닦였는데 받침 밑에는 검붉은 자국이 남았다. 의자에서 쓰러졌다면 여기까지 닿을 이유가 없다.",
+     "source": "spec",
+     "portrait": "player_neutral",
+     "onEnter": {
+      "acquire": [
+       "E02_altar_blood"
+      ]
+     }
+    }
+   }
+  },
+  "mono_wristband": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "환자 물건이 원장 책상 밑에서 찢어진 채 나왔다.",
+     "source": "spec",
+     "portrait": "player_neutral",
+     "onEnter": {
+      "acquire": [
+       "E04_wristband_fragment"
+      ]
+     }
+    }
+   }
+  },
+  "mono_p01_solved": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "원장은 처음부터 의자에 있었던 게 아니다. 누군가 시신을 옮겼다. 누가, 왜 그랬는지는 아직 알 수 없다.",
+     "source": "new",
+     "portrait": "player_neutral"
+    }
+   }
+  },
+  "mono_stairs_locked": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "위층에 가기 전에 원장실부터 정리해야 한다.",
+     "source": "new",
+     "portrait": "player_neutral"
+    }
+   }
+  },
+  "closeup_hat": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "오래 쓴 모자다. 챙 끝이 닳았다.",
+     "source": "new",
+     "portrait": "player_neutral"
+    }
+   }
+  },
+  "closeup_calendar": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "8월 17일. 은호 씨와 약속한 날이다.",
+     "source": "spec",
+     "portrait": "player_neutral"
+    }
+   }
+  }
+ }
+}

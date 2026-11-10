@@ -80,3 +80,41 @@
 .detail { position: absolute; inset: 0; background: rgba(0,0,0,.88); display: flex; align-items: center; justify-content: center; z-index: 3; }
 .detail img { max-height: 262px; max-width: 470px; }
 .viewer { padding: 10px 16px; font-size: 11px; line-height: 1.5; }
+
+.viewer .docbg { position: absolute; right: 8px; top: 8px; height: 254px; width: auto; opacity: .35; pointer-events: none; }
+.viewer > *:not(.docbg) { position: relative; }
+.docbody { background: rgba(20,22,26,.82); border-left: 2px solid #8a7f68; padding: 4px 8px; margin: 4px 0; max-width: 340px; }
+.docbody p { margin: 0 0 3px; }
+.viewer .foot { position: absolute; }
+
+/* 컷신 */
+.cutscene { background: #000; display: flex; align-items: center; justify-content: center; }
+.cutscene img { max-width: 480px; max-height: 270px; }
+.cutscene .foot { border: 0; color: #b8b09c; }
+
+/* 퍼즐 (P01 배치형) */
+.puzzle { font-size: 9px; }
+.puzzle .ptitle { position: absolute; left: 6px; top: 3px; right: 6px; color: #e2c98a; font-size: 11px; font-weight: 700; }
+.puzzle .pleft { position: absolute; left: 6px; top: 18px; width: 270px; }
+.puzzle .plan { position: relative; height: 138px; background: #2b2e34; border: 1px solid #8a7f68; }
+.puzzle .fix { position: absolute; background: #55503f; border: 1px solid #8a7f68; font-size: 8px; text-align: center; box-sizing: border-box; overflow: hidden; }
+.puzzle .fix.fx-blood { background: #7a2a2a; border-color: #b04040; }
+.puzzle .zone { position: absolute; border: 1px dashed #7d8da0; box-sizing: border-box; background: rgba(120,140,160,.12); cursor: pointer; text-align: center; font-size: 8px; padding-top: 1px; }
+.puzzle .zone:hover { background: rgba(226,201,138,.22); }
+.puzzle .zl { display: block; color: #aab; }
+.puzzle .tray { height: 16px; margin-top: 3px; }
+.tk { white-space: nowrap; display: inline-block; background: #4a5a3a; border: 1px solid #b9c98a; padding: 0 4px; margin: 1px 2px; cursor: grab; touch-action: none; font-size: 9px; }
+.tk.grab { background: #8a7a30; } .foc { outline: 1px solid #e2c98a; background-color: #3a4a58; }
+.tk.ghost { position: absolute; transform: translate(-50%, -50%); pointer-events: none; z-index: 9; }
+.puzzle .pright { position: absolute; left: 284px; right: 6px; top: 18px; height: 160px; overflow: hidden; font-size: 8px; }
+.puzzle .pright ul { margin: 0 0 3px; padding-left: 10px; }
+.puzzle .src { display: block; width: 100%; text-align: left; background: #22252b; border: 1px solid #444; padding: 0 3px; margin-bottom: 1px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.puzzle .src.hl { border-color: #e2c98a; color: #fff; }
+.puzzle .hint-t { color: #9fd49a; } .puzzle .ok { color: #9fd49a; font-size: 10px; margin-top: 4px; }
+.puzzle .ptasks { position: absolute; left: 6px; right: 6px; top: 182px; font-size: 9px; }
+.puzzle .trow { margin-bottom: 2px; }
+.puzzle .chip { background: #22252b; border: 1px solid #555; padding: 0 4px; margin-right: 2px; cursor: pointer; }
+.puzzle .chip.on { border-color: #b9c98a; }
+.puzzle .submit { position: absolute; right: 0; top: 26px; background: #2f4030; border: 1px solid #8a7f68; padding: 1px 10px; cursor: pointer; }
+
+.detail.withdlg img { max-height: 150px; margin-bottom: 112px; }

@@ -3,6 +3,8 @@ export type SourceType = 'physical' | 'record' | 'testimony' | 'context';
 export interface Evidence {
   id: string; title: string; description: string; sourceType: SourceType;
   acquiredSceneId: string; sourceCharacterId: string; timestamp: string;
+  body?: string[];   // 원문(문서 전문). HTML 로 표시한다
+  illust?: string;   // 원문 보기 배경 일러스트 (public/assets/illust/<이름>.png)
 }
 export interface Hypothesis {
   id: string; label: string; isCorrect: boolean;
@@ -14,8 +16,11 @@ export interface Claim {
   requiresFlag?: string; hypotheses: Hypothesis[];
 }
 export type PuzzleType = 'SpatialPlacement' | 'Timeline' | 'DocumentDiff' | 'Connection' | 'LogicGrid';
+export interface PuzzleTask { slot: string; label: string; token?: string; kind: 'place' | 'mark'; options: { id: string; label: string }[] }
+export interface PuzzleBox { id: string; label: string; x: number; y: number; w: number; h: number } // 평면도 좌표(%)
 export interface Puzzle {
   id: string; type: PuzzleType; flagOnSolve: string;
+  title?: string; info?: string[]; tasks?: PuzzleTask[]; fixtures?: PuzzleBox[]; zones?: PuzzleBox[]; // 화면 구성 데이터(P01)
   sourceEvidenceIds: string[]; verifiedEvidenceIds: string[];
   slots: string[]; correctSlots: Record<string, string[]>;
   distractors: string[]; conflicts: Record<string, string>; hintTexts: string[];
@@ -32,6 +37,7 @@ export interface StatementRecord { text: string; speaker: string; stage: Stateme
 
 export interface DialogueNode {
   speaker: string; portrait?: string; text: string;
+  source?: 'spec' | 'new'; // 기획서 문장이면 spec, 새로 쓴 문장이면 new
   next?: string;
   choices?: { text: string; next: string; requiresFlag?: string }[];
   statement?: { id: string };   // 이 문장은 검증 대상 진술 (9.3)

@@ -77,7 +77,7 @@ export function openNotebook(s: GameState, onClose: () => void) {
     const buttons = row('[보류] 저장된 결론 지우기') + row('[결론 저장]', !ok);
     const conflicts = findConflicts([...dr.support, ...dr.rebuttal]);
     const saved = s.selectedHypothesisByClaim[c.claimId] ? '<span class="note">저장된 결론이 있다.</span>' : '';
-    return `<div class="ndetail" style="width:100%"><div class="claimq">${esc(c.question)} ${saved}</div>${hyps}<div class="slotlbl" style="margin-top:3px">근거 슬롯 — 지지 최대 ${MAX_SUPPORT_SLOTS}, 반박 1</div>${slots}
+    return `<div class="ndetail" style="width:100%"><div class="claimq">${esc(c.question)} ${saved}</div>${hyps}<div class="note">결론은 저장만 된다. 확정은 최종 보고서에서 한다.</div><div class="slotlbl" style="margin-top:3px">근거 슬롯 — 지지 최대 ${MAX_SUPPORT_SLOTS}, 반박 1</div>${slots}
       ${conflicts.length ? `<div class="warn">${CONFLICT_MESSAGE}</div>` : ''}${buttons}
       ${!ok ? '<div class="slotlbl">가설을 고르고 반박 근거 슬롯을 채워야 저장할 수 있다.</div>' : ''}<div class="note" id="nbmsg">${esc(msg)}</div></div>`;
   }

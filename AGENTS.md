@@ -28,6 +28,7 @@ npm run test:release   # zip을 풀어 file://로 열고 자동 플레이 확인
 npm run build           # tsc + vite build (dist/)
 npm run screenshot      # release zip을 열어 사무실 화면을 ×4로 캡처 (docs/screenshots/)
 npm run test:e2e        # 테스트 전용 대사 포함 빌드(.tmp/e2e)로 이동·대화·수첩 자동 검증 (SHOTS=1 이면 docs/screenshots 에 캡처)
+npx tsx tools/reading-time.ts   # 씬 1~2 읽기 시간 추정 (분당 500자)
 ```
 
 - test:release 는 시스템 Chrome → Edge 순으로 사용한다 (`BROWSER=msedge` 로 지정 가능). Playwright 번들 브라우저는 설치하지 않는다.

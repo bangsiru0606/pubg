@@ -1,7 +1,7 @@
 {
   "_comment": "시스템 확인 전용 대사. 게임 빌드에는 포함되지 않는다 (e2e 빌드에서만 로드). 실제 대사는 4단계부터 dialogue.json 에 쓴다.",
   "dialogues": {
-    "eunho_intro": {
+    "test_eunho_intro": {
       "start": "n1",
       "nodes": {
         "n1": { "speaker": "park_eunho", "portrait": "eunho_worried", "text": "〔시험용 대사〕 박은호가 의뢰를 설명한다.", "next": "n2" },
@@ -12,7 +12,7 @@
                 "onEnter": { "acquire": ["E01_last_letter"], "setFlags": ["intro_done"] } }
       }
     },
-    "baek_lobby": {
+    "test_baek_lobby": {
       "start": "b1",
       "nodes": {
         "b1": { "speaker": "baek_sunwoo", "text": "〔시험용 대사〕 원장님은 의자에서 평온하게 발견됐습니다.", "statement": { "id": "baek_s1" },

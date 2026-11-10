@@ -3,6 +3,7 @@ import './ui/ui.css';
 import { createGameState } from './core';
 import { isTestBuild } from './explore/content';
 import { ExploreScene } from './scenes/ExploreScene';
+import { openDialogue } from './ui/dialogue';
 import { initHud } from './ui/hud';
 
 export const W = 480;
@@ -43,4 +44,4 @@ fit();
 
 // 테스트·스크린샷용 훅 (e2e 빌드에서만 노출)
 (window as unknown as { __game: Phaser.Game }).__game = game;
-if (isTestBuild) (window as unknown as Record<string, unknown>).__cw = { state: scene.state, scene };
+if (isTestBuild) (window as unknown as Record<string, unknown>).__cw = { state: scene.state, scene, openDialogue: (id: string) => openDialogue(scene.state, id) };

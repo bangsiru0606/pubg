@@ -79,7 +79,8 @@
      "to": "floor1",
      "spawnX": 0,
      "kind": "door",
-     "requires": "intro_done"
+     "requires": "intro_done",
+     "cutscene": "hospital_intro"
     }
    ],
    "npcSprite": {
@@ -104,7 +105,8 @@
      "autoTrigger": {
       "x": 112.5,
       "width": 45
-     }
+     },
+     "hideWhen": "baek_left"
     },
     {
      "type": "transition",
@@ -119,9 +121,10 @@
     {
      "type": "examine",
      "id": "exam_note",
-     "x": 1260,
-     "name": "검안 메모",
-     "evidenceId": "E03_preliminary_exam"
+     "x": 690,
+     "name": "바닥의 서류",
+     "evidenceId": "E03_preliminary_exam",
+     "requires": "baek_left"
     },
     {
      "type": "transition",
@@ -140,7 +143,20 @@
      "label": "[2층 올라가기]",
      "to": "floor2",
      "spawnX": 0,
-     "kind": "stairs"
+     "kind": "stairs",
+     "requires": "flag_scene_rebuilt",
+     "lockedDialogue": "mono_stairs_locked"
+    }
+   ],
+   "props": [
+    {
+     "id": "cart",
+     "x": 540,
+     "w": 26,
+     "h": 24,
+     "color": "#8d949a",
+     "label": "청소 카트",
+     "showWhen": "baek_left"
     }
    ]
   },
@@ -164,14 +180,28 @@
      "id": "altar",
      "x": 90,
      "name": "기도대 아래",
-     "evidenceId": "E02_altar_blood"
+     "evidenceId": "E02_altar_blood",
+     "dialogueId": "mono_altar"
     },
     {
      "type": "examine",
      "id": "under_desk",
      "x": 630,
      "name": "책상 아래",
-     "evidenceId": "E04_wristband_fragment"
+     "evidenceId": "E04_wristband_fragment",
+     "dialogueId": "mono_wristband"
+    },
+    {
+     "type": "examine",
+     "id": "plan",
+     "x": 225,
+     "name": "원장실 평면도",
+     "puzzleId": "P01_scene_rebuild",
+     "requiresEvidence": [
+      "E02_altar_blood",
+      "E03_preliminary_exam",
+      "E04_wristband_fragment"
+     ]
     }
    ]
   },

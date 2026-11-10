@@ -6,7 +6,15 @@
   "sourceType": "context",
   "acquiredSceneId": "office",
   "sourceCharacterId": "park_eunji",
-  "timestamp": "의뢰 전"
+  "timestamp": "의뢰 전",
+  "illust": "item_letter",
+  "body": [
+   "오빠에게.",
+   "처음에는 여기서 나아질 수 있다고 믿었어. 그런데 밤마다 빈 침대가 하나씩 늘어나. 다들 치료가 끝나 새 삶을 얻었다고 말하지만, 떠난 사람이 자기 짐을 두고 갈 리 없잖아.",
+   "하늘 언니가 다음 명단에 내 이름이 있다고 했어. 언니가 틀렸으면 좋겠어.",
+   "내가 답장을 못 하더라도 병원 말만 믿지는 마. 내가 정말 나갔다면, 어디로 갔는지 이름을 물어봐 줘.",
+   "— 은지"
+  ]
  },
  {
   "id": "E02_altar_blood",
@@ -24,16 +32,27 @@
   "sourceType": "record",
   "acquiredSceneId": "floor1",
   "sourceCharacterId": "oh_miran",
-  "timestamp": "22:47"
+  "timestamp": "22:52",
+  "body": [
+   "22:52 최초 확인",
+   "후두부 열상 및 출혈 흔적",
+   "의식 없음, 미약 호흡",
+   "※ 부원장 재검토 요청",
+   "",
+   "최종 출력본에는 ‘지병성 심정지 추정’만 남아 있다."
+  ]
  },
  {
   "id": "E04_wristband_fragment",
   "title": "찢어진 손목띠 조각",
-  "description": "원장실에서 발견된 정하늘의 환자 손목띠 조각.",
+  "description": "원장 책상 아래에서 나온 찢어진 환자 손목띠 조각. 이름 일부와 병동, 침상 번호가 남아 있다.",
   "sourceType": "physical",
   "acquiredSceneId": "room_director",
-  "sourceCharacterId": "jeong_haneul",
-  "timestamp": "사건 현장"
+  "sourceCharacterId": "",
+  "timestamp": "사건 현장",
+  "body": [
+   "정ㅎ / 2병동 / 04"
+  ]
  },
  {
   "id": "E05_access_log",

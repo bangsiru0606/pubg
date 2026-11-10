@@ -1,8 +1,10 @@
 // 마우스 근접 조사 (MouseCloseupUI 대응): 호버 하이라이트 + 이름표, 클릭 확대. 키보드: ←→ 이동, Enter 확대, Esc 나가기.
+import type { GameState } from '../core';
+import { openDialogue } from './dialogue';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
 
-interface Hotspot { name: string; icon: string; detail: string; cx: number; cy: number; w: number } // 좌표: 배경 이미지(1376×768) px
+interface Hotspot { name: string; caption: string; icon: string; detail: string; cx: number; cy: number; w: number } // 좌표: 배경 이미지(1376×768) px
 interface Closeup { title: string; bg: string; hotspots: Hotspot[] }
 const BG_W = 1376, BG_H = 768;
 
@@ -11,13 +13,13 @@ export const closeups: Record<string, Closeup> = {
   office_desk: {
     title: '책상을 살펴본다', bg: 'assets/illust/desk.png',
     hotspots: [
-      { name: '모자', icon: 'assets/illust/hat.png', detail: 'assets/illust/hat_detail.png', cx: 560, cy: 175, w: 190 },
-      { name: '캘린더', icon: 'assets/illust/calendar.png', detail: 'assets/illust/calendar_detail.png', cx: 1010, cy: 210, w: 140 },
+      { name: '모자', caption: 'closeup_hat', icon: 'assets/illust/hat.png', detail: 'assets/illust/hat_detail.png', cx: 560, cy: 175, w: 190 },
+      { name: '캘린더', caption: 'closeup_calendar', icon: 'assets/illust/calendar.png', detail: 'assets/illust/calendar_detail.png', cx: 1010, cy: 210, w: 140 },
     ],
   },
 };
 
-export function openCloseup(id: string, onClose: () => void) {
+export function openCloseup(s: GameState, id: string, onClose: () => void) {
   const c = closeups[id];
   const box = el('div', 'modal closeup'); box.id = 'closeup';
   const hot = c.hotspots.map((h, i) =>
@@ -33,6 +35,8 @@ export function openCloseup(id: string, onClose: () => void) {
     detail.id = 'closeup-detail';
     detail.addEventListener('click', closeDetail);
     box.append(detail);
+    detail.classList.add('withdlg');
+    openDialogue(s, c.hotspots[i].caption, () => detail?.classList.remove('withdlg')); // 한 줄 독백
   };
   const close = () => { popModal('closeup'); box.remove(); onClose(); };
   box.addEventListener('click', (e) => {

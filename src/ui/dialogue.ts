@@ -10,7 +10,7 @@ type Item = { label: string; run: () => void; disabled?: boolean };
 
 export function hasDialogue(id: string) { return !!dialogues[id]; }
 
-export function openDialogue(s: GameState, dialogueId: string, onClose: () => void) {
+export function openDialogue(s: GameState, dialogueId: string, onClose: (acquired: string[]) => void = () => {}) {
   const d: Dialogue = dialogues[dialogueId];
   const box = el('div', 'dlg'); box.id = 'dialogue';
   root().append(box);
@@ -20,14 +20,16 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: () => vo
   let shown = 0, timer = 0, typing = false;
   let items: Item[] = [], sel = 0;
   let msg = '';
+  const got: string[] = [];
   let picker: { cursor: number; chosen: Set<string>; list: string[] } | null = null;
 
-  const close = () => { clearInterval(timer); popModal('dialogue'); box.remove(); onClose(); };
+  const close = () => { clearInterval(timer); popModal('dialogue'); box.remove(); onClose(got); };
 
   function go(next: string) { nodeId = next; enter(); }
   function enter() {
     node = getNode(dialogues, dialogueId, nodeId);
     const { acquired } = enterNode(s, node);
+    got.push(...acquired);
     for (const id of acquired) showToast(`단서 획득: ${evidenceById.get(id)!.title}`);
     msg = ''; picker = null; shown = 0; typing = true; items = []; sel = 0;
     clearInterval(timer);

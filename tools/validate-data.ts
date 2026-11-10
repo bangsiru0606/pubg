@@ -29,8 +29,17 @@ for (const [aid, a] of Object.entries(areas)) {
       const t = areas[it.to];
       if (!t) { err(`${w}: 없는 구역 ${it.to}`); continue; }
       if (it.spawnX < t.minX || it.spawnX > t.maxX) err(`${w}: spawnX 가 ${it.to} 범위 밖`);
-      if (it.requires && !knownFlags.has(it.requires)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.requires}`);
-    } else if (it.type === 'examine' && it.evidenceId) needEvLater.push([it.evidenceId, w]);
+      if (it.cutscene && !existsSync(`public/assets/illust/${it.cutscene}.png`)) err(`${w}: 없는 컷신 ${it.cutscene}`);
+    }
+    if (it.requires && !knownFlags.has(it.requires)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.requires}`);
+    if (it.hideWhen && !knownFlags.has(it.hideWhen)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.hideWhen}`);
+    for (const id of it.requiresEvidence ?? []) needEvLater.push([id, w]);
+    const dlg = it.type === 'transition' ? it.lockedDialogue : it.type === 'examine' ? it.dialogueId : undefined;
+    if (dlg && !dialogueIds.has(dlg)) err(`${w}: 없는 대사 ${dlg}`);
+    if (it.type === 'examine') {
+      if (it.evidenceId) needEvLater.push([it.evidenceId, w]);
+      if (it.puzzleId && !puzzles.some((p) => p.id === it.puzzleId)) err(`${w}: 없는 퍼즐 ${it.puzzleId}`);
+    }
   }
 }
 const charIds = new Set(characters.map((c) => c.id));
@@ -39,6 +48,7 @@ for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues 
   if (!d.nodes[d.start]) err(`dialogue ${did}: start 노드 없음`);
   for (const [nid, n] of Object.entries(d.nodes)) {
     const w = `dialogue ${did}/${nid}`;
+    if (real.dialogues[did as keyof typeof real.dialogues] && n.source !== 'spec' && n.source !== 'new') err(`${w}: source(spec|new) 표시 없음`);
     if (!charIds.has(n.speaker)) err(`${w}: 없는 인물 ${n.speaker}`);
     if (n.portrait && !existsSync(`public/assets/illust/${n.portrait}.png`)) err(`${w}: 없는 초상 ${n.portrait}`);
     const refs = [n.next, ...(n.choices ?? []).map((c) => c.next), ...(n.present ?? []).map((p) => p.next)].filter(Boolean) as string[];
@@ -56,6 +66,7 @@ const needEv = (id: string, where: string) => { if (!evidenceById.has(id)) err(`
 
 needEvLater.forEach(([id, w]) => needEv(id, w));
 for (const e of evidenceList) if (e.sourceCharacterId && !charIds.has(e.sourceCharacterId)) err(`${e.id}: 없는 인물 ${e.sourceCharacterId}`);
+for (const e of evidenceList) if (e.illust && !existsSync(`public/assets/illust/${e.illust}.png`)) err(`${e.id}: 없는 일러스트 ${e.illust}`);
 for (const [a, b] of conflictPairs) { needEv(a, 'conflicts'); needEv(b, 'conflicts'); }
 
 // puzzles
@@ -72,6 +83,15 @@ for (const p of puzzles) {
   }
   for (const s of p.slots) if (!p.correctSlots[s]?.length) err(`${p.id}: 슬롯 ${s} 정답 없음`);
   for (const s of Object.keys(p.correctSlots)) if (!p.slots.includes(s)) err(`${p.id}: correctSlots 의 알 수 없는 슬롯 ${s}`);
+  for (const t of p.tasks ?? []) {
+    if (!p.slots.includes(t.slot)) err(`${p.id}: task 의 알 수 없는 슬롯 ${t.slot}`);
+    const ids = new Set(t.options.map((o) => o.id));
+    for (const c of p.correctSlots[t.slot] ?? []) if (!ids.has(c)) err(`${p.id}: ${t.slot} 선택지에 정답 ${c} 없음`);
+    for (const k of [...p.distractors, ...Object.keys(p.conflicts)]) {
+      const [slot, tok] = k.split(':');
+      if (slot === t.slot && !ids.has(tok.replace(/^!/, ''))) err(`${p.id}: ${k} 가 ${t.slot} 선택지에 없음`);
+    }
+  }
   if (p.hintTexts.length !== 3) err(`${p.id}: hintTexts 는 3개`);
   const slotKeys = new Set(p.slots);
   for (const k of [...p.distractors, ...Object.keys(p.conflicts)]) {

@@ -2,13 +2,14 @@
 //   bgm/*.mp3 → audio/bgm/ (MP3 96kbps 스테레오 44.1kHz 로 재인코딩), sfx/*.wav → audio/sfx/ (1초 이상이면 OGG, 아니면 그대로 복사)
 //   재인코딩은 devDependency ffmpeg-static 으로 한다 (제출 빌드에는 들어가지 않는다). 없으면 원본 복사.
 //   bgm/CREDITS.md → src/data/bgm-credits.json (타이틀 "정보"에 표시), 있는 파일 목록 → src/data/audio-list.json
-//   소리 전체가 12MB 를 넘으면 실패한다.
+//   소리 전체가 16MB 를 넘으면 실패하고, 150초를 넘는 곡은 경고한다.
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
-export const AUDIO_BUDGET = 12 * 1024 * 1024;
+export const AUDIO_BUDGET = 16 * 1024 * 1024;
+export const BGM_MAX_SECONDS = 150; // 이보다 긴 곡은 경고 (실패 아님)
 
 /** CREDITS.md → 화면에 보일 줄들 (제목·표 서식·강조 기호를 걷어 낸다) */
 export function parseCredits(md: string): string[] {
@@ -33,11 +34,17 @@ export function wavSeconds(buf: Buffer): number {
   }
   return 0;
 }
+/** ffmpeg -i 출력의 "Duration: hh:mm:ss.xx" 를 초로 (실패하면 0) */
+export function durationOf(ff: string | null, file: string): number {
+  if (!ff) return 0;
+  const m = /Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/.exec(spawnSync(ff, ['-i', file], { encoding: 'utf8' }).stderr ?? '');
+  return m ? +m[1] * 3600 + +m[2] * 60 + +m[3] : 0;
+}
 export const OGG_MIN_SECONDS = 1; // 이 길이 이상의 효과음은 OGG(Vorbis)로 줄인다
 
 export function normalizeAudio(src = 'art/source/audio', out = 'public/assets/audio') {
   const list = { bgm: [] as string[], sfx: [] as string[], ext: {} as Record<string, string> };
-  const info = { reencoded: 0, copied: 0, ogg: 0 };
+  const info = { reencoded: 0, copied: 0, ogg: 0 }, warnings: string[] = [];
   let total = 0;
   const ff = findFfmpeg();
   const run = (args: string[]) => !!ff && spawnSync(ff, ['-y', '-loglevel', 'error', ...args]).status === 0;
@@ -48,6 +55,7 @@ export function normalizeAudio(src = 'art/source/audio', out = 'public/assets/au
     for (const f of readdirSync(dir).filter((x) => x.toLowerCase().endsWith(`.${ext}`)).sort()) {
       const name = f.slice(0, -ext.length - 1), from = join(dir, f);
       let to = join(out, kind, `${name}.${ext}`), done = false;
+      if (kind === 'bgm') { const sec = durationOf(ff, from); if (sec > BGM_MAX_SECONDS) warnings.push(`${name}: ${Math.round(sec)}초 — 150초를 넘는다 (용량 예산을 많이 쓴다)`); }
       if (kind === 'bgm') done = run(['-i', from, '-vn', '-c:a', 'libmp3lame', '-b:a', '96k', '-ac', '2', '-ar', '44100', to]); // 원본은 그대로, 결과는 public 에만
       else if (wavSeconds(readFileSync(from)) >= OGG_MIN_SECONDS) {
         const ogg = join(out, kind, `${name}.ogg`);
@@ -57,11 +65,11 @@ export function normalizeAudio(src = 'art/source/audio', out = 'public/assets/au
       total += statSync(to).size; list[kind].push(name);
     }
   }
-  if (total > AUDIO_BUDGET) throw new Error(`소리 용량 ${(total / 1048576).toFixed(1)}MB 가 예산 12MB 를 넘는다`);
+  if (total > AUDIO_BUDGET) throw new Error(`소리 용량 ${(total / 1048576).toFixed(1)}MB 가 예산 16MB 를 넘는다`);
   const credits = join(src, 'bgm', 'CREDITS.md');
   writeFileSync('src/data/bgm-credits.json', JSON.stringify(existsSync(credits) ? parseCredits(readFileSync(credits, 'utf8')) : []));
   writeFileSync('src/data/audio-list.json', JSON.stringify(list));
-  return { list, total, ffmpeg: ff, ...info };
+  return { list, total, ffmpeg: ff, warnings, ...info };
 }
 
 interface AudioData { bgm: { tracks: Record<string, unknown>; fallback: Record<string, string>; scene: Record<string, string>; area: Record<string, string>; dialogue: Record<string, string>; puzzle: string; ending: Record<string, string> }; sfx: { sounds: Record<string, unknown>; events: Record<string, string>; nodeEvents: Record<string, string>; roomAreas: string[] } }

@@ -19,5 +19,6 @@ export function openNamePopup(onDone: (name: string) => void) {
   pushModal({ id: 'namepopup', raw: true, onKey(e) { if (e.key === 'Enter' && !composing(e) && document.activeElement !== input) confirm(); } }); // 입력창이 처리하고, 포커스가 없을 때의 Enter 도 확정한다
   // 입력창 밖을 눌러 포커스를 잃어도 곧바로 되돌린다 (키보드만으로 계속 진행할 수 있게)
   input.addEventListener('blur', () => { if (!done) setTimeout(() => input.focus(), 0); });
+  input.focus(); // 열리자마자 바로 입력할 수 있게 즉시 포커스 (아래 지연 포커스는 애니메이션·레이아웃 직후의 보험)
   setTimeout(() => input.focus(), 0);
 }

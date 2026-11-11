@@ -126,4 +126,5 @@ writeFileSync('src/data/illust-masks.json', JSON.stringify(masks));
 writeFileSync('src/data/illust-list.json', JSON.stringify(readdirSync(join(OUT, 'illust')).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)).sort()));
 writeFileSync(join(OUT, 'assets.json'), JSON.stringify(manifest, null, 1));
 const au = normalizeAudio();
+for (const w of au.warnings) console.warn(`! 소리 경고 — ${w}`);
 console.log(`assets: ${Object.keys(manifest).length} normalized, audio: BGM ${au.list.bgm.length}곡 · 효과음 ${au.list.sfx.length}개 (${(au.total / 1048576).toFixed(1)}MB, 재인코딩 ${au.reencoded}·복사 ${au.copied}, ${au.ffmpeg ? 'ffmpeg' : 'ffmpeg 없음'})`);

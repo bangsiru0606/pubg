@@ -9,6 +9,8 @@
     "test": "vitest run",
     "validate": "tsx tools/validate-data.ts",
     "assets": "tsx tools/normalize-assets.ts",
+    "readme:credits": "tsx tools/readme-credits.ts",
+    "release:shots": "tsx tools/release-shots.ts",
     "build:release": "tsx tools/build-release.ts",
     "test:release": "tsx tools/test-release.ts",
     "screenshot": "tsx tools/screenshot.ts",

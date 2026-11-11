@@ -28,14 +28,15 @@ const walk = (d: string): string[] => readdirSync(d).flatMap((f) => (statSync(jo
 const root = join(dir, 'ConfessionWard_v1.0_web');
 const toolFiles = walk(root).filter((f) => /ffmpeg|ffprobe/i.test(f));
 const audioFiles = existsSync(join(root, 'assets', 'audio')) ? walk(join(root, 'assets', 'audio')).map((f) => f.slice(root.length + 1).split(sep).join('/')) : [];
-const leaked = ['ffmpeg-static', '〔시험용', '시험용 대사', '__cw', '디버그 메뉴', '__CW_DEBUG__', 'debugmenu', 'dbgstate', '씬 점프', 'jumpToScene', 'buildProgress', 'installJump', 'SCENE_STEPS', 'dbgt'].filter((m) => html.includes(m));
+const leaked = ['ffmpeg-static', 'cw_playlog', 'initPlayLog', '플레이 기록', '〔시험용', '시험용 대사', '__cw', '디버그 메뉴', '__CW_DEBUG__', 'debugmenu', 'dbgstate', '씬 점프', 'jumpToScene', 'buildProgress', 'installJump', 'SCENE_STEPS', 'dbgt'].filter((m) => html.includes(m));
 
 const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 const errors: string[] = [];
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 page.on('pageerror', (e) => errors.push(String(e)));
-page.on('requestfailed', (r) => errors.push(`requestfailed ${r.url()}`));
+// 곡을 바꿀 때 아직 받는 중인 소리 파일의 로드가 취소(ERR_ABORTED)되는 것은 정상이다. 그 밖의 요청 실패는 오류.
+page.on('requestfailed', (r) => { if (!(/\.(mp3|ogg|wav)$/.test(r.url()) && /ABORTED/.test(r.failure()?.errorText ?? ''))) errors.push(`requestfailed ${r.url()}`); });
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__game?.scene.getScene('Explore')?.player, null, { timeout: 10000 });
 await page.waitForSelector('#title'); // 타이틀 → (소리) 설정·정보 화면을 지나 새 게임

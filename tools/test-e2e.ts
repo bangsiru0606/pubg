@@ -17,7 +17,8 @@ const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 const errors: string[] = [];
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 page.on('pageerror', (e) => errors.push(String(e)));
-page.on('requestfailed', (r) => errors.push(`requestfailed ${r.url()}`));
+// 곡을 바꿀 때 아직 받는 중인 소리 파일의 로드가 취소(ERR_ABORTED)되는 것은 정상이다. 그 밖의 요청 실패는 오류.
+page.on('requestfailed', (r) => { if (!(/\.(mp3|ogg|wav)$/.test(r.url()) && /ABORTED/.test(r.failure()?.errorText ?? ''))) errors.push(`requestfailed ${r.url()}`); });
 
 const fails: string[] = [];
 const check = (ok: boolean, msg: string) => { console.log(`${ok ? '✓' : '✗'} ${msg}`); if (!ok) fails.push(msg); };
@@ -153,6 +154,7 @@ await page.waitForSelector('#title');
 await shot('stage7_fix_title');
 await press('Enter'); // 새 게임
 await page.waitForSelector('#namepopup');
+await page.waitForFunction(() => document.activeElement?.id === 'nameinput', null, { timeout: 2000 }); // 이름 입력창은 열리자마자 포커스를 가진다 (첫 글자를 잃지 않는다)
 const inp = page.locator('#nameinput');
 check((await inp.getAttribute('placeholder')) === 'ex. 한지수', '[이름] 안내 문구 “ex. 한지수”');
 await shot('stage7_fix_name');

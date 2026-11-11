@@ -76,7 +76,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   const visibleTokens = () => tokenKeys().filter((k) => !(timeline && isRemoved('', k)));
   const markOptions = (t: PuzzleTask) => t.options.filter((o) => !isRemoved(t.slot, o.id));
 
-  const box = el('div', 'modal puzzle'); box.id = 'puzzle';
+  const box = el('div', 'modal puzzle'); box.id = 'puzzle'; box.dataset.pid = puzzleId; // 개발용 플레이 기록이 어느 퍼즐인지 읽는다
   root().append(box); bgmPush('puzzle', puzzleTrack());
 
   const focusList = (): Focus[] => [

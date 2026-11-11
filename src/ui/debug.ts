@@ -5,10 +5,12 @@ import { buildProgress } from '../explore/playthrough';
 import { START } from '../explore/interaction';
 import { setPrompt } from './hud';
 import { el, esc, root } from './hud';
+import { initPlayLog, togglePlayLogPanel } from './playlog';
 const CSS = `/* ---------- 디버그 메뉴 (개발 서버 전용) ---------- */
 .dbg { position: absolute; left: 6px; top: 6px; width: 250px; background: rgba(10,10,14,.96); border: 1px solid #e05050; padding: 4px; z-index: 99; font-size: 8px; }
 .dbg button { margin: 1px; background: #2a2d33; border: 1px solid #555; padding: 0 4px; cursor: pointer; }
-.dbg .dbgt { color: #e05050; } .dbg pre { white-space: pre-wrap; margin: 2px 0 0; max-height: 150px; overflow: auto; font-size: 7px; }
+.dbg .dbgt { color: #e05050; } .dbg.playlog { width: 330px; max-height: 250px; overflow: auto; } .dbg table { border-collapse: collapse; margin: 2px 0; width: 100%; } .dbg th, .dbg td { border: 1px solid #444; padding: 0 2px; text-align: right; font-size: 7px; } .dbg th:first-child, .dbg td:first-child { text-align: left; } .dbg .note { color: #aaa; font-size: 7px; }
+.dbg pre { white-space: pre-wrap; margin: 2px 0 0; max-height: 150px; overflow: auto; font-size: 7px; }
 
 /* 종이 위의 진술 3단계 (대비 확보) */
 .ndetail .st-unconfirmed { color: #5f594b; border-bottom-color: #7a7365; }
@@ -35,18 +37,19 @@ const MARK = '__CW_DEBUG__';
 void MARK;
 
 export function initDebug(scene: ExploreScene) {
-  installJump(scene); addCss();
+  installJump(scene); addCss(); initPlayLog(scene);
   let box: HTMLElement | null = null;
   const close = () => { box?.remove(); box = null; };
   const open = () => {
     box = el('div', 'dbg'); box.id = 'debugmenu';
     const jumps = [1, 2, 3, 4, 5, 6, 7].map((n) => `<button data-j="${n}">씬 ${n} 시작</button>`).join('');
     box.innerHTML = `<div class="dbgt">디버그 메뉴 (F9) — 개발 서버 전용</div><div>${jumps}</div>
-      <div><button data-a="reset">저장 초기화</button><button data-a="state">상태 보기</button><button data-a="close">닫기</button></div><pre id="dbgstate"></pre>`;
+      <div><button data-a="reset">저장 초기화</button><button data-a="state">상태 보기</button><button data-a="log">플레이 기록</button><button data-a="close">닫기</button></div><pre id="dbgstate"></pre>`;
     box.addEventListener('click', (e) => {
       const b = (e.target as HTMLElement).closest('button'); if (!b) return;
       if (b.dataset.j) { close(); (scene as unknown as { jumpToScene: (n: number) => void }).jumpToScene(+b.dataset.j); }
       else if (b.dataset.a === 'reset') { try { Object.keys(localStorage).filter((k) => k.startsWith('confession_ward_save')).forEach((k) => localStorage.removeItem(k)); } catch { /* 저장소 사용 불가 */ } box!.querySelector('pre')!.textContent = '저장을 모두 지웠다.'; }
+      else if (b.dataset.a === 'log') togglePlayLogPanel();
       else if (b.dataset.a === 'state') {
         const s = scene.state;
         box!.querySelector('pre')!.innerHTML = esc(`구역 ${s.currentSceneId} · 이름 ${s.playerName}\n플래그: ${s.flags.join(', ')}\n단서(${s.evidenceIds.length}): ${s.evidenceIds.map((id) => id.slice(0, 3) + (s.verifiedEvidenceIds.includes(id) ? '✓' : '?')).join(' ')}\n해결한 퍼즐: ${s.solvedPuzzleIds.join(', ')}\n저장 결론: ${JSON.stringify(s.selectedHypothesisByClaim)}\n증거 보존 ${s.evidenceSecured} · 보고 대상 ${s.reportTarget}`);

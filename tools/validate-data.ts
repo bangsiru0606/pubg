@@ -2,7 +2,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import real from '../src/data/dialogue.json' with { type: 'json' };
 import fixture from '../src/data/dialogue.test-fixture.json' with { type: 'json' };
-import { INTERACT_RANGE, areas } from '../src/explore/interaction';
+import { GROUND_Y, INTERACT_RANGE, areas } from '../src/explore/interaction';
 import { characters, claims, conflictPairs, endingLines, endings, evidenceById, evidenceList, puzzles } from '../src/core/data';
 import type { Dialogue } from '../src/core/types';
 import audioData from '../src/data/audio.json' with { type: 'json' };
@@ -33,6 +33,8 @@ for (const [aid, a] of Object.entries(areas)) {
       if (it.spawnX < t.minX || it.spawnX > t.maxX) err(`${w}: spawnX 가 ${it.to} 범위 밖`);
       for (const u of t.interactables) if (u.type === 'transition' && Math.abs(it.spawnX - u.x) <= INTERACT_RANGE) err(`${w}: 도착 위치 ${it.spawnX} 가 ${it.to}/${u.id} 의 상호작용 범위(${INTERACT_RANGE}px) 안`);
       if (it.cutscene && !existsSync(`public/assets/illust/${it.cutscene}.webp`)) err(`${w}: 없는 컷신 ${it.cutscene}`);
+      if (it.cutsceneDialogue && !dialogueIds.has(it.cutsceneDialogue)) err(`${w}: 없는 컷신 독백 ${it.cutsceneDialogue}`);
+      if ((it.requires || it.requiresEvidence?.length) && !it.lockedDialogue) err(`${w}: 잠금 조건(requires)이 있는 이동 지점은 lockedDialogue(잠김 독백)가 있어야 한다`);
     }
     if (it.requires && !knownFlags.has(it.requires)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.requires}`);
     if (it.hideWhen && !knownFlags.has(it.hideWhen)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.hideWhen}`);
@@ -209,6 +211,36 @@ for (const [key, lines] of Object.entries(endingLines)) {
   pendingSummary = { batch3: pendingChars.length * 3, batch4: pendingTex.filter((k) => BG_KEYS.has(k)).length, batch5: pendingTex.filter((k) => !BG_KEYS.has(k)).length };
   if (pendingTex.length) warnings.push(`생성 대기(pending) 텍스처 ${pendingTex.length}개: ${pendingTex.join(', ')}`);
   if (pendingChars.length) warnings.push(`생성 대기(pending) 초상 인물 ${pendingChars.length}명 (${pendingChars.map((c) => c.id).join(', ')})`);
+}
+{ // 벽 세로 위치 조정: 내려도 화면 맨 위(y=0)에 빈틈이 생기지 않아야 한다 (벽 높이 - 바닥선 높이 이내)
+  const sizes = JSON.parse(readFileSync('public/assets/assets.json', 'utf8')) as Record<string, { h: number }>;
+  for (const [aid, a] of Object.entries(areas)) { const off = a.bg?.wallOffsetY ?? 0, wh = a.bg ? sizes[a.bg.wall]?.h : undefined; if (off && wh !== undefined && off > wh - GROUND_Y) err(`map/${aid}: wallOffsetY ${off} 이 크다 — 화면 위쪽에 빈틈이 생긴다 (최대 ${wh - GROUND_Y})`); if (off < 0) err(`map/${aid}: wallOffsetY 는 0 이상`); }
+}
+{ // 맵 끝: 구역은 카메라 폭(480) 이상이고, 가장 바깥 물체·도착 지점에서 100px 넘게 빈 바닥이 이어지지 않는다
+  const sizes = JSON.parse(readFileSync('public/assets/assets.json', 'utf8')) as Record<string, { w: number }>;
+  const spawns: Record<string, number[]> = {};
+  for (const a of Object.values(areas)) for (const it of a.interactables) if (it.type === 'transition') (spawns[it.to] ??= []).push(it.spawnX);
+  for (const [aid, a] of Object.entries(areas)) {
+    if (a.maxX - a.minX < 480) err(`map/${aid}: 폭 ${a.maxX - a.minX} 이 카메라 폭 480 보다 좁다`);
+    const w = (tex?: string, d = 24) => (tex ? sizes[tex]?.w ?? d : d);
+    const ents = [...a.interactables.map((i) => [i.x, w('art' in i ? i.art : undefined)] as const), ...(a.objects ?? []).map((o) => [o.x, w(o.tex)] as const), ...(a.props ?? []).map((p) => [p.x, w(p.tex, p.w)] as const)];
+    const L = Math.min(...ents.map(([x, ww]) => x - ww / 2), ...(spawns[aid] ?? [])), R = Math.max(...ents.map(([x, ww]) => x + ww / 2), ...(spawns[aid] ?? []));
+    if (a.minX < L - 100) err(`map/${aid}: 왼쪽 끝(${a.minX})에서 가장 바깥 물체(${Math.round(L)})까지 빈 바닥이 100px 넘게 이어진다`);
+    if (a.maxX > R + 100) err(`map/${aid}: 오른쪽 끝(${a.maxX})에서 가장 바깥 물체(${Math.round(R)})까지 빈 바닥이 100px 넘게 이어진다`);
+  }
+}
+{ // 구역 연출(stage) 단계와 대사 표시 방식(voice)
+  for (const [aid, a] of Object.entries(areas)) for (const s of a.stage?.steps ?? []) {
+    const w = `map/${aid}/stage`;
+    if (s.do === 'dialogue' && !(s.id && dialogueIds.has(s.id))) err(`${w}: 없는 대사 ${s.id}`);
+    for (const who of [s.actor, s.to]) if (who?.startsWith('npc:') && !a.interactables.some((i) => i.type === 'npc' && i.id === who.slice(4))) err(`${w}: 이 구역에 없는 NPC ${who}`);
+    if (s.do === 'walk' && s.toX !== undefined && (s.toX < a.minX || s.toX > a.maxX)) err(`${w}: walk toX ${s.toX} 가 구역 밖`);
+  }
+  for (const [id, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues }) as [string, Dialogue][]) for (const [nid, n] of Object.entries(d.nodes)) {
+    if (n.voice === undefined) continue;
+    if (n.voice !== 'inner' && n.voice !== 'action') err(`dialogue/${id}:${nid}: 알 수 없는 voice ${n.voice}`);
+    if (/^\(|\)$/.test(n.text.trim())) err(`dialogue/${id}:${nid}: voice 노드의 텍스트에 괄호를 직접 쓰지 않는다 (화면이 감싼다)`);
+  }
 }
 { // 소리 (docs/사운드_계획.md): 데이터 참조 오류는 오류, 파일 없음·미사용 파일은 경고
   const nodes = new Set<string>();

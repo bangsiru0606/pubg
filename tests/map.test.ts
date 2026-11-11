@@ -41,7 +41,8 @@ describe('상호작용 규칙', () => {
   it('지하 계단은 P03·P04 해결 전에는 잠겨 있다', () => {
     const s = createGameState(), a = areas.floor1, stairs = a.interactables.find((i) => i.id === 'stairs_b1')!;
     expect(isAvailable(stairs, s)).toBe(false);
-    expect(nearest(a, stairs.x, s)).toBeNull();
+    expect((stairs as Transition).lockedDialogue).toBe('mono_basement_locked'); // 잠겨 있어도 반응한다: 잠김 독백
+    expect(nearest(a, stairs.x, s)?.id).toBe('stairs_b1');
     for (const id of ['P03_revision_diff', 'P04_approval_chain']) submitPuzzle(s, id, puzzles.find((p) => p.id === id)!.correctSlots);
     expect(nearest(a, stairs.x, s)?.id).toBe('stairs_b1');
   });
@@ -51,12 +52,15 @@ describe('상호작용 규칙', () => {
     setFlag(s, 'intro_done');
     expect(isAvailable(door, s)).toBe(true);
   });
-  it('자동 트리거는 범위 안에서 한 번만', () => {
-    const s = createGameState(), a = areas.floor1;
-    expect(autoTriggered('floor1', a, 0, s)).toBeNull();
-    expect(autoTriggered('floor1', a, 2.5 * 45, s)?.id).toBe('baek');
-    setFlag(s, triggerKey('floor1', 'baek'));
-    expect(autoTriggered('floor1', a, 2.5 * 45, s)).toBeNull();
+  it('1층 백선우 대화는 걸어서 거는 자동 트리거가 아니라 구역 연출(stage)로 시작한다', () => {
+    const a = areas.floor1, s = createGameState();
+    expect(autoTriggered('floor1', a, 112.5, s)).toBeNull();
+    expect(a.stage?.flag).toBe(triggerKey('floor1', 'baek')); // 한 번 본 뒤에는 다시 재생하지 않는다 (이 플래그)
+    const steps = a.stage!.steps.map((q) => q.do);
+    expect(steps.indexOf('dialogue')).toBeGreaterThan(steps.indexOf('camera')); // 카메라를 백선우에게 옮긴 뒤 대화
+    expect(steps.indexOf('hide')).toBeGreaterThan(steps.indexOf('dialogue')); // 대화가 끝나면 퇴장
+    expect(steps.at(-1)).toBe('unlock'); // 마지막에 조작을 푼다
+    expect(a.stage!.steps.find((q) => q.do === 'dialogue')!.id).toBe('baek_lobby');
   });
   it('이미 방문한 구역 전환 페이드는 합계 0.4초 이하', () => {
     const f = fadeSeconds(true);
@@ -81,9 +85,9 @@ describe('바라보는 방향', () => {
     expect(facesLeft('player', flipFor('player', false))).toBe(false);
     expect(facesLeft('player', flipFor('player', true))).toBe(true);
   });
-  it('원본이 오른쪽을 보는 박은호: 왼쪽을 보려면 flip', () => {
-    expect(flipFor('eunho', true)).toBe(true);
-    expect(flipFor('eunho', false)).toBe(false);
+  it('원본이 왼쪽을 보는 박은호(idle·walk 프레임 모두): 왼쪽을 보려면 그대로, 오른쪽을 보려면 flip', () => {
+    expect(flipFor('eunho', true)).toBe(false);
+    expect(flipFor('eunho', false)).toBe(true);
     expect(facesLeft('eunho', flipFor('eunho', true))).toBe(true);
   });
   it('facing 이 없는 스프라이트는 오류', () => expect(() => flipFor('nobody', true)).toThrow());

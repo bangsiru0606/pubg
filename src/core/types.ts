@@ -51,6 +51,7 @@ export interface StatementRecord { text: string; speaker: string; stage: Stateme
 
 export interface DialogueNode {
   speaker: string; portrait?: string; text: string;
+  voice?: 'inner' | 'action'; // 소리 내어 하는 말이 아니다: inner = 생각·독백, action = 행동·소리 묘사. 화면에 ( ) 로 감싸 보여 준다 (괄호는 데이터에 쓰지 않는다)
   noPortrait?: boolean;       // 초상·실루엣을 아예 그리지 않는다 (노크 구간)
   source?: 'spec' | 'new' | 'craft_on'; // 기획서 문장이면 spec, 새로 쓴 문장이면 new
   next?: string;

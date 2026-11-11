@@ -38,7 +38,7 @@ const noIds = async (where: string) => {
   const m = t.match(ID_RE);
   check(!m, `${where}: 내부 ID 노출 없음${m ? ' → ' + m[0] : ''}`);
 };
-const startQuick = async () => { await page.waitForSelector('#title'); await cw('cw.quick()'); await page.waitForSelector('#title', { state: 'detached' }); }; // 시스템 시험·분기 시험: 오프닝 없이 시작
+const startQuick = async () => { await page.waitForSelector('#title'); await cw('cw.quick()'); await cw("cw.state.flags.push('trigger_fired:floor1:baek')"); /* 시스템 시험은 1층 첫 입장 연출(stage) 없이 */ await page.waitForSelector('#title', { state: 'detached' }); }; // 시스템 시험·분기 시험: 오프닝 없이 시작
 async function enterArea(x: number, expect: string) {
   await teleport(x); await wait(60);
   await press('Enter');
@@ -103,7 +103,10 @@ await enterArea(30 * 45, 'floor3'); check(true, '2층 → 3층');
 await enterArea(0, 'floor2'); check(true, '3층 → 2층');
 await enterArea(0, 'floor1'); check(true, '2층 → 1층');
 await teleport(32 * 45); await wait(60);
-check((await promptText()) === '', '지하 계단은 잠겨 있어 프롬프트가 없다');
+check((await promptText()).includes('지하로 내려가기'), '지하 철창문은 잠겨 있어도 반응한다 (프롬프트)');
+await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
+check((await page.locator('#dialogue .text').innerText()) === '(철창문이 잠겨 있다. 지하로 내려가려면 이 병원의 관리 권한이 필요해 보인다.)' && (await area()) === 'floor1', '지하 철창문 잠김 독백 (괄호 표시, 이동하지 않는다)');
+await press('Enter'); await page.waitForFunction(() => !document.querySelector('#dialogue'));
 await cw("cw.state.solvedPuzzleIds.push('P03_revision_diff', 'P04_approval_chain')");
 await wait(60);
 check((await promptText()).includes('지하로 내려가기'), 'P03·P04 해결 후 지하 계단 프롬프트');
@@ -226,7 +229,7 @@ await page.waitForSelector('#dialogue');
 await wait(100);
 check((await page.locator('#dialogue .name').innerText()) === '???', '[오프닝] 노크: 화자 “???”');
 await wait(150); // 타이핑이 끝난 뒤
-check((await page.locator('#dialogue .text').innerText()) === '똑똑똑' && (await page.locator('#dialogue .portrait').count()) === 0, '[오프닝] “똑똑똑” — 초상을 숨긴다');
+check((await page.locator('#dialogue .text').innerText()) === '(똑똑똑)' && (await page.locator('#dialogue .portrait').count()) === 0, '[오프닝] “(똑똑똑)” — 소리 묘사는 괄호로, 초상은 숨긴다');
 await shot('stage7_fix_knock');
 await press('Enter');
 await wait(150);
@@ -246,7 +249,7 @@ await page.waitForSelector('#dialogue', { timeout: 15000 });
 await wait(60);
 const gap = (await cw<number>("cw.scene.actors.get('eunho').x")) - (await cw<number>('cw.scene.player.x'));
 check(Math.abs(gap - 56) <= 1, '[오프닝] 박은호는 플레이어 앞 56px 까지 걸어온다');
-check(await cw<boolean>('!cw.scene.playerFacesLeft()') && await cw<boolean>("cw.scene.actors.get('eunho').flipX === true"), '[오프닝] 서로 마주 본다');
+check(await cw<boolean>('!cw.scene.playerFacesLeft()') && await cw<boolean>("cw.scene.actors.get('eunho').flipX === false"), '[오프닝] 서로 마주 본다 (박은호 원본이 왼쪽을 보므로 flip 없음)');
 await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('병원은 은지가 치료 중이라고만 합니다'), '[씬 1] 첫 대사는 기획서 문장');
 check((await page.locator('#dialogue .name').innerText()) === '박은호', '[씬 1] 박은호 화자');
@@ -275,21 +278,22 @@ await press('Enter');
 await page.waitForSelector('#cutscene', { timeout: 3000 });
 check(true, '[씬 1] 병원 도착 컷신');
 await wait(500); await noIds('[컷신]');
-await press('Enter');
+await page.waitForSelector('#cutscene ~ #dialogue, #dialogue', { timeout: 3000 }); await wait(2300); // 병원 도착 독백 (그림 위 대화창)
+check((await page.locator('#dialogue .text').innerText()).startsWith('(도시에서 두 시간') && (await page.locator('#dialogue .voice-inner').count()) === 1, '[씬 1] 병원 도착 독백은 괄호 + 생각 글씨(inner)로 표시된다');
+for (let i = 0; i < 14 && (await page.locator('#cutscene').count()); i++) { await press('Enter'); await wait(150); } // 세 줄을 넘긴다
 await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor1' && !(window as any).__cw.scene.busy, null, { timeout: 4000 });
 check(true, '[씬 2] 컷신 후 1층');
 check((await promptText()) === '', '[진행] 도착 위치는 다른 전환 지점의 상호작용 범위 밖');
 
 // ---- 씬 2 ----
-await page.keyboard.down('Shift'); await page.keyboard.down('ArrowRight');
-await page.waitForSelector('#dialogue', { timeout: 5000 });
-await page.keyboard.up('ArrowRight'); await page.keyboard.up('Shift');
+await page.waitForSelector('#dialogue', { timeout: 15000 }); // 1층 첫 입장: 조작이 잠기고 카메라가 백선우로 옮겨 간 뒤 대화가 자동으로 시작된다
+check(await cw<boolean>('cw.scene.locked'), '[씬 2] 1층 첫 입장 연출 중에는 조작이 잠겨 있다');
 await wait(60); await press('Enter');
-check((await page.locator('#dialogue .text').innerText()).includes('오늘 새벽 원장님께서 지병으로 돌아가셨습니다'), '[씬 2] 백선우 도착 대사 (자동 트리거)');
+check((await page.locator('#dialogue .text').innerText()).includes('오늘 새벽 원장님께서 지병으로 돌아가셨습니다'), '[씬 2] 백선우 도착 대사 (구역 연출)');
 check(await cw<boolean>("cw.state.statements.baek_s_natural?.stage === 'unconfirmed'"), '[씬 2] 백선우의 진술이 수첩에 미확인으로 기록');
 await mash();
-await wait(100);
-check(await cw<boolean>("cw.state.flags.includes('baek_left')"), '[씬 2] 백선우가 자리를 비운다');
+await page.waitForFunction(() => !(window as any).__cw.scene.locked, null, { timeout: 12000 }); // 대화가 끝나면 백선우가 퇴장하고 조작이 풀린다
+check(await cw<boolean>("cw.state.flags.includes('baek_left')") && await cw<boolean>("!cw.scene.npcSprites.has('baek')"), '[씬 2] 백선우가 자리를 비우고 조작이 풀린다');
 
 await teleport(1620); await wait(60);
 check((await promptText()).includes('올라가기'), '[진행] 잠긴 계단에도 프롬프트');
@@ -843,7 +847,7 @@ await press('Enter'); await page.waitForSelector('#closeup');
 await press('Escape'); // 근접 조사 닫기
 await page.waitForSelector('#dialogue'); await wait(200);
 await press('Escape'); await wait(80);
-check((await page.locator('#dialogue').count()) === 1 && (await page.locator('#dialogue .text').innerText()) === '똑똑똑', '[Esc] 노크 대사 중 Esc 는 무시된다');
+check((await page.locator('#dialogue').count()) === 1 && (await page.locator('#dialogue .text').innerText()) === '(똑똑똑)', '[Esc] 노크 대사 중 Esc 는 무시된다');
 await press('Enter'); await wait(200); await press('Escape'); await wait(80);
 check((await page.locator('#dialogue .text').innerText()) === '들어오세요.', '[Esc] “들어오세요.” 에서도 Esc 는 무시된다');
 await press('Enter');
@@ -876,6 +880,25 @@ check(Math.abs(gap2 - 56) <= 1 && (await page.locator('#dialogue .name').innerTe
 await mash(); await page.waitForSelector('#viewer'); await closeViewer();
 await page.waitForFunction(() => !(window as any).__cw.scene.locked, null, { timeout: 8000 });
 check(await cw<boolean>('cw.scene.started'), '[건너뛰기] 이후 오프닝이 정상 종료된다');
+
+// ---- 긴 선택지·제시 목록: 대화창 안에 들어오고, 선택한 줄이 항상 보인다 ----
+await page.goto(url);
+await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
+await startQuick(); await cw('cw.scene.jumpToScene(3)'); await wait(700);
+await cw("cw.ui.acquire(['E05_access_log','E06_torn_sleeve','E07_report_revision','E08_miran_revised','E09_sedative_gap','E10_consent_forms','E11_transfer_order','E12_ledger'])");
+await cw("cw.openDialogue('jeong_haneul')"); await page.waitForSelector('#dialogue');
+for (let i = 0; i < 30 && (await page.locator('#dialogue .opt', { hasText: '단서 제시' }).count()) === 0; i++) { await press('Enter'); await wait(150); }
+await page.locator('#dialogue .opt', { hasText: '단서 제시' }).click(); await wait(200);
+for (let i = 0; i < 12; i++) await press('ArrowDown');
+await wait(250);
+const fit = await page.evaluate(`(() => {
+  var opts = document.querySelector('#dialogue .opts'), ob = opts.getBoundingClientRect(), sel = document.querySelector('#dialogue .opt.sel').getBoundingClientRect(), ui = document.querySelector('#ui').getBoundingClientRect(), dlg = document.querySelector('#dialogue').getBoundingClientRect();
+  var all = Array.prototype.map.call(document.querySelectorAll('#dialogue .opt'), function (e) { return e.getBoundingClientRect().bottom; });
+  return { scrolls: opts.scrollHeight > opts.clientHeight, selVisible: sel.top >= ob.top - 4 && sel.bottom <= ob.bottom + 4, optsInsideDialog: ob.bottom <= dlg.bottom + 1 && dlg.bottom <= ui.bottom + 1, n: all.length };
+})()`) as { scrolls: boolean; selVisible: boolean; optsInsideDialog: boolean; n: number };
+check(fit.n >= 9 && fit.scrolls && fit.optsInsideDialog, `[선택지] 긴 증거 제시 목록(${fit.n}줄)은 대화창 안에서 스크롤된다`);
+check(fit.selVisible, '[선택지] 선택한 줄이 항상 보이는 영역 안에 있다 (자동 스크롤)');
+await press('Escape'); await press('Escape');
 
 await browser.close();
 check(errors.length === 0, `콘솔 오류 0 ${errors.join(' | ')}`);

@@ -28,8 +28,8 @@
   "office": {
    "name": "탐정 사무실",
    "theme": "office",
-   "minX": -90,
-   "maxX": 630,
+   "minX": 20,
+   "maxX": 590,
    "objects": [
     {
      "id": "window",
@@ -74,7 +74,9 @@
      "kind": "door",
      "requires": "intro_done",
      "cutscene": "hospital_intro",
-     "art": "door"
+     "art": "door",
+     "cutsceneDialogue": "mono_hospital_intro",
+     "lockedDialogue": "mono_office_locked"
     }
    ],
    "npcSprite": {
@@ -92,8 +94,8 @@
   "floor1": {
    "name": "1층 로비+복도",
    "theme": "hospital",
-   "minX": -360,
-   "maxX": 1800,
+   "minX": -20,
+   "maxX": 1680,
    "interactables": [
     {
      "type": "npc",
@@ -101,10 +103,6 @@
      "x": 180,
      "name": "백선우",
      "dialogueId": "baek_lobby",
-     "autoTrigger": {
-      "x": 112.5,
-      "width": 45
-     },
      "hideWhen": "baek_left"
     },
     {
@@ -116,7 +114,8 @@
      "spawnX": 410,
      "kind": "door",
      "requires": "office_access_granted",
-     "art": "door_director"
+     "art": "door_director",
+     "lockedDialogue": "mono_director_locked"
     },
     {
      "type": "examine",
@@ -136,7 +135,8 @@
      "spawnX": 50,
      "kind": "stairs",
      "requires": "@basement_open",
-     "art": "stairs_basement"
+     "art": "stairs_basement",
+     "lockedDialogue": "mono_basement_locked"
     },
     {
      "type": "transition",
@@ -171,14 +171,71 @@
    },
    "bg": {
     "wall": "lobby_wall",
-    "floor": "lobby_floor_v2"
+    "floor": "lobby_floor_v2",
+    "wallOffsetY": 66
+   },
+   "stage": {
+    "flag": "trigger_fired:floor1:baek",
+    "steps": [
+     {
+      "do": "wait",
+      "sec": 0.5
+     },
+     {
+      "do": "walk",
+      "actor": "player",
+      "toX": 116,
+      "speed": 110
+     },
+     {
+      "do": "face",
+      "actor": "player",
+      "dir": "right"
+     },
+     {
+      "do": "camera",
+      "to": "npc:baek",
+      "smooth": 0.06,
+      "settle": true
+     },
+     {
+      "do": "dialogue",
+      "id": "baek_lobby"
+     },
+     {
+      "do": "wait",
+      "sec": 0.6
+     },
+     {
+      "do": "walk",
+      "actor": "npc:baek",
+      "toX": 330,
+      "speed": 90
+     },
+     {
+      "do": "hide",
+      "actor": "npc:baek"
+     },
+     {
+      "do": "camera",
+      "to": "player",
+      "smooth": 0.08,
+      "settle": true
+     },
+     {
+      "do": "refresh"
+     },
+     {
+      "do": "unlock"
+     }
+    ]
    }
   },
   "room_director": {
    "name": "원장실",
    "theme": "admin",
-   "minX": -180,
-   "maxX": 900,
+   "minX": 60,
+   "maxX": 724,
    "interactables": [
     {
      "type": "transition",
@@ -225,7 +282,8 @@
    ],
    "bg": {
     "wall": "director_wall",
-    "floor": "wood_floor"
+    "floor": "wood_floor",
+    "wallOffsetY": 66
    },
    "objects": [
     {
@@ -251,8 +309,8 @@
   "floor2": {
    "name": "2층 병동",
    "theme": "ward",
-   "minX": -90,
-   "maxX": 1530,
+   "minX": -54,
+   "maxX": 1410,
    "interactables": [
     {
      "type": "transition",
@@ -318,14 +376,15 @@
    ],
    "bg": {
     "wall": "ward_wall",
-    "floor": "ward_floor"
+    "floor": "ward_floor",
+    "wallOffsetY": 66
    }
   },
   "room_choi": {
    "name": "201호 병실",
    "theme": "ward",
    "minX": -45,
-   "maxX": 540,
+   "maxX": 440,
    "interactables": [
     {
      "type": "transition",
@@ -353,7 +412,8 @@
    },
    "bg": {
     "wall": "patientroom_wall",
-    "floor": "ward_floor"
+    "floor": "ward_floor",
+    "wallOffsetY": 66
    },
    "objects": [
     {
@@ -368,7 +428,7 @@
    "name": "202호 병실",
    "theme": "ward",
    "minX": -45,
-   "maxX": 540,
+   "maxX": 440,
    "interactables": [
     {
      "type": "transition",
@@ -396,7 +456,8 @@
    },
    "bg": {
     "wall": "patientroom_wall",
-    "floor": "ward_floor"
+    "floor": "ward_floor",
+    "wallOffsetY": 66
    },
    "objects": [
     {
@@ -411,7 +472,7 @@
    "name": "203호 병실",
    "theme": "ward",
    "minX": -45,
-   "maxX": 540,
+   "maxX": 572,
    "interactables": [
     {
      "type": "transition",
@@ -448,7 +509,8 @@
    },
    "bg": {
     "wall": "patientroom_wall",
-    "floor": "ward_floor"
+    "floor": "ward_floor",
+    "wallOffsetY": 66
    },
    "objects": [
     {
@@ -462,8 +524,8 @@
   "floor3": {
    "name": "3층 관계자 구역",
    "theme": "admin",
-   "minX": -90,
-   "maxX": 1035,
+   "minX": -54,
+   "maxX": 992,
    "interactables": [
     {
      "type": "transition",
@@ -508,14 +570,15 @@
    ],
    "bg": {
     "wall": "staff_wall",
-    "floor": "wood_floor"
+    "floor": "wood_floor",
+    "wallOffsetY": 66
    }
   },
   "room_baek": {
    "name": "부원장실",
    "theme": "admin",
    "minX": -45,
-   "maxX": 540,
+   "maxX": 440,
    "interactables": [
     {
      "type": "transition",
@@ -553,14 +616,15 @@
    },
    "bg": {
     "wall": "staff_wall",
-    "floor": "wood_floor"
+    "floor": "wood_floor",
+    "wallOffsetY": 66
    }
   },
   "room_oh": {
    "name": "간호사실",
    "theme": "admin",
    "minX": -45,
-   "maxX": 540,
+   "maxX": 440,
    "interactables": [
     {
      "type": "transition",
@@ -599,14 +663,15 @@
    },
    "bg": {
     "wall": "nurse_wall",
-    "floor": "ward_floor"
+    "floor": "ward_floor",
+    "wallOffsetY": 66
    }
   },
   "room_lee": {
    "name": "이혜정실",
    "theme": "admin",
    "minX": -45,
-   "maxX": 540,
+   "maxX": 526,
    "interactables": [
     {
      "type": "transition",
@@ -646,7 +711,8 @@
    },
    "bg": {
     "wall": "staff_wall",
-    "floor": "wood_floor"
+    "floor": "wood_floor",
+    "wallOffsetY": 66
    },
    "objects": [
     {
@@ -660,8 +726,8 @@
   "b1": {
    "name": "지하 1층 창고",
    "theme": "basement",
-   "minX": -90,
-   "maxX": 1170,
+   "minX": -52,
+   "maxX": 978,
    "interactables": [
     {
      "type": "transition",

@@ -7,7 +7,7 @@ import {
 } from '../core';
 import {
   GROUND_Y, OPENING, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, showsSparkle, walkFlip, promptOf, themes,
-  triggerKey, talkStand, type Examine, type Interactable, type Npc, type Transition,
+  triggerKey, talkStand, type Examine, type OpeningStep, type Interactable, type Npc, type Transition,
 } from '../explore/interaction';
 import { openCloseup } from '../ui/closeup';
 import { openEnding, unsolvedClaimIds } from '../ui/ending';
@@ -91,7 +91,7 @@ export class ExploreScene extends Phaser.Scene {
     if (a.bg && has(a.bg.wall) && has(a.bg.floor)) {
       const tex = (k: string) => this.textures.get(k).getSourceImage() as HTMLImageElement;
       const tile = (k: string, y: number, depth: number) => this.add.tileSprite(a.minX, y, w, tex(k).height, k).setOrigin(0, 0).setDepth(depth);
-      tile(a.bg.wall, g - tex(a.bg.wall).height, 0); tile(a.bg.floor, g, 1);
+      tile(a.bg.wall, g - tex(a.bg.wall).height + (a.bg.wallOffsetY ?? 0), 0); tile(a.bg.floor, g, 1);
       if (has(a.bg.topband)) tile(a.bg.topband, g - tex(a.bg.topband).height, 2);
     } else {
       const t = themes[a.theme] ?? themes.admin;
@@ -198,7 +198,7 @@ export class ExploreScene extends Phaser.Scene {
     if (!it.cutscene || hasFlag(this.state, flag)) { void this.go(it.to, it.spawnX); return; }
     setFlag(this.state, flag); sfx('onFadeWhoosh');
     this.busy = true; setPrompt(null);
-    void fadeThrough(0.3, 0.3, () => openCutscene(it.cutscene!, () => { this.busy = false; void this.go(it.to, it.spawnX); }));
+    void fadeThrough(0.3, 0.3, () => openCutscene(it.cutscene!, () => { this.busy = false; void this.go(it.to, it.spawnX); }, it.cutsceneDialogue ? { state: this.state, dialogueId: it.cutsceneDialogue } : undefined));
   }
 
   /** 조사 지점: 독백(dialogueId)이 있으면 독백 → 원문 보기, 없으면 바로 원문 보기. 이미 얻었으면 원문만 다시 연다. */
@@ -317,7 +317,10 @@ export class ExploreScene extends Phaser.Scene {
   private frame() { return new Promise<void>((r) => this.events.once('update', () => r())); }
   private async until(cond: () => boolean) { while (!cond() && !this.skip) await this.frame(); }
   private async sleep(sec: number) { let t = 0; while (t < sec * 1000 && !this.skip) { t += this.lastDt; await this.frame(); } }
-  private actorOf(name: string) { return name === 'player' ? this.player : this.actors.get(name)!; }
+  /** 연출 대상: 'player' · 'npc:<id>'(이 구역에 그려진 NPC) · 오프닝 배우 이름 */
+  private actorOf(name: string) { return name === 'player' ? this.player : name.startsWith('npc:') ? this.npcSprites.get(name.slice(4))! : this.actors.get(name)!; }
+  /** 그 대상 그림의 스프라이트 키 (walkFlip·애니메이션 이름에 쓴다) */
+  private keyOf(name: string) { return name === 'player' ? 'player' : name.startsWith('npc:') ? areas[this.areaId].npcSprite![name.slice(4)] : OPENING.actors[name].sprite; }
   private playDialogue(id: string, docs: boolean) {
     return new Promise<void>((r) => openDialogue(this.state, id, (got) => {
       if (docs) this.showDocs(got.filter((x) => shownEvidence(this.state, x)?.body), () => r()); else r();
@@ -327,18 +330,33 @@ export class ExploreScene extends Phaser.Scene {
   async runOpening() {
     this.locked = true; clearInput(); this.camPan = null;
     bgmBase(areaTrack(START.area));
-    const cam = this.cameras.main, g = GROUND_Y;
+    const g = GROUND_Y;
     for (const [name, d] of Object.entries(OPENING.actors)) { // 등장 전에는 사무실에 없다
       const sp = this.add.sprite(d.x, g, `${d.sprite}_idle_0`).setOrigin(0.5, 1).setDepth(5).setVisible(false).play(`${d.sprite}_idle`);
       sp.setFlipX(flipFor(d.sprite, d.facing === 'left'));
       this.actors.set(name, sp);
     }
+    await this.runSteps(OPENING.steps);
+  }
+
+  /** 구역에 처음 들어왔을 때의 연출 (map.json 의 areas.<구역>.stage). 이미 본 뒤(flag)와 F9 씬 점프(buildArea 직접 호출)에는 재생하지 않는다. */
+  private async maybeStage() {
+    const st = areas[this.areaId].stage;
+    if (!st || hasFlag(this.state, st.flag) || !this.started || this.locked) return;
+    setFlag(this.state, st.flag);
+    this.locked = true; clearInput(); setPrompt(null);
+    await this.runSteps(st.steps);
+  }
+
+  /** 연출 단계 실행 (오프닝·구역 연출 공통). 단계 데이터는 map.json. */
+  private async runSteps(steps: OpeningStep[]) {
+    const cam = this.cameras.main;
     // 카메라: smooth < 1 이면 직접 천천히 따라가고(컷신), 1 이면 평소처럼 즉시 추적
     const follow = (to: string, smooth: number) => {
-      const obj = to === 'player' ? this.player : this.actors.get(to.startsWith('actor:') ? to.slice(6) : to)!;
+      const obj = to === 'player' ? this.player : this.actorOf(to.startsWith('actor:') ? to.slice(6) : to);
       if (smooth >= 1) { this.camPan = null; cam.startFollow(obj, true); } else { cam.stopFollow(); this.camPan = { obj, smooth }; }
     };
-    for (const s of OPENING.steps) {
+    for (const s of steps) {
       switch (s.do) {
         case 'dialogue': await this.playDialogue(s.id!, !!s.docs); clearInput(); break;
         case 'camera':
@@ -347,17 +365,18 @@ export class ExploreScene extends Phaser.Scene {
           break;
         case 'appear': this.actorOf(s.actor!).setVisible(true); break;
         case 'hide': this.actorOf(s.actor!).setVisible(false); break;
-        case 'face': { const sp = this.actorOf(s.actor!); const key = s.actor === 'player' ? 'player' : OPENING.actors[s.actor!].sprite; sp.setFlipX(flipFor(key, s.dir === 'left')); break; }
+        case 'face': { const sp = this.actorOf(s.actor!); sp.setFlipX(flipFor(this.keyOf(s.actor!), s.dir === 'left')); break; }
         case 'wait': await this.sleep(s.sec ?? 0); break;
         case 'walk': {
-          const sp = this.actorOf(s.actor!), key = OPENING.actors[s.actor!].sprite;
+          const sp = this.actorOf(s.actor!), key = this.keyOf(s.actor!), walkAnim = this.anims.exists(`${key}_walk`) ? `${key}_walk` : `${key}_idle`; // 걷는 그림이 없는 인물은 서 있는 그림 그대로 미끄러진다
           const toX = s.toX ?? this.player.x + (s.gap ?? 56);
-          sp.setFlipX(walkFlip(key, sp.x, toX)).play(`${key}_walk`, true);
+          sp.setFlipX(walkFlip(key, sp.x, toX)).play(walkAnim, true);
           while (Math.abs(sp.x - toX) > 0.5 && !this.skip) { sp.x += Math.sign(toX - sp.x) * Math.min(Math.abs(toX - sp.x), (s.speed ?? 135) * (this.lastDt / 1000)); await this.frame(); }
           sp.x = toX; sp.play(`${key}_idle`, true);
           if (s.actor === 'eunho' && s.toX === undefined) sp.setFlipX(flipFor(key, true)); // 도착하면 플레이어(왼쪽)를 본다
           break;
         }
+        case 'refresh': this.buildArea(this.areaId, this.player.x); break; // NPC 퇴장·소품 등장을 반영해 구역을 다시 그린다
         case 'unlock': follow('player', 1); this.camPan = null; this.locked = false; this.started = true; clearInput(); saveGame(this.state); break;
         case 'hints': queueHints(s.texts ?? [], s.sec ?? 4); break;
       }
@@ -373,7 +392,7 @@ export class ExploreScene extends Phaser.Scene {
     this.busy = true;
     setPrompt(null);
     const f = fadeSeconds(this.state.visitedAreaIds.includes(to));
-    return fadeThrough(f.out, f.in, () => this.buildArea(to, spawnX)).then(() => { this.busy = false; });
+    return fadeThrough(f.out, f.in, () => this.buildArea(to, spawnX)).then(() => { this.busy = false; void this.maybeStage(); });
   }
 
   playerFacesLeft() { return facesLeft('player', this.player.flipX); }

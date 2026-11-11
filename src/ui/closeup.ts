@@ -20,7 +20,7 @@ export const closeups: Record<string, Closeup> = {
     ],
   },
 };
-const descOf = (id: string) => dialogues[id]?.nodes.m?.text ?? '';
+const descOf = (id: string) => { const n = dialogues[id]?.nodes.m; return n ? (n.voice ? `(${n.text})` : n.text) : ''; }; // 독백(voice)은 ( ) 로 감싼다
 
 export function openCloseup(_s: GameState, id: string, onClose: () => void) {
   const c = closeups[id];

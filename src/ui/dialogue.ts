@@ -67,6 +67,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
 
   function textHtml() {
     const t = node.text.slice(0, shown);
+    if (node.voice) return `<span class="voice voice-${node.voice}">(${esc(t)}${typing ? '' : ')'}</span>`; // 생각·행동 묘사는 ( ) 로 감싸 실제 말과 구분한다
     const st = node.statement ? s.statements[node.statement.id] : null;
     if (typing || !st) return esc(t);
     if (st.stage === 'contradiction') return `<span class="st-contradiction">${esc(t)}</span>`;
@@ -77,21 +78,23 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
     // 초상이 아직 없는 인물은 회색 실루엣 placeholder (한지수·박은호 그림을 대신 쓰지 않는다)
     const portrait = node.noPortrait ? '' : node.portrait && illustList.includes(node.portrait) ? `<img class="portrait" src="assets/illust/${node.portrait}.webp" alt="">`
       : node.speaker !== 'han_jisu' ? '<div class="portrait ph"><i></i><b></b></div>' : '';
-    box.className = 'dlg' + (portrait ? ' has-portrait' : '');
+    box.className = 'dlg' + (portrait ? ' has-portrait' : '') + (picker ? ' picking' : '');
     let opts = '';
     if (picker) {
-      opts = '<div class="slotlbl">제시할 자료 — ↑↓ 이동 · Enter/Space 선택 · [제시하기]에서 Enter · Esc 취소</div>' +
-        [...picker.list.map((id, i) => {
+      opts = [...picker.list.map((id, i) => {
           const e = shownEvidence(s, id)!;
           return `<button class="opt${i === picker!.cursor ? ' sel' : ''}" data-pi="${i}"><span class="box">${picker!.chosen.has(id) ? '☑' : '☐'}</span><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${esc(e.title)}</button>`;
         }), `<button class="opt${picker.cursor === picker.list.length ? ' sel' : ''}" data-pi="${picker.list.length}">[제시하기] (${picker.chosen.size}개 선택)</button>`]
-          .slice(Math.max(0, Math.min(picker.cursor - 2, picker.list.length + 1 - 5)), Math.max(0, Math.min(picker.cursor - 2, picker.list.length + 1 - 5)) + 5).join('');
+          .join(''); // 모두 그리고, 길면 이 칸만 스크롤한다 (선택한 줄은 아래에서 보이게 맞춘다)
     } else if (!typing) {
       const single = items.length === 1 && !availableChoices(s, node).length; // 선택지가 하나뿐이어도 문장은 보여 준다
       opts = single ? `<div class="cont">▼ Enter</div>` :
         items.map((it, i) => `<button class="opt${i === sel ? ' sel' : ''}${it.disabled ? ' dis' : ''}" data-i="${i}">${i + 1}. ${esc(it.label)}</button>`).join('');
     }
-    box.innerHTML = `${portrait}<div class="name">${esc(characterName(node.speaker))}</div><div class="text">${textHtml()}</div><div class="msg">${esc(msg)}</div><div class="opts">${opts}</div>`;
+    const keep = (box.querySelector('.opts') as HTMLElement | null)?.scrollTop ?? 0; // 다시 그려도 스크롤 위치를 지킨다
+    box.innerHTML = `${portrait}<div class="name">${esc(characterName(node.speaker))}</div><div class="text">${textHtml()}</div><div class="msg">${esc(msg)}</div>${picker ? '<div class="slotlbl">제시할 자료 — ↑↓ 이동 · Enter/Space 선택 · [제시하기]에서 Enter · Esc 취소</div>' : ''}<div class="opts">${opts}</div>`;
+    const list = box.querySelector('.opts') as HTMLElement | null, cur = list?.querySelector('.opt.sel') as HTMLElement | null;
+    if (list) { list.scrollTop = keep; if (cur) { const top = cur.offsetTop, bottom = top + cur.offsetHeight; if (top < list.scrollTop) list.scrollTop = top; else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight; } } // 선택한 항목이 항상 보이게
   }
 
   box.addEventListener('click', (e) => {

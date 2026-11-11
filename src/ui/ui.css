@@ -48,12 +48,16 @@
   background: var(--grain), linear-gradient(180deg, rgba(40,29,20,.97), rgba(18,13,10,.98));
   border-top: 2px solid var(--brass-d); box-shadow: 0 -1px 0 #000, inset 0 1px 0 rgba(226,201,138,.25);
 }
+.dlg { display: flex; flex-direction: column; }
 .dlg.has-portrait { padding-left: 92px; }
+.dlg > .name { align-self: flex-start; flex: 0 0 auto; }
+.dlg > .text, .dlg > .msg { flex: 0 0 auto; }
 .dlg .portrait { position: absolute; left: 6px; bottom: 3px; height: 104px; width: auto; border: 1px solid var(--brass-d); box-shadow: 0 0 0 1px #000; background: #0c0907; }
 .dlg .name { display: inline-block; color: #1c1308; background: var(--brass); font-weight: 700; padding: 0 6px; margin-bottom: 2px; border-radius: 1px 6px 1px 1px; }
 .dlg .text { min-height: 28px; white-space: pre-wrap; }
 .dlg .msg { color: var(--note); min-height: 12px; }
-.dlg .opts { margin-top: 1px; }
+.dlg .opts { margin-top: 1px; flex: 1 1 0; min-height: 0; overflow-y: auto; position: relative; scrollbar-width: thin; scrollbar-color: #86672b transparent; } /* 선택지·제시 목록이 길면 줄바꿈 + 이 칸만 스크롤 (선택한 항목은 항상 보이게 dialogue.ts 가 맞춘다) */
+.dlg .opts .opt { white-space: normal; overflow-wrap: anywhere; }
 .opt { padding: 0 4px; cursor: pointer; display: block; width: 100%; text-align: left; background: none; border: 0; border-left: 2px solid transparent; }
 .opt:hover { background: rgba(196,160,82,.12); }
 .opt.sel { background: rgba(196,160,82,.24); color: #fff; border-left-color: var(--brass); }
@@ -276,3 +280,12 @@
 @keyframes anykey { 50% { opacity: .55; } }
 
 .title .ctrl.info { max-height: 176px; overflow-y: auto; }
+
+/* 소리 내어 하는 말이 아닌 대사: 생각(inner)은 기울임 + 옅은 색, 행동·소리 묘사(action)는 더 옅게 */
+.dlg .voice-inner { font-style: italic; color: #cbbf9f; }
+.dlg .voice-action { color: #9d957f; }
+
+/* 증거 제시 목록을 열면 대사 문장은 접고(목록이 길어도 여러 줄 보이게), 안내 줄은 스크롤 밖에 고정한다 */
+.dlg.picking > .text { display: none; }
+.dlg.picking > .msg:empty { display: none; }
+.dlg > .slotlbl { flex: 0 0 auto; }

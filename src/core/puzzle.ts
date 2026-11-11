@@ -51,7 +51,7 @@ export function linkTitle(s: GameState, id: string): string {
   const e = shownEvidence(s, id);
   if (e) return e.title;
   const st = s.statements[id];
-  return st ? `${characterName(st.speaker)}의 진술` : id;
+  return st ? `${characterName(st.speaker)}의 ${st.speaker === 'han_jisu' ? '관찰' : '진술'}` : id;
 }
 /** 근거로 인정하는가: 그 칸의 허용 목록에 있고, 플레이어가 가진 단서·진술이며, 맥락(context) 단서가 아니다 */
 export function linkAccepted(s: GameState, p: Puzzle, slot: string, id: string | undefined): boolean {
@@ -126,6 +126,6 @@ export interface LinkCandidate { id: string; kind: 'evidence' | 'statement'; tit
 export function linkCandidates(s: GameState): LinkCandidate[] {
   return [
     ...s.evidenceIds.map((id) => { const e = shownEvidence(s, id)!; return { id, kind: 'evidence' as const, title: e.title, detail: e.description }; }),
-    ...Object.entries(s.statements).map(([id, st]) => ({ id, kind: 'statement' as const, title: `${characterName(st.speaker)}의 진술`, detail: `“${st.stage === 'revised' && st.revisedText ? st.revisedText : st.text}”` })),
+    ...Object.entries(s.statements).map(([id, st]) => ({ id, kind: 'statement' as const, title: `${characterName(st.speaker)}의 ${st.speaker === 'han_jisu' ? '관찰' : '진술'}`, detail: `“${st.stage === 'revised' && st.revisedText ? st.revisedText : st.text}”` })),
   ];
 }

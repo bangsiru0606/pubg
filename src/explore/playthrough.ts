@@ -11,7 +11,7 @@ interface SceneSteps { dialogues?: string[]; examines?: [string, string][]; puzz
 /** 씬별로 끝내는 일 (씬 1 = 인덱스 0). 씬 6 은 증거 보존 선택에 따라 따로 처리한다. */
 export const SCENE_STEPS: SceneSteps[] = [
   { dialogues: ['eunho_intro'], flags: ['cutscene_done:hospital_intro'] },
-  { dialogues: ['baek_lobby'], examines: [['floor1', 'exam_note'], ['room_director', 'altar'], ['room_director', 'under_desk']], puzzles: ['P01_scene_rebuild'] },
+  { dialogues: ['baek_lobby'], examines: [['floor1', 'exam_note'], ['room_director', 'altar'], ['room_director', 'under_desk'], ['room_director', 'chair']], puzzles: ['P01_scene_rebuild'] },
   { dialogues: ['choi_okja', 'han_yujin', 'chae_soyeon', 'jeong_haneul'], examines: [['floor2', 'broadcast']], puzzles: ['P02_night_timeline'] },
   { dialogues: ['baek_office', 'oh_miran', 'lee_hyejeong'], examines: [['room_baek', 'revision'], ['room_oh', 'stock'], ['room_lee', 'desk']], puzzles: ['P03_revision_diff', 'P04_approval_chain'], flags: ['basement_announced'] },
   { dialogues: ['jeong_haneul_final'], examines: [['b1', 'ledger'], ['b1', 'idmap'], ['b1', 'manifest'], ['b1', 'belongings']], puzzles: ['P05_patient_code'], flags: ['diary_closed'] },

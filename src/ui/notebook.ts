@@ -62,11 +62,11 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
   function statementsTab(): string {
     const list = Object.entries(s.statements);
     if (!list.length) return '<div class="nlist"></div><div class="ndetail note">기록된 진술이 없다.</div>';
-    const rows = list.map(([, st], i) => `<button class="row${i === Math.min(cur(), list.length - 1) ? ' sel' : ''}" data-row="${i}">${esc(characterName(st.speaker))} <span class="tag">${STAGE_LABEL[st.stage]}</span></button>`).join('');
+    const rows = list.map(([, st], i) => `<button class="row${i === Math.min(cur(), list.length - 1) ? ' sel' : ''}" data-row="${i}">${esc(characterName(st.speaker))}${st.speaker === 'han_jisu' ? ' 관찰' : ''} <span class="tag">${st.speaker === 'han_jisu' ? '관찰' : STAGE_LABEL[st.stage]}</span></button>`).join('');
     const [, st] = list[Math.min(cur(), list.length - 1)];
     const body = st.stage === 'revised' ? `<s class="st-revised">${esc(st.text)}</s><br><b>${esc(st.revisedText ?? '')}</b>`
       : `<span class="st-${st.stage}">${st.stage === 'unconfirmed' ? '“' + esc(st.text) + '”' : esc(st.text)}</span>`;
-    return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(characterName(st.speaker))}의 진술</h3><p>${body}</p></div>`;
+    return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(characterName(st.speaker))}의 ${st.speaker === 'han_jisu' ? '관찰' : '진술'}</h3><p>${body}</p></div>`;
   }
   // 가설 표시 순서는 질문마다 다르게 돌려 둔다 (정답이 항상 같은 자리에 오지 않게). 데이터 순서는 그대로.
   const SHIFT = [0, 1, 2, 1];

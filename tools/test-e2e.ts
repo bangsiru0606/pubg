@@ -277,7 +277,7 @@ check((await page.locator('.hintbanner').innerText()).includes('Tab을 눌러 �
 check(await cw<boolean>('cw.scene.started'), '[오프닝] 오프닝이 끝나면 자동 저장이 시작된다');
 
 await teleport(540); await wait(60);
-check((await promptText()).includes('들어가기'), '[씬 1] 의뢰 후 문이 열린다');
+check((await promptText()).includes('[사무실] 나가기'), '[씬 1] 의뢰 후 문이 열린다 (프롬프트: [사무실] 나가기)');
 await press('Enter');
 await page.waitForSelector('#cutscene', { timeout: 3000 });
 check(true, '[씬 1] 병원 도착 컷신');
@@ -340,8 +340,18 @@ await mash();
 await page.waitForSelector('#viewer');
 check((await docText()).includes('정ㅎ / 2병동 / 04') && !(await docText()).includes('정하늘'), '[씬 2] 손목띠 조각: 이름은 정ㅎ 로만 보인다');
 await closeViewer();
+check((await page.locator('#puzzle').count()) === 0, '[씬 2] 세 자료가 있어도 의자를 조사하기 전에는 P01 이 열리지 않는다');
+await teleport(700); await wait(60);
+check((await promptText()).includes('책상 의자'), '[씬 2] 원장실 의자 조사 지점 (반짝임으로 찾는다)');
+check((await page.locator('#ui').innerText()).length > 0 && await cw<boolean>("cw.scene.children.list.some((c) => c.texture && c.texture.key.startsWith('sparkle') && Math.abs(c.x - 700) < 3)"), '[씬 2] 아직 조사하지 않은 의자 위에 반짝임이 보인다');
+await press('Enter');
+await page.waitForSelector('#dialogue');
+await wait(60); await press('Enter');
+check((await page.locator('#dialogue .text').innerText()).startsWith('(의자 다리 아래 바닥이 기도대 쪽에서부터 길게 긁혀 있다') && (await page.locator('#dialogue .voice-inner').count()) === 1, '[씬 2] 의자 조사 독백(생각, 괄호 표시)');
+check(await cw<boolean>("cw.state.statements.han_o_chair?.speaker === 'han_jisu' && cw.state.evidenceIds.length === 4"), '[씬 2] 관찰 카드(한지수)를 얻고 새 단서 ID 는 늘지 않는다');
+await mash();
 await page.waitForSelector('#puzzle', { timeout: 3000 });
-check(true, '[P01] 세 자료가 등록되면 평면도가 자동으로 열린다');
+check(true, '[P01] 세 자료와 의자 관찰이 모이면 평면도가 자동으로 열린다');
 await noIds('[P01] 초기 화면');
 await shot('stage4_p01_start');
 

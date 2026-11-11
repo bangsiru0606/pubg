@@ -139,8 +139,8 @@
    "nodes": {
     "m": {
      "speaker": "han_jisu",
-     "text": "환자 물건이 원장 책상 밑에서 찢어진 채 나왔다. 의자 다리 아래 바닥에는 무언가를 끌어다 놓은 듯한 긁힌 자국이 길게 남아 있다.",
-     "source": "new",
+     "text": "환자 물건이 원장 책상 밑에서 찢어진 채 나왔다.",
+     "source": "spec",
      "portrait": "player_neutral",
      "onEnter": {
       "acquire": [
@@ -1083,6 +1083,26 @@
      "source": "new",
      "voice": "inner",
      "portrait": "player_neutral"
+    }
+   }
+  },
+  "mono_chair": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "의자 다리 아래 바닥이 기도대 쪽에서부터 길게 긁혀 있다. 누군가 의자를 끌어다 놓았다.",
+     "source": "new",
+     "voice": "inner",
+     "portrait": "player_neutral",
+     "statement": {
+      "id": "han_o_chair"
+     },
+     "onEnter": {
+      "setFlags": [
+       "chair_checked"
+      ]
+     }
     }
    }
   }

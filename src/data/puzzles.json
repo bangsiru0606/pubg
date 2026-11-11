@@ -40,7 +40,7 @@
    "finalPosition:desk_side": "백선우의 진술과 맞지 않는다.",
    "movedObjects:syringe": "예비 검안 메모의 상처 기록과 맞지 않는다.",
    "movedObjects:altar": "기도대 아래 혈흔과 맞지 않는다.",
-   "movedObjects:!chair": "찢어진 손목띠 조각의 현장 메모와 맞지 않는다.",
+   "movedObjects:!chair": "의자 아래 바닥의 긁힌 자국({player}의 관찰)과 맞지 않는다.",
    "movedObjects:!body": "예비 검안 메모와 백선우의 진술을 함께 보면 빠진 항목이 있다."
   },
   "hintTexts": [
@@ -177,6 +177,9 @@
     "E02_altar_blood",
     "E03_preliminary_exam",
     "E04_wristband_fragment"
+   ],
+   "flags": [
+    "chair_checked"
    ]
   },
   "solvedDialogue": "mono_p01_solved",
@@ -189,7 +192,7 @@
     "baek_s_natural"
    ],
    "movedObjects": [
-    "E04_wristband_fragment",
+    "han_o_chair",
     "E03_preliminary_exam"
    ]
   }

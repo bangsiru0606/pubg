@@ -13,7 +13,7 @@ const BG_W = 1376, BG_H = 768;
 // 사무실 책상: craft_on 의 책상 위 소품. 신문은 쓰지 않는다 (이전계획 3.1).
 export const closeups: Record<string, Closeup> = {
   office_desk: {
-    title: '출근한 아침, 책상을 살펴본다 (마우스로 조사)', bg: 'assets/illust/desk.png',
+    title: '출근한 아침, 책상을 살펴본다 (마우스로 조사)', bg: 'assets/illust/desk.webp',
     hotspots: [
       { name: '모자', icon: 'hat', detail: 'hat_detail', desc: 'closeup_hat', cx: 560, cy: 175, w: 184 },
       { name: '캘린더', icon: 'calendar', detail: 'calendar_detail', desc: 'closeup_calendar', cx: 1010, cy: 210, w: 136 },
@@ -29,7 +29,7 @@ export function openCloseup(_s: GameState, id: string, onClose: () => void) {
     const m = maskOf(h.icon);
     const wPct = (h.w / BG_W) * 100, aspect = m.w / m.h;
     return `<div class="hot" data-h="${i}" style="left:${(h.cx / BG_W) * 100}%;top:${(h.cy / BG_H) * 100}%;width:${wPct}%;aspect-ratio:${aspect}">
-      <img src="assets/illust/${h.icon}.png" alt="" style="width:${(m.W / m.w) * 100}%;left:${-(m.x / m.w) * 100}%;top:${-(m.y / m.h) * 100}%"><span class="hl">${esc(h.name)}</span></div>`;
+      <img src="assets/illust/${h.icon}.webp" alt="" style="width:${(m.W / m.w) * 100}%;left:${-(m.x / m.w) * 100}%;top:${-(m.y / m.h) * 100}%"><span class="hl">${esc(h.name)}</span></div>`;
   }).join('');
   box.innerHTML = `<img class="bg" src="${c.bg}" alt=""><div class="title">${esc(c.title)}</div>${hot}<button class="exit">나가기 (Esc)</button>`;
   root().append(box);
@@ -39,7 +39,7 @@ export function openCloseup(_s: GameState, id: string, onClose: () => void) {
   const closeDetail = () => { detail?.remove(); detail = null; };
   const showDetail = (i: number) => {
     const h = c.hotspots[i];
-    detail = el('div', 'detail', `<div class="dart"><img src="assets/illust/${h.detail}.png" alt=""></div>
+    detail = el('div', 'detail', `<div class="dart"><img src="assets/illust/${h.detail}.webp" alt=""></div>
       <div class="dtext"><h3>${esc(h.name)}</h3><div class="dbody">${esc(descOf(h.desc))}</div><div class="dfoot">Enter / Esc / 클릭: 닫기</div></div>`);
     detail.id = 'closeup-detail';
     detail.addEventListener('click', closeDetail);

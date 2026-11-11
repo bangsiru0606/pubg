@@ -29,7 +29,7 @@ for (const [aid, a] of Object.entries(areas)) {
       if (!t) { err(`${w}: 없는 구역 ${it.to}`); continue; }
       if (it.spawnX < t.minX || it.spawnX > t.maxX) err(`${w}: spawnX 가 ${it.to} 범위 밖`);
       for (const u of t.interactables) if (u.type === 'transition' && Math.abs(it.spawnX - u.x) <= INTERACT_RANGE) err(`${w}: 도착 위치 ${it.spawnX} 가 ${it.to}/${u.id} 의 상호작용 범위(${INTERACT_RANGE}px) 안`);
-      if (it.cutscene && !existsSync(`public/assets/illust/${it.cutscene}.png`)) err(`${w}: 없는 컷신 ${it.cutscene}`);
+      if (it.cutscene && !existsSync(`public/assets/illust/${it.cutscene}.webp`)) err(`${w}: 없는 컷신 ${it.cutscene}`);
     }
     if (it.requires && !knownFlags.has(it.requires)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.requires}`);
     if (it.hideWhen && !knownFlags.has(it.hideWhen)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.hideWhen}`);
@@ -56,7 +56,7 @@ const exprOf = new Map(characters.map((c) => [c.id, c as unknown as { portrait: 
 for (const c of characters as unknown as { id: string; portrait: string | null; expressions?: string[] }[]) {
   if (!c.portrait) continue;
   if (c.expressions) { if (!c.expressions.includes('neutral')) err(`characters/${c.id}: expressions 에 neutral 필요`); }
-  else if (!existsSync(`public/assets/illust/${c.portrait}_neutral.png`)) err(`characters/${c.id}: 초상 ${c.portrait} 없음`);
+  else if (!existsSync(`public/assets/illust/${c.portrait}_neutral.webp`)) err(`characters/${c.id}: 초상 ${c.portrait} 없음`);
 }
 for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues }) as [string, Dialogue][]) {
   if (!d.nodes[d.start]) err(`dialogue ${did}: start 노드 없음`);
@@ -70,8 +70,8 @@ for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues 
       if (ch?.expressions) { // 생성 초상: 접두어_표정 형식이어야 한다. 파일이 아직 없으면 경고만 (배치 3 도착 전)
         const ok = ch.expressions.some((x) => n.portrait === `${ch.portrait}_${x}`);
         if (!ok) err(`${w}: 초상 ${n.portrait} 는 ${n.speaker} 의 표정(${ch.expressions.join('/')})이 아니다`);
-        else if (!existsSync(`public/assets/illust/${n.portrait}.png`)) pendingPortraits.add(n.portrait);
-      } else if (!existsSync(`public/assets/illust/${n.portrait}.png`)) err(`${w}: 없는 초상 ${n.portrait}`);
+        else if (!existsSync(`public/assets/illust/${n.portrait}.webp`)) pendingPortraits.add(n.portrait);
+      } else if (!existsSync(`public/assets/illust/${n.portrait}.webp`)) err(`${w}: 없는 초상 ${n.portrait}`);
     }
     const refs = [n.next, ...(n.choices ?? []).map((c) => c.next), ...(n.present ?? []).map((p) => p.next)].filter(Boolean) as string[];
     for (const c of n.onEnter?.contradict ?? []) if (!Object.values(real.dialogues).some((dd) => Object.values((dd as unknown as Dialogue).nodes).some((x) => x.statement?.id === c))) err(`${w}: 없는 진술 ${c}`);
@@ -95,7 +95,7 @@ const needEv = (id: string, where: string) => { if (!evidenceById.has(id)) err(`
 needEvLater.forEach(([id, w]) => needEv(id, w));
 for (const e of evidenceList) if (e.sourceCharacterId && !charIds.has(e.sourceCharacterId)) err(`${e.id}: 없는 인물 ${e.sourceCharacterId}`);
 for (const e of evidenceList) for (const l of e.newText ?? []) if (!e.body?.includes(l)) err(`${e.id}: newText 가 body 에 없음`);
-for (const e of evidenceList) if (e.illust && !existsSync(`public/assets/illust/${e.illust}.png`)) err(`${e.id}: 없는 일러스트 ${e.illust}`);
+for (const e of evidenceList) if (e.illust && !existsSync(`public/assets/illust/${e.illust}.webp`)) err(`${e.id}: 없는 일러스트 ${e.illust}`);
 for (const [a, b] of conflictPairs) { needEv(a, 'conflicts'); needEv(b, 'conflicts'); }
 
 // puzzles
@@ -202,7 +202,7 @@ for (const [key, lines] of Object.entries(endingLines)) {
     const owner = (characters as unknown as { id: string; portrait: string | null }[]).find((c) => c.portrait && f.startsWith(`${c.portrait}_`));
     if (owner && !pendingPortraitChars.has(owner.id)) err(`초상 ${f}: 파일이 없는데 ${owner.id} 가 pending 이 아니다`);
   }
-  for (const c of pendingChars) if ((c as unknown as { expressions?: string[]; portrait: string }).expressions?.every((x) => existsSync(`public/assets/illust/${(c as unknown as { portrait: string }).portrait}_${x}.png`))) err(`characters/${c.id}: 초상 파일이 모두 있는데 pending 이 남아 있다`);
+  for (const c of pendingChars) if ((c as unknown as { expressions?: string[]; portrait: string }).expressions?.every((x) => existsSync(`public/assets/illust/${(c as unknown as { portrait: string }).portrait}_${x}.webp`))) err(`characters/${c.id}: 초상 파일이 모두 있는데 pending 이 남아 있다`);
   pendingSummary = { batch3: pendingChars.length * 3, batch4: pendingTex.filter((k) => BG_KEYS.has(k)).length, batch5: pendingTex.filter((k) => !BG_KEYS.has(k)).length };
   if (pendingTex.length) warnings.push(`생성 대기(pending) 텍스처 ${pendingTex.length}개: ${pendingTex.join(', ')}`);
   if (pendingChars.length) warnings.push(`생성 대기(pending) 초상 인물 ${pendingChars.length}명 (${pendingChars.map((c) => c.id).join(', ')})`);

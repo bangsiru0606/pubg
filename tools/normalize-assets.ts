@@ -1,6 +1,6 @@
 // art/source → public/assets 정규화: 투명 여백 자르기 → 목표 높이로 축소 → 팔레트 양자화
 import sharp from 'sharp';
-import { cpSync, mkdirSync, readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { readFileSync as readFile } from 'node:fs';
 import { breatheFrame } from './breathe';
@@ -75,11 +75,23 @@ const pendingBases = (JSON.parse(readFileSync('src/data/characters.json', 'utf8'
 const isPendingPortrait = (file: string) => pendingBases.some((b) => file.startsWith(b));
 
 // 클로즈업·초상·컷신은 정규화하지 않고 그대로 복사
+/**
+ * 일러스트(초상·근접 조사·편지·컷신)는 화면 최대 표시 크기 × 1.5 를 넘지 않게 줄여 WebP(품질 85)로 저장한다. 원본(art/source)은 그대로 둔다.
+ *  - 초상: 1920×1080 에서 액자 높이(104 논리 px × 4 = 416) × 1.5 = 624px
+ *  - 근접 조사 소품 아이콘(hat·calendar): 화면 표시 폭 약 260px × 1.5 → 400px
+ *  - 그 밖(책상 배경·확대 그림·편지·컷신): 전체 화면 기준 최대 1920 폭 (확대하지 않는다)
+ */
+const ICON_NAMES = ['hat.png', 'calendar.png'];
+async function emitIllust(file: string, name: string, portrait: boolean) {
+  const img = sharp(file);
+  const fit = portrait ? { height: 624 } : ICON_NAMES.includes(name) ? { width: 400 } : { width: 1920 };
+  await img.resize({ ...fit, withoutEnlargement: true, kernel: 'lanczos3' }).webp({ quality: 85, effort: 6 }).toFile(join(OUT, 'illust', name.replace(/\.png$/, '.webp')));
+}
 for (const p of spec.illust as string[]) {
   if (p.endsWith('/*.png')) {
     const dir = p.slice(0, -6);
-    for (const f of readdirSync(join(SRC, dir))) if (!isPendingPortrait(f)) cpSync(join(SRC, dir, f), join(OUT, 'illust', f)); // 승인 전(pending) 인물의 초상은 복사하지 않는다
-  } else cpSync(join(SRC, p), join(OUT, 'illust', basename(p)));
+    for (const f of readdirSync(join(SRC, dir))) if (!isPendingPortrait(f)) await emitIllust(join(SRC, dir, f), f, /portraits/i.test(dir)); // 승인 전(pending) 인물의 초상은 넣지 않는다
+  } else await emitIllust(join(SRC, p), basename(p), false);
 }
 // 근접 조사 소품: 투명 여백을 뺀 실제 그림 영역(bbox)과 클릭 판정용 마스크(40열)를 src/data/illust-masks.json 에 쓴다 (file:// 에서는 캔버스로 읽을 수 없다)
 const masks: Record<string, unknown> = {};
@@ -103,6 +115,6 @@ for (const p of (spec.masks ?? []) as string[]) {
   masks[basename(p, '.png')] = { W: info.width, H: info.height, x: x0, y: y0, w: bw, h: bh, bits };
 }
 writeFileSync('src/data/illust-masks.json', JSON.stringify(masks));
-writeFileSync('src/data/illust-list.json', JSON.stringify(readdirSync(join(OUT, 'illust')).filter((f) => f.endsWith('.png')).map((f) => f.slice(0, -4)).sort()));
+writeFileSync('src/data/illust-list.json', JSON.stringify(readdirSync(join(OUT, 'illust')).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)).sort()));
 writeFileSync(join(OUT, 'assets.json'), JSON.stringify(manifest, null, 1));
 console.log(`assets: ${Object.keys(manifest).length} normalized`);

@@ -8,7 +8,7 @@ export function openViewer(s: GameState, evidenceId: string, onClose: () => void
   const e = shownEvidence(s, evidenceId)!;
   const box = el('div', 'modal viewer'); box.id = 'viewer';
   const ver = isVerified(s, evidenceId) ? '<span class="ver">검증됨</span>' : '<span class="unver">미검증</span>';
-  const bg = e.illust ? `<img class="docbg" src="assets/illust/${e.illust}.png" alt="">` : '';
+  const bg = e.illust ? `<img class="docbg" src="assets/illust/${e.illust}.webp" alt="">` : '';
   box.innerHTML = `${bg}<h3 style="margin:0 0 4px;color:#e2c98a;font-size:13px">${esc(e.title)}</h3>
     <div class="meta"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${ver} · ${esc(areaName(e.acquiredSceneId))} · ${esc(e.timestamp)}</div>
     ${e.body ? `<div class="docbody">${e.body.map((l) => (l ? `<p>${esc(l)}</p>` : '<br>')).join('')}</div>` : `<p>${esc(e.description)}</p>`}<div class="foot">Enter / Esc / 클릭: 닫기</div>`;

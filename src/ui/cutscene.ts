@@ -3,7 +3,7 @@ import { el, root } from './hud';
 import { popModal, pushModal } from './input';
 
 export function openCutscene(image: string, onClose: () => void) {
-  const box = el('div', 'modal cutscene', `<img src="assets/illust/${image}.png" alt=""><div class="foot">Enter / Esc / 클릭: 건너뛰기</div>`);
+  const box = el('div', 'modal cutscene', `<img src="assets/illust/${image}.webp" alt=""><div class="foot">Enter / Esc / 클릭: 건너뛰기</div>`);
   box.id = 'cutscene';
   root().append(box);
   const close = () => { popModal('cutscene'); box.remove(); onClose(); };

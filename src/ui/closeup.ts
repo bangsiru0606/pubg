@@ -31,7 +31,7 @@ export function openCloseup(_s: GameState, id: string, onClose: () => void) {
     return `<div class="hot" data-h="${i}" style="left:${(h.cx / BG_W) * 100}%;top:${(h.cy / BG_H) * 100}%;width:${wPct}%;aspect-ratio:${aspect}">
       <img src="assets/illust/${h.icon}.webp" alt="" style="width:${(m.W / m.w) * 100}%;left:${-(m.x / m.w) * 100}%;top:${-(m.y / m.h) * 100}%"><span class="hl">${esc(h.name)}</span></div>`;
   }).join('');
-  box.innerHTML = `<img class="bg" src="${c.bg}" alt=""><div class="title">${esc(c.title)}</div>${hot}<button class="exit">나가기 (Esc)</button>`;
+  box.innerHTML = `<img class="bg" src="${c.bg}" alt=""><div class="title">${esc(c.title)}</div>${hot}<button class="wbtn exit"><span>나가기</span><kbd>Esc</kbd></button>`;
   root().append(box);
   let sel = -1; // 처음에는 선택 없음 (마우스를 올리거나 ←→ 를 누르면 100%)
   let detail: HTMLElement | null = null;
@@ -40,7 +40,7 @@ export function openCloseup(_s: GameState, id: string, onClose: () => void) {
   const showDetail = (i: number) => {
     const h = c.hotspots[i];
     detail = el('div', 'detail', `<div class="dart"><img src="assets/illust/${h.detail}.webp" alt=""></div>
-      <div class="dtext"><h3>${esc(h.name)}</h3><div class="dbody">${esc(descOf(h.desc))}</div><div class="dfoot">Enter / Esc / 클릭: 닫기</div></div>`);
+      <div class="dtext"><h3>${esc(h.name)}</h3><div class="dbody">${esc(descOf(h.desc))}</div><div class="dfoot"><button class="wbtn"><span>닫기</span><kbd>Enter</kbd></button></div></div>`);
     detail.id = 'closeup-detail';
     detail.addEventListener('click', closeDetail);
     box.append(detail);

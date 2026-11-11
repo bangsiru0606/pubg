@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import spec from '../art/asset-spec.json';
 import audio from '../src/data/audio.json';
 import characters from '../src/data/characters.json';
+import map from '../src/data/map.json';
 import evidence from '../src/data/evidence.json';
 import real from '../src/data/dialogue.json';
 import { createGameState, hasFlag, linkCandidates, puzzles, setFlag, shownEvidence } from '../src/core';
@@ -13,9 +14,17 @@ type Seq = { id: string; frames: string[]; walkCycle?: string[] };
 const seqs = spec.sequences as unknown as Seq[];
 
 describe('걷기 5프레임·1/3 속도 (asset-spec 데이터)', () => {
-  it('공통 규칙: 걷기 2장 → 서 있는 프레임 → 걷기 2장, 예전 8fps 의 1/3', () => {
+  it('공통 규칙: 걷기 2장 → 서 있는 프레임 → 걷기 2장, 5fps(한 주기 1.0초)', () => {
     expect(spec.walk.cycle).toEqual(['walk_0', 'walk_1', 'idle_0', 'walk_2', 'walk_3']);
-    expect(spec.walk.fps).toBeCloseTo(8 / 3, 0); expect(spec.walk.fps).toBeLessThan(3);
+    expect(spec.walk.fps).toBe(5); expect(spec.walk.cycle.length / spec.walk.fps).toBe(1);
+  });
+  it('발이 미끄러지지 않는다: 한 주기에 가는 거리 = 이동 속도 × 주기 시간 = 실제 보폭(60~70px), 달리기는 속도·fps 가 같은 배수', () => {
+    const cycleSec = spec.walk.cycle.length / spec.walk.fps, perCycle = map.playerSpeed * cycleSec;
+    expect(perCycle).toBeGreaterThanOrEqual(60); expect(perCycle).toBeLessThanOrEqual(70); expect(map.playerSpeed).toBe(65);
+    expect(map.runMultiplier).toBe(2); expect(map.playerSpeed * map.runMultiplier * (cycleSec / map.runMultiplier)).toBe(perCycle); // 달릴 때 주기는 절반(fps ×2), 속도 ×2 → 한 주기 거리 그대로
+  });
+  it('연출 속 이동(오프닝 박은호·1층 첫 입장 플레이어·백선우)도 같은 속도 규칙: 단계에 speed 를 따로 쓰지 않는다', () => {
+    for (const st of [...map.opening.steps, ...(map.areas.floor1.stage?.steps ?? [])]) if (st.do === 'walk') expect(st, JSON.stringify(st)).not.toHaveProperty('speed');
   });
   it('모든 걷는 인물의 순서는 걷기·걷기·idle_0·걷기·걷기이고 그림이 실제로 있다 (박은호는 보폭이 큰 4장)', () => {
     for (const q of seqs.filter((x) => x.frames.some((f) => f.startsWith('walk_')))) {

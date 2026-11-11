@@ -24,6 +24,7 @@ import { openViewer } from '../ui/viewer';
 
 const A = 'assets/';
 const CAMERA_MARGIN = 80; // 갈 수 없는 곳(계단 너머)을 이만큼까지 검게 보여 준다
+const STEP_MS = (spec.walk.cycle.length / spec.walk.fps / 2) * 1000; // 발걸음 한 번의 시간(ms): 한 주기에 두 걸음
 const SKIP_HOLD_MS = 600; // 컷신 연출 구간은 Enter 를 이만큼 길게 누르면 건너뛴다
 
 export class ExploreScene extends Phaser.Scene {
@@ -180,9 +181,11 @@ export class ExploreScene extends Phaser.Scene {
     const speed = PLAYER_SPEED * (isHeld('Shift') ? RUN_MULTIPLIER : 1);
     const p = this.player;
     p.x = Phaser.Math.Clamp(p.x + dir * speed * (dt / 1000), this.minX, this.maxX);
-    if (dir !== 0) { p.setFlipX(flipFor('player', dir < 0)); this.stepMs += dt; if (this.stepMs >= (isHeld('Shift') ? 230 : 340)) { this.stepMs = 0; sfx('onFootstep'); } } else this.stepMs = 0;
+    const running = isHeld('Shift');
+    if (dir !== 0) { p.setFlipX(flipFor('player', dir < 0)); this.stepMs += dt; if (this.stepMs >= STEP_MS / (running ? RUN_MULTIPLIER : 1)) { this.stepMs = 0; sfx('onFootstep'); } } else this.stepMs = 0;
     const want = dir !== 0 ? 'player_walk' : 'player_idle';
     if (p.anims.currentAnim?.key !== want) p.play(want);
+    p.anims.timeScale = dir !== 0 && running ? RUN_MULTIPLIER : 1; // 달릴 때는 이동 속도와 같은 배수로 걷기 fps 도 올려 발이 맞게 한다
 
     const area = areas[this.areaId];
     const auto = autoTriggered(this.areaId, area, p.x, this.state);
@@ -388,7 +391,7 @@ export class ExploreScene extends Phaser.Scene {
           const sp = this.actorOf(s.actor!), key = this.keyOf(s.actor!), walkAnim = this.anims.exists(`${key}_walk`) ? `${key}_walk` : `${key}_idle`; // 걷는 그림이 없는 인물은 서 있는 그림 그대로 미끄러진다
           const toX = s.toX ?? this.player.x + (s.gap ?? 56);
           sp.setFlipX(walkFlip(key, sp.x, toX)).play(walkAnim, true); this.scripted.add(sp);
-          while (Math.abs(sp.x - toX) > 0.5 && !this.skip) { sp.x += Math.sign(toX - sp.x) * Math.min(Math.abs(toX - sp.x), (s.speed ?? 135) * (this.lastDt / 1000)); await this.frame(); }
+          while (Math.abs(sp.x - toX) > 0.5 && !this.skip) { sp.x += Math.sign(toX - sp.x) * Math.min(Math.abs(toX - sp.x), (s.speed ?? PLAYER_SPEED) * (this.lastDt / 1000)); await this.frame(); }
           sp.x = toX; this.scripted.delete(sp); sp.play(`${key}_idle`, true);
           if (s.actor === 'eunho' && s.toX === undefined) sp.setFlipX(flipFor(key, true)); // 도착하면 플레이어(왼쪽)를 본다
           break;

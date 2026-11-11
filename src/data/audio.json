@@ -17,9 +17,9 @@
   },
   "sfx": {
     "sounds": {
-      "knock": {}, "door_open": {}, "door_close": {}, "stairs": {}, "footstep": { "volume": 0.3 }, "page_flip": {}, "evidence_get": {}, "statement_update": {},
-      "puzzle_correct": {}, "puzzle_wrong": {}, "hint": {}, "ui_move": { "volume": 0.6 }, "ui_confirm": {}, "type_blip": { "volume": 0.35 }, "broadcast_chime": {},
-      "heartbeat": {}, "transfer_done": { "volume": 0.7 }, "fade_whoosh": {}
+      "knock": {}, "door_open": {}, "door_close": {}, "stairs": {}, "footstep": {}, "page_flip": {}, "evidence_get": {}, "statement_update": {},
+      "puzzle_correct": {}, "puzzle_wrong": {}, "hint": {}, "ui_move": {}, "ui_confirm": {}, "type_blip": {}, "broadcast_chime": {},
+      "heartbeat": {}, "transfer_done": {}, "fade_whoosh": {}
     },
     "events": {
       "onKnock": "knock", "onDoorEnter": "door_open", "onDoorExit": "door_close", "onStairs": "stairs", "onFootstep": "footstep", "onPageFlip": "page_flip",

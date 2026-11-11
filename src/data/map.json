@@ -157,7 +157,17 @@
      "label": "청소 카트",
      "showWhen": "baek_left"
     }
-   ]
+   ],
+   "npcSprite": {
+    "baek": "baek"
+   },
+   "npcFacing": {
+    "baek": "left"
+   },
+   "bg": {
+    "wall": "lobby_wall",
+    "floor": "lobby_floor_v2"
+   }
   },
   "room_director": {
    "name": "원장실",
@@ -289,7 +299,13 @@
      "name": "최옥자",
      "dialogueId": "choi_okja"
     }
-   ]
+   ],
+   "npcSprite": {
+    "choi": "choi"
+   },
+   "npcFacing": {
+    "choi": "left"
+   }
   },
   "room_han": {
    "name": "202호 병실",
@@ -313,7 +329,13 @@
      "name": "한유진",
      "dialogueId": "han_yujin"
     }
-   ]
+   ],
+   "npcSprite": {
+    "han": "han"
+   },
+   "npcFacing": {
+    "han": "left"
+   }
   },
   "room_jeong": {
    "name": "203호 병실",
@@ -344,7 +366,15 @@
      "name": "정하늘",
      "dialogueId": "jeong_haneul"
     }
-   ]
+   ],
+   "npcSprite": {
+    "chae": "chae",
+    "haneul": "haneul"
+   },
+   "npcFacing": {
+    "chae": "left",
+    "haneul": "left"
+   }
   },
   "floor3": {
    "name": "3층 관계자 구역",
@@ -421,7 +451,13 @@
      "requires": "baek_refused",
      "puzzleId": "P03_revision_diff"
     }
-   ]
+   ],
+   "npcSprite": {
+    "baek": "baek"
+   },
+   "npcFacing": {
+    "baek": "left"
+   }
   },
   "room_oh": {
    "name": "간호사실",
@@ -455,7 +491,13 @@
       "E05_access_log"
      ]
     }
-   ]
+   ],
+   "npcSprite": {
+    "miran": "oh"
+   },
+   "npcFacing": {
+    "miran": "left"
+   }
   },
   "room_lee": {
    "name": "이혜정실",
@@ -490,7 +532,13 @@
      ],
      "puzzleId": "P04_approval_chain"
     }
-   ]
+   ],
+   "npcSprite": {
+    "lee": "lee"
+   },
+   "npcFacing": {
+    "lee": "left"
+   }
   },
   "b1": {
    "name": "지하 1층 창고",
@@ -559,7 +607,13 @@
       "flag_claim_d_open"
      ]
     }
-   ]
+   ],
+   "npcSprite": {
+    "haneul_b1": "haneul"
+   },
+   "npcFacing": {
+    "haneul_b1": "left"
+   }
   }
  },
  "opening": {

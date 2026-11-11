@@ -48,7 +48,7 @@
   background: var(--grain), linear-gradient(180deg, rgba(40,29,20,.97), rgba(18,13,10,.98));
   border-top: 2px solid var(--brass-d); box-shadow: 0 -1px 0 #000, inset 0 1px 0 rgba(226,201,138,.25);
 }
-.dlg.has-portrait { padding-left: 82px; }
+.dlg.has-portrait { padding-left: 92px; }
 .dlg .portrait { position: absolute; left: 6px; bottom: 3px; height: 104px; width: auto; border: 1px solid var(--brass-d); box-shadow: 0 0 0 1px #000; background: #0c0907; }
 .dlg .name { display: inline-block; color: #1c1308; background: var(--brass); font-weight: 700; padding: 0 6px; margin-bottom: 2px; border-radius: 1px 6px 1px 1px; }
 .dlg .text { min-height: 28px; white-space: pre-wrap; }

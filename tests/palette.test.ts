@@ -13,7 +13,7 @@ describe('캐릭터 프레임 팔레트 통일', () => {
   for (const q of spec.sequences) {
     it(`${q.id}: 모든 프레임 색 합집합 ≤ ${q.colours}`, async () => {
       const union = new Set<number>();
-      for (const f of q.frames) for (const c of await colours(`public/assets/${q.id}_${f}.png`)) union.add(c);
+      for (const f of (q as { breathe?: boolean }).breathe ? ['idle_0', 'idle_1'] : q.frames) for (const c of await colours(`public/assets/${q.id}_${f}.png`)) union.add(c);
       expect(union.size).toBeLessThanOrEqual(q.colours);
     });
   }

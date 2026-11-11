@@ -53,6 +53,10 @@ export class ExploreScene extends Phaser.Scene {
     anim('player_walk', 'player', ['walk_0', 'walk_1', 'walk_2', 'walk_3'], 8);
     anim('player_idle', 'player', ['idle_0', 'idle_1'], 2);
     anim('eunho_idle', 'eunho', ['idle_0', 'idle_1'], 2);
+    for (const k of Object.keys(assetList)) { // 생성 캐릭터(idle_0/1): `<id>_idle` 애니메이션
+      const m = k.match(/^(.+)_idle_1$/);
+      if (m && !this.anims.exists(`${m[1]}_idle`)) anim(`${m[1]}_idle`, m[1], ['idle_0', 'idle_1'], 2);
+    }
     anim('eunho_walk', 'eunho', ['walk_0', 'walk_1', 'walk_2', 'walk_3', 'walk_4', 'walk_5'], 8);
     setTabHandler(() => { if (this.started && !this.locked && !this.busy && !isModalOpen()) openNotebook(this.state, () => {}); });
     setThenHandler((t) => { if (t === 'report') this.startReport(); });

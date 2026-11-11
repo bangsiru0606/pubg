@@ -6,14 +6,15 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname } from 'node:path';
 
 export interface ManifestEntry { file: string; size?: number[]; kind: string; facing?: 'left' | 'right' | null; chromaKey?: boolean }
-export interface Spec { sequences: any[]; sprites: any[]; illust: string[]; [k: string]: unknown }
+export interface Spec { ignoreGenerated?: string[]; sequences: any[]; sprites: any[]; illust: string[]; [k: string]: unknown }
 
 /** 이전계획 3.3.1: 소품 높이(px). 표에 없으면 90 으로 두고 draft 표시를 남긴다. */
 export const PROP_HEIGHT: Record<string, number> = { door: 117, stairs: 90, cleaning_cart: 54, bed: 40, desk: 59, chair: 40, altar: 50 };
 export const WALL_HEIGHT = 270; // 6유닛
 export const FLOOR_HEIGHT = 112; // 바닥선 y=158 아래
 
-export function draftFromManifest(manifest: ManifestEntry[], spec: Pick<Spec, 'sequences' | 'sprites' | 'illust'>) {
+export function draftFromManifest(manifest: ManifestEntry[], spec: Pick<Spec, 'sequences' | 'sprites' | 'illust'> & { ignoreGenerated?: string[] }) {
+  manifest = manifest.filter((e) => !(spec.ignoreGenerated ?? []).includes(e.file)); // 쓰지 않기로 한 생성 파일
   const draft = { sequences: [] as any[], sprites: [] as any[], illust: [] as string[] };
   const haveSeq = new Set(spec.sequences.map((q) => q.id)), haveSprite = new Set(spec.sprites.map((q) => q.id)), haveIllust = new Set(spec.illust);
   // 스프라이트 시퀀스: characters/<id>/<frame>.png 를 인물별로 묶는다
@@ -23,7 +24,10 @@ export function draftFromManifest(manifest: ManifestEntry[], spec: Pick<Spec, 's
     if (haveSeq.has(id)) continue;
     const facing = list[0].facing;
     if (facing !== 'left' && facing !== 'right') throw new Error(`manifest ${id}: facing 누락 (left|right 필수)`);
-    draft.sequences.push({ id, src: `generated/${dirname(list[0].file)}`, frames: list.map((e) => basename(e.file, '.png')).sort(), canvasHeight: 90, colours: 64, facing, chromaKey: !!list[0].chromaKey, draft: true });
+    const frames = list.map((e) => basename(e.file, '.png')).sort();
+    // idle_0 한 장뿐이면 정규화 때 숨쉬기 프레임(idle_1)을 만든다
+    const breathe = frames.length === 1 && frames[0] === 'idle_0';
+    draft.sequences.push({ id, src: `generated/${dirname(list[0].file)}`, frames, canvasHeight: 90, colours: 64, facing, chromaKey: !!list[0].chromaKey, ...(breathe ? { breathe: true } : {}), draft: true });
   }
   for (const m of manifest.filter((e) => ['wall', 'floor', 'prop'].includes(e.kind))) {
     const id = basename(m.file, '.png');

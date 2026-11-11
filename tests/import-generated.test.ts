@@ -11,12 +11,16 @@ const M: ManifestEntry[] = [
   { file: 'props/mystery.png', kind: 'prop', facing: null, chromaKey: true },
   { file: 'portraits/baek_neutral.png', kind: 'portrait', facing: null, chromaKey: false },
 ];
-const base = { sequences: spec.sequences as any[], sprites: spec.sprites as any[], illust: spec.illust as string[] };
+const gen = (x: any) => !x.draft; // 이미 가져온 생성 항목을 뺀 기준 spec
+const base = { sequences: (spec.sequences as any[]).filter(gen), sprites: (spec.sprites as any[]).filter(gen), illust: (spec.illust as string[]).filter((i) => !i.startsWith('generated/')) };
 
 describe('생성 에셋 가져오기 (manifest → asset-spec 초안)', () => {
   it('kind·facing·chromaKey 를 옮기고 높이는 규격으로 채운다', () => {
     const d = draftFromManifest(M, base);
     expect(d.sequences).toEqual([{ id: 'baek', src: 'generated/characters/baek', frames: ['idle_0', 'idle_1'], canvasHeight: 90, colours: 64, facing: 'right', chromaKey: true, draft: true }]);
+    // idle_1 을 쓰지 않기로 하면(ignoreGenerated) idle_0 한 장 + breathe
+    const b = draftFromManifest(M, { ...base, ignoreGenerated: ['characters/baek/idle_1.png'] });
+    expect(b.sequences[0]).toMatchObject({ frames: ['idle_0'], breathe: true });
     expect(d.sprites.find((s) => s.id === 'lobby_wall')).toMatchObject({ height: 270, chromaKey: false });
     expect(d.sprites.find((s) => s.id === 'lobby_floor')).toMatchObject({ height: 112 });
     expect(d.sprites.find((s) => s.id === 'cleaning_cart')).toMatchObject({ height: 54, chromaKey: true });

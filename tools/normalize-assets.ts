@@ -2,7 +2,8 @@
 import sharp from 'sharp';
 import { cpSync, mkdirSync, readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
-import { despillEdges, removeChromaKey } from './chroma';
+import { breatheFrame } from './breathe';
+import { binarizeAlpha, despillEdges, removeChromaKey } from './chroma';
 
 /** 원본 읽기: chromaKey 지정 시 #00FF00 배경 제거 + 가장자리 초록 번짐 정리 */
 const load = async (path: string, chroma?: boolean): Promise<Buffer> => (chroma ? despillEdges(await removeChromaKey(path)) : readFileSync(path));
@@ -34,8 +35,10 @@ for (const q of spec.sequences) {
     const src = await load(join(SRC, q.src, `${f}.png`), q.chromaKey);
     const meta = await sharp(src).metadata();
     const w = Math.round((meta.width! * q.canvasHeight) / meta.height!);
-    return { f, w, buf: await sharp(src).resize(w, q.canvasHeight, { kernel: 'lanczos3' }).png().toBuffer() };
+    const resized = await sharp(src).resize(w, q.canvasHeight, { kernel: 'lanczos3' }).png().toBuffer();
+    return { f, w, buf: q.chromaKey ? await binarizeAlpha(resized) : resized };
   }));
+  if (q.breathe) frames.push({ f: 'idle_1', w: frames[0].w, buf: await breatheFrame(frames[0].buf) }); // idle_0 한 장에서 숨쉬기 프레임을 만든다
   const total = frames.reduce((a, x) => a + x.w, 0);
   let left = 0;
   const strip = await sharp({ create: { width: total, height: q.canvasHeight, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })

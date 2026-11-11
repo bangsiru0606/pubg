@@ -47,3 +47,12 @@ export async function despillEdges(png: Buffer, radius = 2): Promise<Buffer> {
   }
   return sharp(out, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
 }
+
+/** 픽셀 아트용: 반투명 가장자리를 완전 투명/불투명으로 정리한다 (리사이즈로 생긴 중간 알파가 팔레트를 늘리지 않게) */
+export async function binarizeAlpha(png: Buffer, threshold = 128): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] >= threshold) data[i + 3] = 255; else { data[i] = data[i + 1] = data[i + 2] = 0; data[i + 3] = 0; }
+  }
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}

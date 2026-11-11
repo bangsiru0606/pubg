@@ -182,5 +182,97 @@
  "haneul_idle_1": {
   "w": 55,
   "h": 90
+ },
+ "door_hospital": {
+  "w": 76,
+  "h": 117
+ },
+ "door_director": {
+  "w": 68,
+  "h": 117
+ },
+ "door_staff": {
+  "w": 76,
+  "h": 117
+ },
+ "stairs_up": {
+  "w": 103,
+  "h": 90
+ },
+ "stairs_down": {
+  "w": 108,
+  "h": 90
+ },
+ "stairs_basement": {
+  "w": 73,
+  "h": 90
+ },
+ "cleaning_cart": {
+  "w": 41,
+  "h": 54
+ },
+ "papers_floor": {
+  "w": 33,
+  "h": 10
+ },
+ "altar": {
+  "w": 33,
+  "h": 50
+ },
+ "blood_mark": {
+  "w": 58,
+  "h": 8
+ },
+ "director_desk": {
+  "w": 137,
+  "h": 59
+ },
+ "director_chair": {
+  "w": 29,
+  "h": 40
+ },
+ "order_emblem": {
+  "w": 36,
+  "h": 32
+ },
+ "bed_ward": {
+  "w": 81,
+  "h": 40
+ },
+ "bed_empty": {
+  "w": 89,
+  "h": 40
+ },
+ "broadcast_board": {
+  "w": 40,
+  "h": 66
+ },
+ "baek_pc": {
+  "w": 67,
+  "h": 46
+ },
+ "nurse_counter": {
+  "w": 88,
+  "h": 70
+ },
+ "lee_desk": {
+  "w": 95,
+  "h": 59
+ },
+ "ledger_shelf": {
+  "w": 58,
+  "h": 80
+ },
+ "code_chart": {
+  "w": 91,
+  "h": 60
+ },
+ "belongings_locker": {
+  "w": 59,
+  "h": 84
+ },
+ "cold_crate": {
+  "w": 49,
+  "h": 40
  }
 }

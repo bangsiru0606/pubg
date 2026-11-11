@@ -49,3 +49,29 @@ describe('크로마키 제거 (#00FF00)', () => {
   });
   it('실제 생성 에셋이 없어도 통과한다 (합성 이미지만 사용)', () => expect(true).toBe(true));
 });
+
+describe('despill full (소품 전용)', () => {
+  it('g > max(r,b) 인 픽셀이 남지 않고, 알파는 그대로다', async () => {
+    const { despillFull } = await import('../tools/chroma');
+    const keyed = await removeChromaKey('tests/fixtures/chroma_shapes.png');
+    const { data } = await sharp(await despillFull(keyed)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const before = (await sharp(keyed).ensureAlpha().raw().toBuffer());
+    for (let i = 0; i < data.length; i += 4) { expect(data[i + 1]).toBeLessThanOrEqual(Math.max(data[i], data[i + 2])); expect(data[i + 3]).toBe(before[i + 3]); }
+  });
+  it('trimSoftEdge: 알파 255 미만 픽셀이 없다', async () => {
+    const { trimSoftEdge } = await import('../tools/chroma');
+    const { data } = await sharp(await trimSoftEdge(await removeChromaKey('tests/fixtures/chroma_shapes.png'))).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    for (let i = 3; i < data.length; i += 4) expect(data[i] === 0 || data[i] === 255).toBe(true);
+  });
+  it('배치 5 소품 정규화 결과에 초록기 픽셀이 없다', async () => {
+    const { readFileSync } = await import('node:fs');
+    const spec = JSON.parse(readFileSync('art/asset-spec.json', 'utf8'));
+    const props = spec.sprites.filter((s: any) => s.despill === 'full');
+    expect(props.length).toBe(23);
+    for (const s of props) {
+      const { data } = await sharp(`public/assets/${s.id}.png`).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      let bad = 0; for (let i = 0; i < data.length; i += 4) if (data[i + 3] && data[i + 1] - Math.max(data[i], data[i + 2]) > 8) bad++;
+      expect(bad, s.id).toBe(0);
+    }
+  });
+});

@@ -245,6 +245,191 @@
       "src": "generated/backgrounds/basement_floor.png",
       "height": 112,
       "chromaKey": false
+    },
+    {
+      "id": "door_hospital",
+      "src": "generated/props/door_hospital.png",
+      "outline": true,
+      "despill": "full",
+      "height": 117,
+      "chromaKey": true
+    },
+    {
+      "id": "door_director",
+      "src": "generated/props/door_director.png",
+      "outline": true,
+      "despill": "full",
+      "height": 117,
+      "chromaKey": true
+    },
+    {
+      "id": "door_staff",
+      "src": "generated/props/door_staff.png",
+      "outline": true,
+      "despill": "full",
+      "height": 117,
+      "chromaKey": true
+    },
+    {
+      "id": "stairs_up",
+      "src": "generated/props/stairs_up.png",
+      "outline": true,
+      "despill": "full",
+      "height": 90,
+      "chromaKey": true
+    },
+    {
+      "id": "stairs_down",
+      "src": "generated/props/stairs_down.png",
+      "outline": true,
+      "despill": "full",
+      "height": 90,
+      "chromaKey": true
+    },
+    {
+      "id": "stairs_basement",
+      "src": "generated/props/stairs_basement.png",
+      "outline": true,
+      "despill": "full",
+      "height": 90,
+      "chromaKey": true
+    },
+    {
+      "id": "cleaning_cart",
+      "src": "generated/props/cleaning_cart.png",
+      "outline": true,
+      "despill": "full",
+      "height": 54,
+      "chromaKey": true
+    },
+    {
+      "id": "papers_floor",
+      "src": "generated/props/papers_floor.png",
+      "outline": true,
+      "despill": "full",
+      "height": 10,
+      "chromaKey": true
+    },
+    {
+      "id": "altar",
+      "src": "generated/props/altar.png",
+      "outline": true,
+      "despill": "full",
+      "height": 50,
+      "chromaKey": true
+    },
+    {
+      "id": "blood_mark",
+      "src": "generated/props/blood_mark.png",
+      "outline": true,
+      "despill": "full",
+      "height": 8,
+      "chromaKey": true,
+      "trimSoftEdge": true
+    },
+    {
+      "id": "director_desk",
+      "src": "generated/props/director_desk.png",
+      "outline": true,
+      "despill": "full",
+      "height": 59,
+      "chromaKey": true
+    },
+    {
+      "id": "director_chair",
+      "src": "generated/props/director_chair.png",
+      "outline": true,
+      "despill": "full",
+      "height": 40,
+      "chromaKey": true
+    },
+    {
+      "id": "order_emblem",
+      "src": "generated/props/order_emblem.png",
+      "outline": true,
+      "despill": "full",
+      "height": 32,
+      "chromaKey": true
+    },
+    {
+      "id": "bed_ward",
+      "src": "generated/props/bed_ward.png",
+      "outline": true,
+      "despill": "full",
+      "height": 40,
+      "chromaKey": true
+    },
+    {
+      "id": "bed_empty",
+      "src": "generated/props/bed_empty.png",
+      "outline": true,
+      "despill": "full",
+      "height": 40,
+      "chromaKey": true
+    },
+    {
+      "id": "broadcast_board",
+      "src": "generated/props/broadcast_board.png",
+      "outline": true,
+      "despill": "full",
+      "height": 66,
+      "chromaKey": true
+    },
+    {
+      "id": "baek_pc",
+      "src": "generated/props/baek_pc.png",
+      "outline": true,
+      "despill": "full",
+      "height": 46,
+      "chromaKey": true
+    },
+    {
+      "id": "nurse_counter",
+      "src": "generated/props/nurse_counter.png",
+      "outline": true,
+      "despill": "full",
+      "height": 70,
+      "chromaKey": true
+    },
+    {
+      "id": "lee_desk",
+      "src": "generated/props/lee_desk.png",
+      "outline": true,
+      "despill": "full",
+      "height": 59,
+      "chromaKey": true
+    },
+    {
+      "id": "ledger_shelf",
+      "src": "generated/props/ledger_shelf.png",
+      "outline": true,
+      "despill": "full",
+      "height": 80,
+      "chromaKey": true
+    },
+    {
+      "id": "code_chart",
+      "src": "generated/props/code_chart.png",
+      "outline": true,
+      "despill": "full",
+      "height": 60,
+      "chromaKey": true
+    },
+    {
+      "id": "belongings_locker",
+      "src": "generated/props/belongings_locker.png",
+      "outline": true,
+      "despill": "full",
+      "height": 84,
+      "chromaKey": true
+    },
+    {
+      "id": "cold_crate",
+      "src": "generated/props/cold_crate.png",
+      "outline": true,
+      "despill": "full",
+      "height": 40,
+      "chromaKey": true
     }
   ],
   "illust": [
@@ -270,29 +455,5 @@
     "characters/baek/idle_1.png",
     "backgrounds/lobby_floor.png"
   ],
-  "pending": [
-    "altar",
-    "baek_pc",
-    "bed_empty",
-    "bed_ward",
-    "belongings_locker",
-    "blood_mark",
-    "broadcast_board",
-    "cleaning_cart",
-    "code_chart",
-    "cold_crate",
-    "director_chair",
-    "director_desk",
-    "door_director",
-    "door_hospital",
-    "door_staff",
-    "ledger_shelf",
-    "lee_desk",
-    "nurse_counter",
-    "order_emblem",
-    "papers_floor",
-    "stairs_basement",
-    "stairs_down",
-    "stairs_up"
-  ]
+  "pending": []
 }

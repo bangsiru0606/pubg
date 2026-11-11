@@ -5,10 +5,16 @@ import { join, basename } from 'node:path';
 import { readFileSync as readFile } from 'node:fs';
 import { breatheFrame } from './breathe';
 import { applyOutline, measureOutlineColor, padForOutline } from './outline';
-import { binarizeAlpha, despillEdges, removeChromaKey } from './chroma';
+import { binarizeAlpha, despillEdges, despillFull, removeChromaKey, trimSoftEdge } from './chroma';
 
 /** 원본 읽기: chromaKey 지정 시 #00FF00 배경 제거 + 가장자리 초록 번짐 정리 */
-const load = async (path: string, chroma?: boolean): Promise<Buffer> => (chroma ? despillEdges(await removeChromaKey(path)) : readFileSync(path));
+const load = async (path: string, chroma?: boolean, o: { despill?: string; trimSoftEdge?: boolean } = {}): Promise<Buffer> => {
+  if (!chroma) return readFileSync(path);
+  let b = await despillEdges(await removeChromaKey(path));
+  if (o.despill === 'full') b = await despillFull(b); // 소품 전용 (asset-spec despill: "full")
+  if (o.trimSoftEdge) b = await trimSoftEdge(b);
+  return b;
+};
 
 const SRC = 'art/source';
 const OUT = 'public/assets';
@@ -26,12 +32,13 @@ rmSync(OUT, { recursive: true, force: true });
 mkdirSync(join(OUT, 'illust'), { recursive: true });
 
 async function normalizeSprite(s: any) {
-  const trimmed = sharp(await load(join(SRC, s.src), s.chromaKey)).trim({ threshold: 1 });
+  const trimmed = sharp(await load(join(SRC, s.src), s.chromaKey, s)).trim({ threshold: 1 });
   const buf = await trimmed.png().toBuffer();
   let img = sharp(buf).resize({ height: s.outline ? s.height - 1 : s.height, kernel: 'lanczos3' });
   if (s.outline) { // 소품: 알파 정리 → 위·좌·우 여백 1px → 바깥 외곽선 (기준 색은 한지수 스프라이트라 시퀀스 처리 뒤에 한다). 높이 규격은 유지.
     let b: Buffer = await img.png().toBuffer();
     if (s.chromaKey) b = await binarizeAlpha(b);
+    if (s.despill === 'full') b = await despillFull(b); // 리사이즈 보간으로 생긴 초록기도 다시 걷어 낸다
     img = sharp(await applyOutline(await padForOutline(b), await outlineColor()));
   }
   await save(img, `${s.id}.png`, spec.colours, s.id);

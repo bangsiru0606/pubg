@@ -56,3 +56,17 @@ export async function binarizeAlpha(png: Buffer, threshold = 128): Promise<Buffe
   }
   return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
+
+/** 강한 디스필: g > max(r, b) 인 픽셀의 g 를 max(r, b) 로 낮춘다. "초록 금지"로 만든 소품 전용 (올리브·연두가 정상인 배경·인물에는 쓰지 않는다) */
+export async function despillFull(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) { const cap = Math.max(data[i], data[i + 2]); if (data[i + 1] > cap) data[i + 1] = cap; }
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}
+
+/** 알파가 255 미만인 반투명 가장자리 픽셀을 투명으로 만든다 */
+export async function trimSoftEdge(png: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) if (data[i + 3] < 255) { data[i] = data[i + 1] = data[i + 2] = 0; data[i + 3] = 0; }
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}

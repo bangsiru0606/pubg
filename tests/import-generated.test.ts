@@ -12,7 +12,7 @@ const M: ManifestEntry[] = [
   { file: 'portraits/baek_neutral.png', kind: 'portrait', facing: null, chromaKey: false },
 ];
 const gen = (x: any) => !x.draft; // 이미 가져온 생성 항목을 뺀 기준 spec
-const base = { sequences: (spec.sequences as any[]).filter(gen), sprites: (spec.sprites as any[]).filter(gen), illust: (spec.illust as string[]).filter((i) => !i.startsWith('generated/')) };
+const base = { sequences: (spec.sequences as any[]).filter(gen), sprites: (spec.sprites as any[]).filter(gen).filter((s) => s.id !== 'cleaning_cart'), illust: (spec.illust as string[]).filter((i) => !i.startsWith('generated/')) };
 
 describe('생성 에셋 가져오기 (manifest → asset-spec 초안)', () => {
   it('kind·facing·chromaKey 를 옮기고 높이는 규격으로 채운다', () => {

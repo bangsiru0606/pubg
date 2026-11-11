@@ -6,7 +6,7 @@ import { condMet, hasFlag, type GameState } from '../core';
 interface Gate { requires?: string; requiresEvidence?: string[]; hideWhen?: string; showWhen?: string }
 export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string; art?: string; auto?: boolean }
 export interface Npc extends Gate { type: 'npc'; id: string; x: number; name: string; dialogueId: string; autoTrigger?: { x: number; width: number }; autoWhen?: string[]; silent?: boolean } // autoWhen: 모든 플래그가 서면 한 번 자동 시작, silent: 그림·프롬프트 없는 장면 사건
-export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[]; art?: string; artBottom?: number }
+export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[]; art?: string; artBottom?: number; sparkle?: boolean }
 export type Interactable = Transition | Npc | Examine;
 export interface Prop { id: string; x: number; w: number; h: number; color: string; label: string; showWhen?: string; tex?: string }
 export interface OpeningStep { do: 'dialogue' | 'camera' | 'appear' | 'hide' | 'face' | 'wait' | 'walk' | 'unlock' | 'hints'; id?: string; docs?: boolean; to?: string; smooth?: number; settle?: boolean; actor?: string; dir?: 'left' | 'right'; sec?: number; gap?: number; toX?: number; speed?: number; texts?: string[] }
@@ -31,6 +31,15 @@ export function isAvailable(it: Interactable, s: GameState): boolean {
   if (it.requiresEvidence?.some((id) => !s.evidenceIds.includes(id))) return false;
   return !it.requires || condMet(s, it.requires);
 }
+/** 조사 지점을 이미 조사했는가: 단서는 모두 얻었고, 퍼즐이 딸려 있으면 한 번 열었거나 풀었다. 반짝임 표시는 조사 전에만 띄운다. */
+export function isExamined(it: Examine, s: GameState): boolean {
+  const ids = [...(it.evidenceId ? [it.evidenceId] : []), ...(it.evidenceIds ?? [])];
+  if (ids.some((id) => !s.evidenceIds.includes(id))) return false;
+  if (it.puzzleId) return s.solvedPuzzleIds.includes(it.puzzleId) || hasFlag(s, `puzzle_opened:${it.puzzleId}`);
+  return true;
+}
+/** 반짝임을 띄울 지점: 조사 전이고 지금 조사할 수 있는 examine (map.json 의 sparkle: false 로 끈다, 근접 조사 지점은 제외) */
+export const showsSparkle = (it: Interactable, s: GameState) => it.type === 'examine' && it.sparkle !== false && !it.closeup && isAvailable(it, s) && !isHidden(it, s) && !isExamined(it, s);
 /** 이미 사라진 대상(예: 자리를 뜬 NPC) */
 export const isHidden = (it: Interactable, s: GameState) => (!!it.hideWhen && hasFlag(s, it.hideWhen)) || (!!it.showWhen && !hasFlag(s, it.showWhen)) || (it.type === 'npc' && !!it.silent);
 

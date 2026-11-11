@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import './ui/ui.css';
 import { acquireEvidence, claims, createGameState, enterNode, getNode, puzzles, saveConclusion, setFlag, setReportTarget, submitPuzzle } from './core';
 import { dialogues, isTestBuild } from './explore/content';
-import { debugState as audioState } from './audio/audio';
+import { debugState as audioState, sfx as playSfx } from './audio/audio';
 import { ExploreScene } from './scenes/ExploreScene';
 import { openDialogue } from './ui/dialogue';
 import { openEnding } from './ui/ending';
@@ -72,7 +72,7 @@ if (isTestBuild) {
     void scene.go('b1', 0);
   };
   (window as unknown as Record<string, unknown>).__cw = {
-    get state() { return scene.state; }, scene, audioState, ff, quick: () => { closeTitleNow(); scene.newGame(true); }, saveConclusion, claims,
+    get state() { return scene.state; }, scene, audioState, sfx: playSfx, ff, quick: () => { closeTitleNow(); scene.newGame(true); }, saveConclusion, claims,
     openDialogue: (id: string) => openDialogue(scene.state, id),
     // 화면 디자인 확인용 (tools/ui-shots.ts): 각 오버레이를 현재 상태로 바로 연다
     ui: {

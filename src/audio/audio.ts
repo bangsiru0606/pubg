@@ -11,6 +11,7 @@ const tracks = data.bgm.tracks as Record<string, TrackCfg>;
 const sounds = data.sfx.sounds as Record<string, { volume?: number }>;
 const events = data.sfx.events as Record<string, string>;
 const available = { bgm: list.bgm as string[], sfx: list.sfx as string[] };
+const sfxExt = (list as { ext?: Record<string, string> }).ext ?? {}; // 1초 이상 효과음은 ogg 로 변환되어 있다
 
 let vol: Volumes = { master: 0.8, bgm: 0.7, sfx: 0.8, muted: false };
 try { const o = JSON.parse(localStorage.getItem(KEY) ?? 'null'); if (o) vol = { master: clamp01(o.master ?? vol.master), bgm: clamp01(o.bgm ?? vol.bgm), sfx: clamp01(o.sfx ?? vol.sfx), muted: !!o.muted }; } catch { /* 저장소 사용 불가: 기본값 */ }
@@ -36,7 +37,7 @@ const stack = new Map<string, string>();
 let timer = 0;
 
 const mk = (kind: 'bgm' | 'sfx', name: string) => {
-  try { const a = new Audio(`assets/audio/${kind}/${name}.${kind === 'bgm' ? 'mp3' : 'wav'}`); a.preload = 'auto'; return a; } catch { return null; }
+  try { const a = new Audio(`assets/audio/${kind}/${name}.${kind === 'bgm' ? 'mp3' : sfxExt[name] ?? 'wav'}`); a.preload = 'auto'; return a; } catch { return null; }
 };
 const play = (a: HTMLAudioElement) => { try { void a.play()?.catch(() => { /* 자동 재생 차단 등: 무음 */ }); } catch { /* 무시 */ } };
 

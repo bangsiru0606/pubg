@@ -6,7 +6,7 @@ import {
   acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, puzzles, setFlag, type GameState,
 } from '../core';
 import {
-  GROUND_Y, OPENING, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, promptOf, themes,
+  GROUND_Y, OPENING, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, showsSparkle, promptOf, themes,
   triggerKey, talkStand, type Examine, type Interactable, type Npc, type Transition,
 } from '../explore/interaction';
 import { openCloseup } from '../ui/closeup';
@@ -60,6 +60,12 @@ export class ExploreScene extends Phaser.Scene {
       if (m && !this.anims.exists(`${m[1]}_idle`)) anim(`${m[1]}_idle`, m[1], ['idle_0', 'idle_1'], 2);
     }
     anim('eunho_walk', 'eunho', ['walk_0', 'walk_1', 'walk_2', 'walk_3', 'walk_4', 'walk_5'], 8);
+    // 조사 지점 반짝임: 5×5 놋쇠색 2프레임 (0.8초 주기). 그림 파일 없이 코드로 만든다.
+    const g = this.make.graphics({ x: 0, y: 0 }, false);
+    g.fillStyle(0x3a2a10); g.fillRect(1, 1, 1, 1); g.fillRect(3, 1, 1, 1); g.fillRect(1, 3, 1, 1); g.fillRect(3, 3, 1, 1); // 안쪽 모서리의 어두운 점: 밝은 옷·벽 위에서도 보이게
+    g.fillStyle(0xe2c98a); g.fillRect(2, 0, 1, 5); g.fillRect(0, 2, 5, 1); g.fillStyle(0xfff3c4); g.fillRect(2, 2, 1, 1); g.generateTexture('sparkle_0', 5, 5); g.clear();
+    g.fillStyle(0xb08a3c); g.fillRect(1, 1, 3, 3); g.fillStyle(0xe2c98a); g.fillRect(2, 2, 1, 1); g.generateTexture('sparkle_1', 5, 5); g.destroy();
+    this.anims.create({ key: 'sparkle', frameRate: 2.5, repeat: -1, frames: [{ key: 'sparkle_0' }, { key: 'sparkle_1' }] });
     setTabHandler(() => { if (this.started && !this.locked && !this.busy && !isModalOpen()) openNotebook(this.state, () => {}); });
     setThenHandler((t) => { if (t === 'report') this.startReport(); });
     this.buildArea(START.area, START.x);
@@ -111,6 +117,14 @@ export class ExploreScene extends Phaser.Scene {
   }
 
   private drawInteractable(a: (typeof areas)[string], it: Interactable) {
+    this.drawInteractableArt(a, it);
+    if (showsSparkle(it, this.state)) { // 아직 조사하지 않은 지점 위에 반짝임 (캐릭터보다 위 레이어)
+      const g = GROUND_Y, art = it.type === 'examine' && it.art && this.textures.exists(it.art) ? (this.textures.get(it.art).getSourceImage() as HTMLImageElement).height + (it.artBottom ?? 0) : 22;
+      this.add.sprite(it.x, g - art - 5, 'sparkle_0').setOrigin(0.5, 1).setDepth(7).play('sparkle');
+    }
+  }
+
+  private drawInteractableArt(a: (typeof areas)[string], it: Interactable) {
     const g = GROUND_Y;
     if (it.type === 'transition') {
       if (it.art && this.textures.exists(it.art)) { // 아트가 있는 문·계단은 그림으로, 없으면 아래 placeholder

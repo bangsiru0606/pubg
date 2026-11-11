@@ -1,9 +1,11 @@
 // art/source/audio → public/assets/audio 정규화 (npm run assets 가 부른다).
-//   bgm/*.mp3 → audio/bgm/ , sfx/*.wav → audio/sfx/ 로 복사 (재인코딩 도구 ffmpeg 가 있으면 BGM 을 MP3 128kbps 로 다시 만든다. 없으면 원본 복사)
+//   bgm/*.mp3 → audio/bgm/ (MP3 96kbps 스테레오 44.1kHz 로 재인코딩), sfx/*.wav → audio/sfx/ (1초 이상이면 OGG, 아니면 그대로 복사)
+//   재인코딩은 devDependency ffmpeg-static 으로 한다 (제출 빌드에는 들어가지 않는다). 없으면 원본 복사.
 //   bgm/CREDITS.md → src/data/bgm-credits.json (타이틀 "정보"에 표시), 있는 파일 목록 → src/data/audio-list.json
 //   소리 전체가 12MB 를 넘으면 실패한다.
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 export const AUDIO_BUDGET = 12 * 1024 * 1024;
@@ -14,18 +16,44 @@ export function parseCredits(md: string): string[] {
     .map((l) => l.replace(/^#+\s*/, '').replace(/^[-*]\s+/, '').replace(/\*\*|`/g, '').replace(/^\||\|$/g, '').replace(/\s*\|\s*/g, ' · ').trim()).filter(Boolean);
 }
 
+/** ffmpeg: devDependency ffmpeg-static 의 실행 파일을 쓴다 (없으면 시스템 ffmpeg, 둘 다 없으면 null → 원본 복사) */
+export function findFfmpeg(): string | null {
+  try { const p = createRequire(import.meta.url)('ffmpeg-static') as string | null; if (p && existsSync(p)) return p; } catch { /* 설치 안 됨 */ }
+  return spawnSync('ffmpeg', ['-version'], { stdio: 'ignore' }).status === 0 ? 'ffmpeg' : null;
+}
+/** PCM WAV 길이(초): 헤더의 byteRate 와 data 크기로 계산 */
+export function wavSeconds(buf: Buffer): number {
+  if (buf.length < 44 || buf.toString('ascii', 0, 4) !== 'RIFF') return 0;
+  let p = 12, rate = 0;
+  while (p + 8 <= buf.length) {
+    const id = buf.toString('ascii', p, p + 4), n = buf.readUInt32LE(p + 4);
+    if (id === 'fmt ') rate = buf.readUInt32LE(p + 16);
+    if (id === 'data') return rate ? Math.min(n, buf.length - p - 8) / rate : 0;
+    p += 8 + n + (n % 2);
+  }
+  return 0;
+}
+export const OGG_MIN_SECONDS = 1; // 이 길이 이상의 효과음은 OGG(Vorbis)로 줄인다
+
 export function normalizeAudio(src = 'art/source/audio', out = 'public/assets/audio') {
-  const list = { bgm: [] as string[], sfx: [] as string[] };
+  const list = { bgm: [] as string[], sfx: [] as string[], ext: {} as Record<string, string> };
+  const info = { reencoded: 0, copied: 0, ogg: 0 };
   let total = 0;
-  const ffmpeg = spawnSync('ffmpeg', ['-version'], { stdio: 'ignore' }).status === 0;
+  const ff = findFfmpeg();
+  const run = (args: string[]) => !!ff && spawnSync(ff, ['-y', '-loglevel', 'error', ...args]).status === 0;
   for (const [kind, ext] of [['bgm', 'mp3'], ['sfx', 'wav']] as const) {
     const dir = join(src, kind);
     if (!existsSync(dir)) continue;
     mkdirSync(join(out, kind), { recursive: true });
     for (const f of readdirSync(dir).filter((x) => x.toLowerCase().endsWith(`.${ext}`)).sort()) {
-      const name = f.slice(0, -ext.length - 1), to = join(out, kind, `${name}.${ext}`);
-      if (kind === 'bgm' && ffmpeg && spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', join(dir, f), '-b:a', '128k', '-ac', '2', to]).status === 0) { /* 재인코딩 성공 */ }
-      else copyFileSync(join(dir, f), to);
+      const name = f.slice(0, -ext.length - 1), from = join(dir, f);
+      let to = join(out, kind, `${name}.${ext}`), done = false;
+      if (kind === 'bgm') done = run(['-i', from, '-vn', '-c:a', 'libmp3lame', '-b:a', '96k', '-ac', '2', '-ar', '44100', to]); // 원본은 그대로, 결과는 public 에만
+      else if (wavSeconds(readFileSync(from)) >= OGG_MIN_SECONDS) {
+        const ogg = join(out, kind, `${name}.ogg`);
+        if (run(['-i', from, '-c:a', 'libvorbis', '-q:a', '4', ogg])) { to = ogg; done = true; list.ext[name] = 'ogg'; info.ogg++; }
+      }
+      if (done) info.reencoded++; else { copyFileSync(from, to); info.copied++; }
       total += statSync(to).size; list[kind].push(name);
     }
   }
@@ -33,7 +61,7 @@ export function normalizeAudio(src = 'art/source/audio', out = 'public/assets/au
   const credits = join(src, 'bgm', 'CREDITS.md');
   writeFileSync('src/data/bgm-credits.json', JSON.stringify(existsSync(credits) ? parseCredits(readFileSync(credits, 'utf8')) : []));
   writeFileSync('src/data/audio-list.json', JSON.stringify(list));
-  return { list, total, ffmpeg };
+  return { list, total, ffmpeg: ff, ...info };
 }
 
 interface AudioData { bgm: { tracks: Record<string, unknown>; fallback: Record<string, string>; scene: Record<string, string>; area: Record<string, string>; dialogue: Record<string, string>; puzzle: string; ending: Record<string, string> }; sfx: { sounds: Record<string, unknown>; events: Record<string, string>; nodeEvents: Record<string, string>; roomAreas: string[] } }

@@ -5,6 +5,9 @@ import fixture from '../src/data/dialogue.test-fixture.json' with { type: 'json'
 import { INTERACT_RANGE, areas } from '../src/explore/interaction';
 import { characters, claims, conflictPairs, endingLines, endings, evidenceById, evidenceList, puzzles } from '../src/core/data';
 import type { Dialogue } from '../src/core/types';
+import audioData from '../src/data/audio.json' with { type: 'json' };
+import audioList from '../src/data/audio-list.json' with { type: 'json' };
+import { checkAudio } from './audio-assets';
 
 const errors: string[] = [];
 const err = (m: string) => errors.push(m);
@@ -207,7 +210,13 @@ for (const [key, lines] of Object.entries(endingLines)) {
   if (pendingTex.length) warnings.push(`생성 대기(pending) 텍스처 ${pendingTex.length}개: ${pendingTex.join(', ')}`);
   if (pendingChars.length) warnings.push(`생성 대기(pending) 초상 인물 ${pendingChars.length}명 (${pendingChars.map((c) => c.id).join(', ')})`);
 }
-if (pendingSummary.batch3 + pendingSummary.batch4 + pendingSummary.batch5) warnings.push(`pending 합계: 배치 3(초상) ${pendingSummary.batch3}장, 배치 4(구역 배경) ${pendingSummary.batch4}장, 배치 5(소품) ${pendingSummary.batch5}장`);
+{ // 소리 (docs/사운드_계획.md): 데이터 참조 오류는 오류, 파일 없음·미사용 파일은 경고
+  const nodes = new Set<string>();
+  for (const [id, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues }) as [string, Dialogue][]) for (const n of Object.keys(d.nodes)) nodes.add(`${id}:${n}`);
+  const r = checkAudio(audioData as never, audioList, { dialogues: dialogueIds, nodes, areas: new Set(Object.keys(areas)), endings: new Set(endings.map((e) => e.id)) });
+  r.errors.forEach(err); warnings.push(...r.warnings);
+}
+if (pendingSummary.batch3 + pendingSummary.batch4 + pendingSummary.batch5) warnings.push(`pending 합계: 배치 3(초상) ${pendingSummary.batch3}장, 배치 4(구역 배경) ${pendingSummary.batch4}장, 배치 6(소품) ${pendingSummary.batch5}장`);
 if (warnings.length) console.warn(warnings.map((w) => `! ${w}`).join('\n'));
 if (errors.length) { console.error(errors.map((e) => `✗ ${e}`).join('\n')); process.exit(1); }
 console.log(`validate OK (단서 ${evidenceList.length}, 질문 ${claims.length}, 퍼즐 ${puzzles.length}, 엔딩 ${endings.length}, 구역 ${Object.keys(areas).length}, 대사 미작성 NPC ${missing})`);

@@ -1,5 +1,6 @@
 // 단서 원문 보기 (ClueDetailView 대응). 수첩의 "원문 다시 열기"와 단서 획득 시 사용.
 import { shownEvidence, isVerified, type GameState } from '../core';
+import { sfx } from '../audio/audio';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
 import { TYPE_LABEL, areaName } from './labels';
@@ -12,7 +13,7 @@ export function openViewer(s: GameState, evidenceId: string, onClose: () => void
   box.innerHTML = `${bg}<h3 style="margin:0 0 4px;color:#e2c98a;font-size:13px">${esc(e.title)}</h3>
     <div class="meta"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${ver} · ${esc(areaName(e.acquiredSceneId))} · ${esc(e.timestamp)}</div>
     ${e.body ? `<div class="docbody">${e.body.map((l) => (l ? `<p>${esc(l)}</p>` : '<br>')).join('')}</div>` : `<p>${esc(e.description)}</p>`}<div class="foot">Enter / Esc / 클릭: 닫기</div>`;
-  root().append(box);
+  root().append(box); sfx('onPageFlip');
   const close = () => { popModal('viewer'); box.remove(); onClose(); };
   box.addEventListener('click', close);
   pushModal({ id: 'viewer', onKey(ev) { if ((ev.key === 'Enter' || ev.key === 'Escape') && !ev.repeat) close(); } });

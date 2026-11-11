@@ -3,6 +3,7 @@ import sharp from 'sharp';
 import { mkdirSync, readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { readFileSync as readFile } from 'node:fs';
+import { normalizeAudio } from './audio-assets';
 import { breatheFrame } from './breathe';
 import { applyOutline, measureOutlineColor, padForOutline } from './outline';
 import { binarizeAlpha, despillEdges, despillFull, removeChromaKey, trimSoftEdge } from './chroma';
@@ -124,4 +125,5 @@ for (const p of (spec.masks ?? []) as string[]) {
 writeFileSync('src/data/illust-masks.json', JSON.stringify(masks));
 writeFileSync('src/data/illust-list.json', JSON.stringify(readdirSync(join(OUT, 'illust')).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)).sort()));
 writeFileSync(join(OUT, 'assets.json'), JSON.stringify(manifest, null, 1));
-console.log(`assets: ${Object.keys(manifest).length} normalized`);
+const au = normalizeAudio();
+console.log(`assets: ${Object.keys(manifest).length} normalized, audio: BGM ${au.list.bgm.length}곡 · 효과음 ${au.list.sfx.length}개 (${(au.total / 1048576).toFixed(1)}MB)`);

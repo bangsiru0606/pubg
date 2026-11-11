@@ -22,7 +22,7 @@ npm install
 npm run dev            # 개발 서버 (F9: 디버그 메뉴 — 씬 1~7 점프·저장 초기화·상태 보기, 제출 빌드에는 없음)
 npm test               # Vitest
 npm run validate       # 데이터 ID 참조 무결성 검사
-npm run assets         # art/source → public/assets 정규화
+npm run assets         # art/source → public/assets 정규화 (소리: art/source/audio/bgm·sfx → public/assets/audio, 12MB 초과 시 실패. 파일이 없으면 게임은 무음)
 npm run play           # build:release 후 release/ConfessionWard_v1.0_web/index.html 을 기본 브라우저로 연다 (플레이 시험, ALLOW_PENDING=1 로 동작)
 npm run build:release  # release/ConfessionWard_v1.0_web.zip 생성 (index.html 더블클릭 실행)
 npm run test:release   # zip을 풀어 file://로 열고 자동 플레이 확인 (Playwright). 생성 대기(pending) 에셋이 남아 있으면 실패 — 중간 단계는 ALLOW_PENDING=1 npm run test:release

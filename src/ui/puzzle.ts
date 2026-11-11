@@ -6,6 +6,7 @@
 // 마우스: 토큰 드래그 / 클릭 → 위치 클릭. 키보드: ←→ 선택 → Enter 로 잡기 → ←→ 위치 → Enter 로 놓기.
 import { characterName, hintFor, puzzleById, shownEvidence, submitPuzzle, type GameState, type PuzzleAnswer, type PuzzleTask } from '../core';
 import { el, esc, root } from './hud';
+import { bgmPop, bgmPush, puzzleTrack, sfx } from '../audio/audio';
 import { popModal, pushModal } from './input';
 import { openViewer } from './viewer';
 
@@ -76,7 +77,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   const markOptions = (t: PuzzleTask) => t.options.filter((o) => !isRemoved(t.slot, o.id));
 
   const box = el('div', 'modal puzzle'); box.id = 'puzzle';
-  root().append(box);
+  root().append(box); bgmPush('puzzle', puzzleTrack());
 
   const focusList = (): Focus[] => [
     ...visibleTokens().map((k) => ({ kind: 'token' as const, id: k })),
@@ -159,12 +160,14 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     if (r.status === 'incomplete') { note = '모든 과제를 채운 뒤에 확인할 수 있다.'; conflicts = []; }
     else if (r.status === 'wrong') {
       conflicts = r.conflicts; note = r.conflicts.length ? '' : '아직 맞지 않는다. 자료를 다시 비교해 보자.';
-      const h = applyHint();
+      sfx('onPuzzleWrong'); // 확인 버튼을 누른 뒤에만 결과음
+      const prev = hintLevel, h = applyHint();
+      if (h.level > prev) window.setTimeout(() => sfx('onHint'), 450);
       if (h.autoFill) fromAutoFill(h.autoFill.slotId, h.autoFill.tokens);
-    } else { solved = true; conflicts = []; note = ''; }
+    } else { solved = true; conflicts = []; note = ''; sfx('onPuzzleCorrect'); }
     render();
   }
-  const close = () => { popModal('puzzle'); box.remove(); onClose(solved); };
+  const close = () => { bgmPop('puzzle'); popModal('puzzle'); box.remove(); onClose(solved); };
 
   function startGrab(key: string) {
     grabbed = key; grabFrom = where[key];

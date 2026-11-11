@@ -5,6 +5,7 @@ import {
   isClaimOpen, isVerified, relatedEvidenceIds, saveConclusion, type Claim, type GameState,
 } from '../core';
 import { el, esc, root } from './hud';
+import { sfx } from '../audio/audio';
 import { popModal, pushModal } from './input';
 import { TYPE_LABEL, areaName } from './labels';
 import { openViewer } from './viewer';
@@ -19,7 +20,7 @@ const VISIBLE_ROWS = 14;
 
 export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
   const box = el('div', 'modal'); box.id = 'notebook';
-  root().append(box);
+  root().append(box); sfx('onPageFlip');
   let tab = startTab;
   const cursor: Record<string, number> = {};
   const drafts: Record<string, Draft> = {};
@@ -127,6 +128,7 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
     else if (canSaveConclusion(dr.hyp, dr.rebuttal)) {
       const r = saveConclusion(s, c.claimId, dr.hyp!, dr.support, dr.rebuttal);
       msg = r.ok ? '결론을 저장했다.' : r.reason; // 정답 여부는 알리지 않는다
+      sfx('onUiConfirm'); // 결과와 무관한 같은 소리 하나
     }
   }
   function pick(c: Claim, idx: number) {

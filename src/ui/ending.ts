@@ -1,6 +1,7 @@
 // 엔딩: (A 만) 마지막 대본 → 엔딩 카드 + 결과 세 줄 → 추리 등급 → 선택.
 // D: 보고서 다시 쓰기(씬 7 시작 시점으로) · 처음부터 · 타이틀로.  그 밖: 처음부터 · 타이틀로.
 import { characterName, gradeOf, resolveEnding, resolveEndingLines, type GameState } from '../core';
+import { bgmPop, bgmPush, endingTrack, sfx } from '../audio/audio';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
 
@@ -19,7 +20,8 @@ export function openEnding(s: GameState, h: { onRetry: () => void; onRestart: ()
   ];
   const box = el('div', 'modal ending'); box.id = 'ending';
   root().append(box);
-  const close = () => { popModal('ending'); box.remove(); };
+  bgmPush('ending', endingTrack(ending.id));
+  const close = () => { bgmPop('ending'); sfx('onUiConfirm'); popModal('ending'); box.remove(); };
 
   function render() {
     const kind = pages[pi];

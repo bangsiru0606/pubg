@@ -1,0 +1,10 @@
+{
+  "title": "병원의 고해 (Confession Ward)",
+  "lines": [
+    "제작: 병원의 고해 제작팀",
+    "사용 도구: Vite · TypeScript · Phaser 4 · Vitest · Playwright",
+    "그림: 탐색 화면 기준 그림체는 craft_on 에셋, 새 그림은 Codex $imagegen 으로 생성",
+    "효과음: 코드로 합성 (외부 음원 없음)"
+  ],
+  "bgmPending": "배경음악: 준비 중"
+}

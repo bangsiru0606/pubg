@@ -33,7 +33,20 @@ page.on('pageerror', (e) => errors.push(String(e)));
 page.on('requestfailed', (r) => errors.push(`requestfailed ${r.url()}`));
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__game?.scene.getScene('Explore')?.player, null, { timeout: 10000 });
-await page.waitForSelector('#title'); // 타이틀 → 새 게임
+await page.waitForSelector('#title'); // 타이틀 → (소리) 설정·정보 화면을 지나 새 게임
+const hintBefore = await page.locator('#title .anykey').count(); // 첫 입력 전에는 "아무 키나 눌러 시작" 안내
+for (const k of ['ArrowDown', 'ArrowDown']) await page.keyboard.press(k); // 새 게임 → 조작법 → 설정 (이어하기는 저장이 없어 없다)
+await page.keyboard.press('Enter'); await page.waitForTimeout(100);
+const settingsText = await page.locator('#title').innerText();
+await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowLeft'); // 음량 조절
+await page.keyboard.press('Escape');
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(100); // 정보
+const infoText = await page.locator('#title').innerText();
+await page.keyboard.press('Escape');
+const hintAfter = await page.locator('#title .anykey').count();
+await page.keyboard.press('m'); await page.keyboard.press('m'); // 전체 음소거 두 번 (켬 → 끔)
+const audioSaved = await page.evaluate(() => { try { return localStorage.getItem('cw_audio'); } catch { return 'blocked'; } });
+for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowUp'); // 정보 → 새 게임
 await page.keyboard.press('Enter');
 await page.waitForSelector('#title', { state: 'detached' });
 // 새 게임: 이름 입력(기본 이름) → 근접 조사(Esc) → 오프닝 연출을 Enter 로 끝까지
@@ -57,6 +70,9 @@ if (leaked.length) fail.push(`테스트 전용 내용이 제출 빌드에 포함
 if (errors.length) fail.push(`콘솔 오류 ${errors.length}건: ${errors.join(' | ')}`);
 if (!canvas || canvas[0] !== 480 || canvas[1] !== 270) fail.push(`캔버스 이상: ${canvas}`);
 if (hook !== 'undefined') fail.push('시험 훅(__cw) 이 제출 빌드에 노출됨');
+if (hintBefore !== 1 || hintAfter !== 0) fail.push(`"아무 키나 눌러 시작" 안내 이상: 입력 전 ${hintBefore}, 입력 후 ${hintAfter}`);
+if (!settingsText.includes('마스터 음량') || !infoText.includes('배경음악')) fail.push('설정/정보 화면이 열리지 않음');
+if (audioSaved === 'blocked') console.warn('! file:// 에서 localStorage 가 막혀 있다 (음량은 저장되지 않지만 소리 동작에는 문제 없다)');
 if (!(x1 > x0)) fail.push(`이동 안 됨: ${x0} → ${x1}`);
 if (fail.length) { console.error('FAIL\n' + fail.join('\n')); process.exit(1); }
 console.log(`OK file:// 콘솔 오류 0, 캔버스 ${canvas}, x ${x0.toFixed(1)} → ${x1.toFixed(1)}`);

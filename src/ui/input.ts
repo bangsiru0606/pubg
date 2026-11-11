@@ -1,3 +1,5 @@
+import { sfx, toggleMute } from '../audio/audio';
+import { showToast } from './hud';
 // 키보드 입력 + 모달 스택. 모달이 열려 있으면 키는 맨 위 모달만 받는다. 모든 화면은 키보드만으로 조작 가능해야 한다.
 const held = new Set<string>();
 const queue: string[] = [];
@@ -26,7 +28,9 @@ export const setTabHandler = (f: () => void) => { onTab = f; };
 
 window.addEventListener('keydown', (e) => {
   const top = modals[modals.length - 1];
+  if ((e.key === 'm' || e.key === 'M') && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey && !top?.raw) { showToast(toggleMute() ? '소리 끔 (M)' : '소리 켬 (M)', 1200); return; } // 전체 음소거
   if (top) {
+    if (!e.repeat && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !top.raw) sfx('onUiMove');
     if (top.raw ? e.key === 'Tab' : ['Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Enter', 'Escape'].includes(e.key)) e.preventDefault();
     top.onKey(e);
     return;

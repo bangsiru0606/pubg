@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import assetList from '../../public/assets/assets.json';
+import { areaTrack, bgmBase, sceneTrack, sfx, transitionSfx } from '../audio/audio';
 import { openNamePopup } from '../ui/namepopup';
 import {
   acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, puzzles, setFlag, type GameState,
@@ -39,6 +40,7 @@ export class ExploreScene extends Phaser.Scene {
   private lastDt = 16;
   private camPan: { obj: Phaser.GameObjects.Sprite; smooth: number } | null = null;
   private actors = new Map<string, Phaser.GameObjects.Sprite>();
+  private stepMs = 0; // 발소리 간격
 
   constructor() { super('Explore'); }
 
@@ -61,6 +63,7 @@ export class ExploreScene extends Phaser.Scene {
     setTabHandler(() => { if (this.started && !this.locked && !this.busy && !isModalOpen()) openNotebook(this.state, () => {}); });
     setThenHandler((t) => { if (t === 'report') this.startReport(); });
     this.buildArea(START.area, START.x);
+    if (!this.started) bgmBase(sceneTrack('title')); // 타이틀이 먼저 열려 있으면 타이틀 음악
   }
 
   // ---------- 구역 구성 ----------
@@ -73,6 +76,7 @@ export class ExploreScene extends Phaser.Scene {
     this.state.currentSceneId = id;
     this.state.playerX = spawnX;
     if (!this.state.visitedAreaIds.includes(id)) this.state.visitedAreaIds.push(id);
+    bgmBase(areaTrack(id));
     const a = areas[id], g = GROUND_Y, w = a.maxX - a.minX;
     this.minX = a.minX; this.maxX = a.maxX;
 
@@ -124,7 +128,7 @@ export class ExploreScene extends Phaser.Scene {
         this.add.rectangle(it.x, g - 66, 22, 24, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
       }
     } else if (it.art && this.textures.exists(it.art)) { // 조사 지점 그림이 있으면 노란 마름모 대신 그림 (그림 자체가 조사 대상)
-      this.add.image(it.x, g, it.art).setOrigin(0.5, 1).setDepth(3);
+      this.add.image(it.x, g - (it.artBottom ?? 0), it.art).setOrigin(0.5, 1).setDepth(3); // artBottom: 벽에 거는 그림은 바닥선 위로 띄운다
     } else if (!it.closeup && isAvailable(it, this.state)) {
       this.add.rectangle(it.x, g - 14, 12, 12, 0xe8d36a).setAngle(45).setDepth(5).setStrokeStyle(1, 0x000000, 0.6); // 조사 지점
     }
@@ -146,7 +150,7 @@ export class ExploreScene extends Phaser.Scene {
     const speed = PLAYER_SPEED * (isHeld('Shift') ? RUN_MULTIPLIER : 1);
     const p = this.player;
     p.x = Phaser.Math.Clamp(p.x + dir * speed * (dt / 1000), this.minX, this.maxX);
-    if (dir !== 0) p.setFlipX(flipFor('player', dir < 0));
+    if (dir !== 0) { p.setFlipX(flipFor('player', dir < 0)); this.stepMs += dt; if (this.stepMs >= (isHeld('Shift') ? 230 : 340)) { this.stepMs = 0; sfx('onFootstep'); } } else this.stepMs = 0;
     const want = dir !== 0 ? 'player_walk' : 'player_idle';
     if (p.anims.currentAnim?.key !== want) p.play(want);
 
@@ -176,8 +180,9 @@ export class ExploreScene extends Phaser.Scene {
 
   private useTransition(it: Transition) {
     const flag = it.cutscene ? `cutscene_done:${it.cutscene}` : '';
+    transitionSfx(it.kind, this.areaId, it.to);
     if (!it.cutscene || hasFlag(this.state, flag)) { void this.go(it.to, it.spawnX); return; }
-    setFlag(this.state, flag);
+    setFlag(this.state, flag); sfx('onFadeWhoosh');
     this.busy = true; setPrompt(null);
     void fadeThrough(0.3, 0.3, () => openCutscene(it.cutscene!, () => { this.busy = false; void this.go(it.to, it.spawnX); }));
   }
@@ -190,6 +195,7 @@ export class ExploreScene extends Phaser.Scene {
     if (it.dialogueId && !have) { openDialogue(this.state, it.dialogueId, (got) => this.showDocs(got)); return; }
     const fresh = ids.filter((id) => acquireEvidence(this.state, id));
     for (const id of fresh) showToast(`단서 획득: ${shownEvidence(this.state, id)!.title}`);
+    if (fresh.length) sfx('onEvidenceGet');
     this.showDocs(have ? ids : fresh);
   }
 
@@ -250,7 +256,8 @@ export class ExploreScene extends Phaser.Scene {
     this.state = createGameState(); setPlayerName(this.state.playerName);
     this.started = false; this.locked = false;
     this.buildArea(START.area, START.x);
-    if (quick) { this.started = true; return; }
+    if (quick) { this.started = true; bgmBase(areaTrack(START.area)); return; }
+    bgmBase(sceneTrack('title')); // 이름 입력·책상 조사까지는 타이틀 음악, 오프닝이 시작되면 사무실 음악
     openNamePopup((name) => {
       this.state.playerName = name; setPlayerName(name);
       setPrompt(null);
@@ -288,6 +295,7 @@ export class ExploreScene extends Phaser.Scene {
 
   openTitle() {
     this.started = false;
+    bgmBase(sceneTrack('title'));
     openTitle({ canContinue: loadGame() !== null, onNew: () => this.newGame(), onContinue: () => { const st = loadGame(); if (st) this.continueGame(st); else this.newGame(); } });
   }
 
@@ -304,6 +312,7 @@ export class ExploreScene extends Phaser.Scene {
 
   async runOpening() {
     this.locked = true; clearInput(); this.camPan = null;
+    bgmBase(areaTrack(START.area));
     const cam = this.cameras.main, g = GROUND_Y;
     for (const [name, d] of Object.entries(OPENING.actors)) { // 등장 전에는 사무실에 없다
       const sp = this.add.sprite(d.x, g, `${d.sprite}_idle_0`).setOrigin(0.5, 1).setDepth(5).setVisible(false).play(`${d.sprite}_idle`);

@@ -1,0 +1,36 @@
+{
+  "_comment": "소리 배치 (docs/사운드_계획.md). 파일이 없으면 무음으로 진행한다. 트랙·효과음 이름은 계획서 1.2·2.2 의 이름과 같다.",
+  "bgm": {
+    "tracks": {
+      "bgm_title": {}, "bgm_office": {}, "bgm_hospital": {}, "bgm_interrogation": {}, "bgm_basement": {},
+      "bgm_confession": {}, "bgm_report": {}, "bgm_ending_light": { "loop": false }, "bgm_ending_dark": { "loop": false }
+    },
+    "fallback": { "bgm_office": "bgm_title", "bgm_interrogation": "bgm_hospital", "bgm_report": "bgm_hospital" },
+    "scene": { "title": "bgm_title", "report": "bgm_report" },
+    "area": {
+      "office": "bgm_office", "floor1": "bgm_hospital", "room_director": "bgm_hospital", "floor2": "bgm_hospital", "room_choi": "bgm_hospital", "room_han": "bgm_hospital",
+      "room_jeong": "bgm_hospital", "floor3": "bgm_hospital", "room_baek": "bgm_hospital", "room_oh": "bgm_hospital", "room_lee": "bgm_hospital", "b1": "bgm_basement"
+    },
+    "dialogue": { "baek_lobby": "bgm_interrogation", "baek_office": "bgm_interrogation", "oh_miran": "bgm_interrogation", "lee_hyejeong": "bgm_interrogation", "jeong_haneul_final": "bgm_confession", "eunho_message": "bgm_report" },
+    "puzzle": "bgm_interrogation",
+    "ending": { "ending_a": "bgm_ending_light", "ending_b": "bgm_ending_dark", "ending_c": "bgm_ending_dark", "ending_d": "bgm_ending_dark" }
+  },
+  "sfx": {
+    "sounds": {
+      "knock": {}, "door_open": {}, "door_close": {}, "stairs": {}, "footstep": { "volume": 0.3 }, "page_flip": {}, "evidence_get": {}, "statement_update": {},
+      "puzzle_correct": {}, "puzzle_wrong": {}, "hint": {}, "ui_move": { "volume": 0.6 }, "ui_confirm": {}, "type_blip": { "volume": 0.35 }, "broadcast_chime": {},
+      "heartbeat": {}, "transfer_done": { "volume": 0.7 }, "fade_whoosh": {}
+    },
+    "events": {
+      "onKnock": "knock", "onDoorEnter": "door_open", "onDoorExit": "door_close", "onStairs": "stairs", "onFootstep": "footstep", "onPageFlip": "page_flip",
+      "onEvidenceGet": "evidence_get", "onStatementUpdate": "statement_update", "onPuzzleCorrect": "puzzle_correct", "onPuzzleWrong": "puzzle_wrong", "onHint": "hint",
+      "onUiMove": "ui_move", "onUiConfirm": "ui_confirm", "onTypeBlip": "type_blip", "onBroadcast": "broadcast_chime", "onHeartbeat": "heartbeat",
+      "onTransferDone": "transfer_done", "onFadeWhoosh": "fade_whoosh"
+    },
+    "nodeEvents": {
+      "intro_knock:k1": "onKnock", "jeong_haneul_final:f1": "onHeartbeat", "jeong_haneul_final:f8": "onBroadcast",
+      "eunho_message:m2": "onHeartbeat", "eunho_message:a1": "onTransferDone"
+    },
+    "roomAreas": ["office", "room_director", "room_choi", "room_han", "room_jeong", "room_baek", "room_oh", "room_lee"]
+  }
+}

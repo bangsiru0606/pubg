@@ -154,7 +154,7 @@
    "props": [
     {
      "id": "cart",
-     "x": 540,
+     "x": 485,
      "w": 26,
      "h": 24,
      "color": "#8d949a",
@@ -218,7 +218,9 @@
       "E02_altar_blood",
       "E03_preliminary_exam",
       "E04_wristband_fragment"
-     ]
+     ],
+     "art": "floor_plan_board",
+     "artBottom": 40
     }
    ],
    "bg": {

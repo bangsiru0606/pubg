@@ -1,5 +1,6 @@
 // 대화 오버레이 (바닥선 아래 112px). 타이핑 연출(Enter/클릭으로 즉시 완성), 선택지, 단서 제시(9.2), 진술 3단계(9.3).
 import { availableChoices, startNodeOf, characterName, enterNode, shownEvidence, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
+import { bgmPop, bgmPush, dialogueTrack, nodeSfx, sfx } from '../audio/audio';
 import { dialogues } from '../explore/content';
 import illustList from '../data/illust-list.json'; // 초상 파일이 아직 없으면 회색 실루엣 placeholder
 import { el, esc, root, showToast } from './hud';
@@ -19,6 +20,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   const d: Dialogue = dialogues[dialogueId];
   const box = el('div', 'dlg'); box.id = 'dialogue';
   root().append(box);
+  bgmPush('dialogue', dialogueTrack(dialogueId)); // 심문·고백·보고 대화는 전용 음악 (없으면 구역 음악 그대로)
 
   let nodeId = startNodeOf(s, d);
   let node: DialogueNode;
@@ -28,23 +30,26 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   const got: string[] = [];
   let picker: { cursor: number; chosen: Set<string>; list: string[] } | null = null;
 
-  const close = () => { clearInterval(timer); popModal('dialogue'); box.remove(); onClose(got); if (d.then) thenHandler(d.then); };
+  const close = () => { clearInterval(timer); bgmPop('dialogue'); popModal('dialogue'); box.remove(); onClose(got); if (d.then) thenHandler(d.then); };
 
   function go(next: string) { nodeId = next; enter(); }
   function enter() {
     node = getNode(dialogues, dialogueId, nodeId);
     const { acquired } = enterNode(s, node);
     got.push(...acquired);
+    nodeSfx(dialogueId, nodeId);
+    if (acquired.length) sfx('onEvidenceGet');
+    if (node.onEnter?.contradict?.length) sfx('onStatementUpdate');
     for (const id of acquired) showToast(`단서 획득: ${shownEvidence(s, id)!.title}`);
     msg = ''; picker = null; shown = 0; typing = true; items = []; sel = 0;
     clearInterval(timer);
-    timer = window.setInterval(() => { shown++; if (shown >= node.text.length) finishTyping(); else render(); }, CHAR_MS);
+    timer = window.setInterval(() => { shown++; if (shown % 3 === 0 && node.text[shown - 1] !== ' ') sfx('onTypeBlip'); if (shown >= node.text.length) finishTyping(); else render(); }, CHAR_MS);
     render();
   }
   function finishTyping() {
     clearInterval(timer); typing = false; shown = node.text.length;
     const ch = availableChoices(s, node);
-    if (ch.length) items = ch.map((c) => ({ label: c.text, run: () => go(c.next) }));
+    if (ch.length) items = ch.map((c) => ({ label: c.text, run: () => { sfx('onUiConfirm'); go(c.next); } }));
     else items = [node.next ? { label: '계속', run: () => go(node.next!) } : { label: '대화 끝', run: close }];
     if (node.present?.length) items.push({ label: '[단서 제시]', run: openPicker });
     render();

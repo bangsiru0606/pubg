@@ -455,5 +455,7 @@
     "characters/baek/idle_1.png",
     "backgrounds/lobby_floor.png"
   ],
-  "pending": []
+  "pending": [
+    "floor_plan_board"
+  ]
 }

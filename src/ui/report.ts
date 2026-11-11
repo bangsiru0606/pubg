@@ -1,6 +1,7 @@
 // 씬 7 최종 보고서: 질문 A~D 결론(수첩에서 저장) + 보고 대상 → 작성 내용 확인 → 제출.
 // 제출 전 요약은 플레이어가 고른 결론과 보고 대상을 문장으로 다시 보여 줄 뿐, 정답·해결 여부·예상 엔딩을 암시하지 않는다.
 import { claims, setReportTarget, shownEvidence, type Claim, type GameState } from '../core';
+import { bgmPop, bgmPush, sceneTrack, sfx } from '../audio/audio';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
 import { openNotebook } from './notebook';
@@ -16,6 +17,7 @@ export const isSaved = (s: GameState, c: Claim) => !!s.selectedHypothesisByClaim
 export function openReport(s: GameState, onSubmit: () => void) {
   const box = el('div', 'modal report'); box.id = 'report';
   root().append(box);
+  bgmPush('report', sceneTrack('report'));
   let sel = 0, page: 'main' | 'summary' = 'main', msg = '', sumSel = 0;
   const rows = claims.length + 2; // 질문들 + 보고 대상 + 작성 내용 확인
 
@@ -54,14 +56,14 @@ export function openReport(s: GameState, onSubmit: () => void) {
     page = 'summary'; sumSel = 0; render();
   }
   const hidden = (h: boolean) => { box.style.display = h ? 'none' : ''; };
-  const close = () => { popModal('report'); box.remove(); };
+  const close = () => { bgmPop('report'); popModal('report'); box.remove(); };
 
   box.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
     const r = t.closest('[data-r]') as HTMLElement | null, sm = t.closest('[data-s]') as HTMLElement | null;
     if (sm) { sumSel = +sm.dataset.s!; pickSummary(); } else if (r) { sel = +r.dataset.r!; activate(sel); }
   });
-  function pickSummary() { if (sumSel === 0) { close(); onSubmit(); } else { page = 'main'; render(); } }
+  function pickSummary() { if (sumSel === 0) { sfx('onUiConfirm'); close(); onSubmit(); } else { page = 'main'; render(); } }
 
   pushModal({
     id: 'report',

@@ -124,6 +124,13 @@ for (const p of puzzles) {
 // claims
 dup(claims.map((c) => c.claimId), 'claim');
 for (const c of claims) {
+  {
+    const ok = c.hypotheses.find((h) => h.isCorrect)!;
+    const required = new Set([...ok.supportEvidenceIds, ...ok.rebuttalEvidenceIds]);
+    for (const id of c.relatedEvidenceIds ?? []) needEv(id, `${c.claimId}/relatedEvidenceIds`);
+    const extra = (c.relatedEvidenceIds ?? []).filter((id) => !required.has(id));
+    if (extra.length < 2) err(`${c.claimId}: relatedEvidenceIds 에 필수·반박 근거가 아닌 단서가 2개 이상 있어야 한다 (지금 ${extra.length})`);
+  }
   if (c.requiresFlag && !flagsSetByPuzzles.has(c.requiresFlag)) err(`${c.claimId}: requiresFlag ${c.requiresFlag} 를 설정하는 퍼즐 없음`);
   if (c.hypotheses.filter((h) => h.isCorrect).length !== 1) err(`${c.claimId}: 정답 가설은 정확히 1개`);
   dup(c.hypotheses.map((h) => h.id), `${c.claimId} hypothesis`);

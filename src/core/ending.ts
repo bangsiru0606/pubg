@@ -57,10 +57,7 @@ export function gradeOf(s: GameState): Grade {
   };
 }
 
-/** 엔딩 D 재도전: 해결하지 못한 질문과 관련된 단서 ID (가설 지지·반박·반증 자료의 합집합 — 어느 것이 정답인지는 구분하지 않는다) */
+/** 엔딩 D 재도전: 해결하지 못한 질문과 관련된 단서 ID — claims.json 의 relatedEvidenceIds (정답 근거 집합과 일치하지 않게 데이터에서 정한다) */
 export function relatedEvidenceIds(claimIds: string[]): Set<string> {
-  const out = new Set<string>();
-  for (const c of claims) if (claimIds.includes(c.claimId))
-    for (const h of c.hypotheses) [...h.supportEvidenceIds, ...h.rebuttalEvidenceIds, ...h.refutedBy].forEach((id) => out.add(id));
-  return out;
+  return new Set(claims.filter((c) => claimIds.includes(c.claimId)).flatMap((c) => c.relatedEvidenceIds));
 }

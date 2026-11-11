@@ -17,6 +17,7 @@ export interface Hypothesis {
 export interface Claim {
   claimId: string; question: string; requiredDistinctSourceTypes: number;
   requiresFlag?: string; hypotheses: Hypothesis[];
+  relatedEvidenceIds: string[]; // 엔딩 D 재도전에서 "관련" 으로 먼저 보여 줄 단서 (그 질문을 다루는 장면에서 얻는 것, 정답 근거만이 아니다)
 }
 export type PuzzleType = 'SpatialPlacement' | 'Timeline' | 'DocumentDiff' | 'Connection' | 'LogicGrid';
 export interface PuzzleTask { slot: string; label: string; token?: string; detail?: string; kind: 'place' | 'mark'; options: { id: string; label: string }[] }

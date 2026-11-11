@@ -42,6 +42,13 @@
     "refutedBy": [],
     "requiresFlag": "flag_scene_rebuilt"
    }
+  ],
+  "relatedEvidenceIds": [
+   "E02_altar_blood",
+   "E03_preliminary_exam",
+   "E04_wristband_fragment",
+   "E05_access_log",
+   "E07_report_revision"
   ]
  },
  {
@@ -88,6 +95,15 @@
     ],
     "refutedBy": []
    }
+  ],
+  "relatedEvidenceIds": [
+   "E02_altar_blood",
+   "E03_preliminary_exam",
+   "E04_wristband_fragment",
+   "E05_access_log",
+   "E06_torn_sleeve",
+   "E08_miran_revised",
+   "E09_sedative_gap"
   ]
  },
  {
@@ -133,6 +149,13 @@
     ],
     "refutedBy": []
    }
+  ],
+  "relatedEvidenceIds": [
+   "E03_preliminary_exam",
+   "E07_report_revision",
+   "E08_miran_revised",
+   "E10_consent_forms",
+   "E11_transfer_order"
   ]
  },
  {
@@ -178,6 +201,15 @@
     ],
     "refutedBy": []
    }
+  ],
+  "relatedEvidenceIds": [
+   "E01_last_letter",
+   "E10_consent_forms",
+   "E11_transfer_order",
+   "E12_ledger",
+   "E13_identity_map",
+   "E14_belongings_diary",
+   "E15_transport_manifest"
   ]
  }
 ]

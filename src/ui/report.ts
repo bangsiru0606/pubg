@@ -34,10 +34,10 @@ export function openReport(s: GameState, onSubmit: () => void) {
     const qs = claims.map((c, i) => `<button class="rrow${sel === i ? ' sel' : ''}" data-r="${i}">질문 ${NAMES[i]}. ${esc(c.question)} — ${esc(hypLabel(c) ?? '(결론을 아직 저장하지 않았다)')}${isSaved(s, c) ? '' : ''}</button>`).join('');
     const tg = TARGETS.find((x) => x.id === s.reportTarget);
     box.innerHTML = `<h3>최종 보고서</h3>
-      <div class="slotlbl">질문마다 Enter 를 누르면 사건 수첩이 열린다. 거기서 가설을 고르고 지지 근거 2개와 반박 근거 1개를 채워 결론을 저장한다.</div>${qs}
+      <div class="slotlbl">질문마다 Enter 를 누르면 사건 수첩이 열린다. 거기서 가설을 고르고 지지 근거 2개와 반박 근거 1개를 채워 결론을 저장한다.</div><div class="sheet">${qs}
       <div class="slotlbl" style="margin-top:4px">보고 대상 — ←→ 로 고른다</div>
       <button class="rrow${sel === claims.length ? ' sel' : ''}" data-r="${claims.length}">${tg ? '◉ ' + esc(tg.label) : '(아직 고르지 않았다)'}</button>
-      <button class="rrow${sel === claims.length + 1 ? ' sel' : ''}" data-r="${claims.length + 1}">[작성 내용 확인]</button>
+      <button class="rrow${sel === claims.length + 1 ? ' sel' : ''}" data-r="${claims.length + 1}">[작성 내용 확인]</button></div>
       <div class="note">${esc(msg)}</div><div class="foot">↑↓ 이동 · Enter 선택 · ←→ 보고 대상 · Tab 수첩</div>`;
   }
 

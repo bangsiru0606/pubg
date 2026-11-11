@@ -43,7 +43,7 @@ npx tsx tools/reading-time.ts   # 씬 1~2 읽기 시간 추정 (분당 500자)
 - 보정판에 없는 단서·퍼즐·인물·엔딩을 추가하지 않는다. 사용자가 요청할 때만 추가한다.
 - 맥락 단서(`context`)와 "수상한 반응"은 핵심 근거 슬롯에 넣을 수 없다.
 - 결론 저장 시 정답 여부를 알려주지 않는다. 판정은 최종 보고서 제출 후에만.
-- 오답 카드를 튕겨내거나 정답을 자동으로 끌어당기지 않는다.
+- 오답 카드를 튕겨내거나 조작 중 정답 칸으로 자동으로 끌어당기지 않는다. 단, 기획서 4.6의 오답 누적 힌트 단계(2·4·6회)는 예외다.
 - 찻잔·독살·화학자 설정은 폐기됐다. 되살리지 않는다.
 
 ### 코드 구조
@@ -73,4 +73,6 @@ npx tsx tools/reading-time.ts   # 씬 1~2 읽기 시간 추정 (분당 500자)
 ## 커밋
 - 단계 하나를 끝낼 때, 또는 의미 있는 기능 단위로 커밋한다.
 - 커밋 전에 `npm test`와 `npm run validate`를 통과시킨다.
+- Codex가 `art/source/generated/` 에 에셋을 생성하는 동안에는 이 폴더를 커밋하지 않는다. `git add -A` 를 쓰지 말고 경로를 지정해 add 한다.
+- 생성 에셋은 Codex가 배치 완료를 보고한 뒤, 코드와 분리된 커밋("에셋: 배치 N")으로 올린다. `art/source/generated/` 와 `manifest.json` 은 craft_on 사본과 같은 빌드 원본으로 추적한다.
 - push 전 훅(`.githooks/pre-push`: `npm test && npm run validate`) 통과 필수. `--no-verify` 금지. `npm install` 시 `prepare` 스크립트가 `core.hooksPath` 를 설정한다.

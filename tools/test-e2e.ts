@@ -825,6 +825,56 @@ await finishReport({ good: ['claim_a', 'claim_b', 'claim_c', 'claim_d'], target:
 check((await page.locator('#ending').innerText()).includes('기록된 고해') || (await page.locator('#ending').innerText()).includes('은지를 찾은 건 아니네요.'), '[엔딩 D → A] 다시 쓴 보고서로 엔딩 A');
 
 
+
+// =====================================================================
+// 오프닝 견고성: 각 단계에서 Esc 를 눌러도 꼬이지 않는다 / Enter 길게 눌러 연출 건너뛰기
+// =====================================================================
+const startReal = async () => {
+  await page.goto(url);
+  await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
+  await page.waitForSelector('#title'); await press('Enter'); await page.waitForSelector('#namepopup');
+};
+await startReal();
+await press('Escape'); await wait(100);
+check((await page.locator('#namepopup').count()) === 1, '[Esc] 이름 입력 중 Esc 는 아무 일도 일으키지 않는다');
+await press('Enter'); await page.waitForSelector('#closeup');
+await press('Escape'); // 근접 조사 닫기
+await page.waitForSelector('#dialogue'); await wait(200);
+await press('Escape'); await wait(80);
+check((await page.locator('#dialogue').count()) === 1 && (await page.locator('#dialogue .text').innerText()) === '똑똑똑', '[Esc] 노크 대사 중 Esc 는 무시된다');
+await press('Enter'); await wait(200); await press('Escape'); await wait(80);
+check((await page.locator('#dialogue .text').innerText()) === '들어오세요.', '[Esc] “들어오세요.” 에서도 Esc 는 무시된다');
+await press('Enter');
+await wait(500); await press('Escape'); await wait(80);
+check(await cw<boolean>('cw.scene.locked'), '[Esc] 카메라 연출 중 Esc 를 눌러도 조작 잠금이 풀리지 않는다');
+await page.waitForFunction(() => (window as any).__cw.scene.actors.get('eunho').visible, null, { timeout: 8000 });
+await press('Escape');
+await page.waitForSelector('#dialogue', { timeout: 15000 }); await wait(200);
+await press('Escape'); await wait(80);
+check((await page.locator('#dialogue .name').innerText()) === '박은호', '[Esc] 박은호 대화 중 Esc 는 무시된다');
+await mash();
+await page.waitForSelector('#viewer'); await press('Escape'); // 편지 원문: Esc 로 닫는다
+await page.waitForFunction(() => !(window as any).__cw.scene.locked, null, { timeout: 8000 });
+check(await cw<boolean>("cw.scene.started && cw.state.evidenceIds.includes('E01_last_letter') && !cw.scene.actors.get('eunho').visible") && (await page.locator('#dialogue, #viewer, #closeup, #namepopup').count()) === 0, '[Esc] 편지를 Esc 로 닫아도 오프닝이 정상 종료된다 (E01 획득, 박은호 퇴장, 잔여 창 없음)');
+const xe = await cw<number>('cw.scene.player.x');
+await page.keyboard.down('ArrowRight'); await wait(400); await page.keyboard.up('ArrowRight');
+check((await cw<number>('cw.scene.player.x')) > xe, '[Esc] 오프닝이 끝나면 정상적으로 이동할 수 있다');
+
+await startReal();
+await press('Enter'); await page.waitForSelector('#closeup'); await press('Escape');
+await page.waitForSelector('#dialogue'); await wait(200); await press('Enter'); await wait(200); await press('Enter'); // 노크 두 줄
+const t0 = Date.now();
+await page.keyboard.down('Enter'); // 길게 누르기: 연출 건너뛰기
+await page.waitForSelector('#dialogue', { timeout: 6000 });
+const took = Date.now() - t0;
+await page.keyboard.up('Enter');
+check(took < 3500, `[건너뛰기] Enter 길게 누르면 오프닝 연출을 건너뛴다 (${took}ms, 자연 진행은 약 6초)`);
+const gap2 = (await cw<number>("cw.scene.actors.get('eunho').x")) - (await cw<number>('cw.scene.player.x'));
+check(Math.abs(gap2 - 56) <= 1 && (await page.locator('#dialogue .name').innerText()) === '박은호', '[건너뛰기] 건너뛰어도 박은호는 플레이어 앞 56px 에 서 있고 대화가 시작된다');
+await mash(); await page.waitForSelector('#viewer'); await closeViewer();
+await page.waitForFunction(() => !(window as any).__cw.scene.locked, null, { timeout: 8000 });
+check(await cw<boolean>('cw.scene.started'), '[건너뛰기] 이후 오프닝이 정상 종료된다');
+
 await browser.close();
 check(errors.length === 0, `콘솔 오류 0 ${errors.join(' | ')}`);
 if (fails.length) { console.error(`\nFAIL ${fails.length}건`); process.exit(1); }

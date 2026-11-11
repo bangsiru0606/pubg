@@ -183,3 +183,16 @@ describe('씬 점프 진술 상태', () => {
     expect(state.statements.haneul_s_denial.stage).toBe('unconfirmed'); // 정하늘의 부정은 모순으로 바뀌지 않는다
   });
 });
+
+describe('엔딩 D 재도전 관련 단서 (relatedEvidenceIds)', () => {
+  it('관련 목록만으로 정답 근거 집합을 특정할 수 없다: 필수·반박 근거가 아닌 단서가 2개 이상, 목록 ≠ 정답 근거 집합', () => {
+    for (const c of claimById.size ? [...claimById.values()] : []) {
+      const ok = c.hypotheses.find((h) => h.isCorrect)!;
+      const required = new Set([...ok.supportEvidenceIds, ...ok.rebuttalEvidenceIds]);
+      const rel = new Set(c.relatedEvidenceIds);
+      expect([...rel].filter((id) => !required.has(id)).length, c.claimId).toBeGreaterThanOrEqual(2);
+      expect([...rel].sort()).not.toEqual([...required].sort());
+      expect(relatedEvidenceIds([c.claimId])).toEqual(rel);
+    }
+  });
+});

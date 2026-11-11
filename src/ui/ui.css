@@ -309,3 +309,6 @@
 .lay-logic .tray .lnk { max-width: 150px; }
 .lay-timeline .trow { display: flex; flex-wrap: wrap; gap: 2px 6px; align-items: center; }
 .lay-timeline .lnk { max-width: 108px; }
+
+.puzzle .lnk.need { border-color: #e05050; color: #ffd0c8; box-shadow: 0 0 0 1px #e05050; animation: lneed 1s ease-in-out infinite; }
+@keyframes lneed { 50% { box-shadow: 0 0 0 2px rgba(224,80,80,.35); } }

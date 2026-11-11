@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createGameState, setFlag, submitPuzzle, puzzles } from '../src/core';
+import { createGameState, setFlag, puzzles } from '../src/core';
+import { submitPuzzle } from './helpers';
 import { buildProgress } from '../src/explore/playthrough';
 import { countOpen, emptyLog, fmt, observe, sceneOf, table, toText, type Observation } from '../src/explore/playlog';
 

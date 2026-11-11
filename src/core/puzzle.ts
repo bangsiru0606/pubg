@@ -14,6 +14,7 @@ export interface PuzzleHint {
 }
 export interface PuzzleResult {
   status: 'solved' | 'wrong' | 'incomplete' | 'already_solved';
+  missingLinks?: string[]; // incomplete 인 이유가 근거 칸이면 그 슬롯들 (화면이 근거 칸을 강조한다)
   conflicts: string[]; // 오답이면 문장 하나만(근거 문제가 우선, 그다음 토큰 충돌). 어느 자료와 맞지 않는지 이름으로 말하고 정답은 알려 주지 않는다.
   hint: PuzzleHint;
 }
@@ -64,12 +65,14 @@ export const linksCorrect = (s: GameState, p: Puzzle, links: PuzzleLinks) => lin
 export const isLinkSlot = (p: Puzzle, slot: string) => !!p.evidenceLinks?.[slot]?.length;
 /** 정답 근거 (허용 목록의 첫 번째): 자동 채우기·시험용 풀이에 쓴다 */
 export const correctLinksOf = (p: Puzzle): PuzzleLinks => Object.fromEntries(Object.entries(p.evidenceLinks ?? {}).map(([k, v]) => [k, v[0]]));
-/** 근거 문제 문장 (슬롯 순서로 첫 번째 하나): 비었거나 맞지 않는 칸 */
+/** 근거를 붙이지 않은 칸 (슬롯 순서) — 제출은 incomplete 로 처리하고 오답 횟수를 올리지 않는다 */
+export const missingLinkSlots = (p: Puzzle, links: PuzzleLinks): string[] => p.slots.filter((sl) => isLinkSlot(p, sl) && !links[sl]);
+/** 근거 문제 문장 (슬롯 순서로 첫 번째 하나): 붙였지만 그 칸의 내용을 말해 주지 않는 자료 */
 function linkProblem(s: GameState, p: Puzzle, links: PuzzleLinks): string | null {
   for (const slot of p.slots) {
     if (!isLinkSlot(p, slot)) continue;
     const id = links[slot], label = slotLabelOf(p, slot);
-    if (!id) return `‘${label}’ 칸에 근거 자료가 붙어 있지 않다.`;
+    if (!id) continue;
     if (!linkAccepted(s, p, slot, id)) return `「${linkTitle(s, id)}」은(는) ‘${label}’ 칸의 내용을 말해 주지 않는다.`;
   }
   return null;
@@ -90,28 +93,29 @@ export function hintFor(p: Puzzle, wrongCount: number, a: PuzzleAnswer = {}, lin
   };
 }
 
-/** 퍼즐 답 제출. 빈 슬롯이 있으면 incomplete(오답 횟수 증가 없음). 정답이면 검증·플래그 처리. */
 /**
- * 퍼즐 답 제출. links 는 슬롯별 근거 카드: 퍼즐 데이터에 evidenceLinks 가 있으면 토큰과 근거가 모두 맞아야 정답이다.
- * links 를 아예 주지 않는 호출(undefined)은 근거 규칙을 쓰지 않는 구형 호출이다 — 화면(ui/puzzle.ts)·플레이 재현(playthrough)은 항상 넘긴다.
+ * 퍼즐 답 제출. links(슬롯별 근거 카드)는 필수다: 토큰과 근거가 모두 맞아야 정답이고, 근거 없이 판정하는 경로는 없다.
+ * 토큰 칸이 비었거나 근거를 붙이지 않은 칸이 있으면 incomplete(오답 횟수·힌트 단계는 오르지 않는다). 붙였지만 틀리면 wrong.
  */
-export function submitPuzzle(s: GameState, puzzleId: string, a: PuzzleAnswer, links?: PuzzleLinks): PuzzleResult {
+export function submitPuzzle(s: GameState, puzzleId: string, a: PuzzleAnswer, links: PuzzleLinks): PuzzleResult {
   const p = puzzleById.get(puzzleId);
   if (!p) throw new Error(`unknown puzzle ${puzzleId}`);
   const wrong = s.wrongCountByPuzzle[puzzleId] ?? 0;
-  if (s.solvedPuzzleIds.includes(puzzleId)) return { status: 'already_solved', conflicts: [], hint: hintFor(p, wrong, a, links ?? {}) };
-  if (p.slots.some((slot) => !a[slot]?.length)) return { status: 'incomplete', conflicts: [], hint: hintFor(p, wrong, a, links ?? {}) };
+  if (s.solvedPuzzleIds.includes(puzzleId)) return { status: 'already_solved', conflicts: [], hint: hintFor(p, wrong, a, links) };
+  if (p.slots.some((slot) => !a[slot]?.length)) return { status: 'incomplete', conflicts: [], hint: hintFor(p, wrong, a, links) };
+  const missing = missingLinkSlots(p, links);
+  if (missing.length) return { status: 'incomplete', conflicts: [], missingLinks: missing, hint: hintFor(p, wrong, a, links) };
 
-  const problem = links === undefined ? null : linkProblem(s, p, links);
+  const problem = linkProblem(s, p, links);
   if (isCorrectAnswer(p, a) && !problem) {
     s.solvedPuzzleIds.push(puzzleId);
     setFlag(s, p.flagOnSolve);
     for (const id of p.verifiedEvidenceIds) if (s.evidenceIds.includes(id) && !isVerified(s, id)) s.verifiedEvidenceIds.push(id);
-    return { status: 'solved', conflicts: [], hint: hintFor(p, wrong, a, links ?? {}) };
+    return { status: 'solved', conflicts: [], hint: hintFor(p, wrong, a, links) };
   }
   const n = wrong + 1;
   s.wrongCountByPuzzle[puzzleId] = n;
-  const hint = hintFor(p, n, a, links ?? {});
+  const hint = hintFor(p, n, a, links);
   s.hintCountByPuzzle[puzzleId] = hint.level;
   const one = problem ?? conflictsOf(p, a)[0]; // 오답 피드백은 한 번에 하나만: 근거 문제가 먼저, 그다음 토큰 충돌
   return { status: 'wrong', conflicts: one ? [one] : [], hint };

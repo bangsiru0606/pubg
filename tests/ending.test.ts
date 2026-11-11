@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   acquireEvidence, canSaveConclusion, clearConclusion, createGameState, evidenceList, findConflicts, puzzles,
-  resolveEnding, resolveEndingLines, saveConclusion, submitPuzzle, claimById, type GameState,
+  resolveEnding, resolveEndingLines, saveConclusion, claimById, type GameState,
 } from '../src/core';
+import { submitPuzzle } from './helpers';
 
 const GOOD: Record<string, [string[], string[]]> = {
   claim_a: [['E02_altar_blood', 'E03_preliminary_exam'], ['E07_report_revision']],

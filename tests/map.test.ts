@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GROUND_Y, START, areas, autoTriggered, fadeSeconds, isAvailable, nearest, talkStand, flipFor, facesLeft, triggerKey, type Transition } from '../src/explore/interaction';
-import { createGameState, setFlag, submitPuzzle, puzzles } from '../src/core';
+import { createGameState, setFlag, puzzles } from '../src/core';
+import { submitPuzzle } from './helpers';
 
 const transitions = (id: string) => areas[id].interactables.filter((i): i is Transition => i.type === 'transition');
 

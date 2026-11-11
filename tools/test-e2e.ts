@@ -32,6 +32,7 @@ const wait = (ms: number) => page.waitForTimeout(ms);
 const confirmPick = async () => { for (let i = 0; i < 20 && !(await page.locator('#dialogue .opt.sel').innerText()).includes('제시하기'); i++) await press('ArrowDown'); await press('Enter'); }; // 선택기: [제시하기] 행에서 Enter
 const click = (sel: string) => page.locator(sel).first().click();
 /** 퍼즐 오답 문장(줄 단위): 한 번에 하나만 나와야 한다 */
+const noteText = async () => (await page.locator('#puzzle .note').innerText()).trim();
 const warnLines = async () => (await page.locator('#puzzle .warn').innerText()).split('\n').map((l) => l.trim()).filter(Boolean);
 const shot = async (name: string) => { if (SHOT) await page.screenshot({ path: `docs/screenshots/${name}.png` }); };
 // 화면 텍스트에 내부 ID(영문 snake_case, E01 같은 단서 코드, 플래그 이름)가 나오면 안 된다
@@ -357,14 +358,14 @@ check((await page.locator('#puzzle [data-zone="desk_chair"] [data-token="finalPo
 await click('#puzzle [data-chip="movedObjects|body"]'); await click('#puzzle [data-chip="movedObjects|chair"]');
 await click('#puzzle [data-submit]');
 await wait(60);
-check((await warnLines()).length === 1 && (await warnLines())[0].includes('근거 자료가 붙어 있지 않다'), '[P01] 근거 카드를 붙이지 않으면 오답: 근거 칸을 먼저, 문장 하나만');
-check(await cw<boolean>("cw.state.wrongCountByPuzzle.P01_scene_rebuild === 1 && !cw.state.solvedPuzzleIds.includes('P01_scene_rebuild')"), '[P01] 오답 1회 기록');
+check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .warn').count()) === 0 && (await page.locator('#puzzle .lnk.need').count()) === 3, '[P01] 근거를 붙이지 않은 칸이 있으면 안내 하나 + 근거 칸 강조(오답 아님)');
+check(await cw<boolean>("!cw.state.wrongCountByPuzzle.P01_scene_rebuild && !cw.state.hintCountByPuzzle.P01_scene_rebuild"), '[P01] 근거 빈 칸은 오답 횟수·힌트를 올리지 않는다');
 await attachCorrectLinks(page, 'P01_scene_rebuild'); // 근거는 맞게 붙였지만 토큰(충돌 직후=책상 옆)이 틀리다
 await click('#puzzle [data-submit]'); await wait(60);
 const warn = await warnLines();
 check(warn.length === 1 && warn[0].includes('기도대 아래 혈흔과 맞지 않는다'), '[P01] 오답: 충돌 문장은 하나, 어느 자료와 맞지 않는지 이름으로 말한다');
 check(!warn.join().includes('기도대 옆 바닥') && !warn.join().includes('책상 의자'), '[P01] 오답 표시에 정답을 알려주지 않는다');
-check(await cw<boolean>("cw.state.wrongCountByPuzzle.P01_scene_rebuild === 2"), '[P01] 오답 2회 기록');
+check(await cw<boolean>("cw.state.wrongCountByPuzzle.P01_scene_rebuild === 1"), '[P01] 오답 1회 기록');
 await noIds('[P01] 오답 화면');
 await shot('stage4_p01');
 await click('#puzzle [data-src]');
@@ -508,12 +509,12 @@ await page.mouse.move(rc!.x + rc!.width / 2, rc!.y + rc!.height / 2); await page
 await page.mouse.move(z51!.x + z51!.width / 2, z51!.y + z51!.height / 2, { steps: 8 }); await page.mouse.up();
 await wait(100);
 await click('#puzzle [data-submit]'); await wait(60);
-check((await warnLines()).length === 1 && (await warnLines())[0].includes('근거 자료가 붙어 있지 않다'), '[P02] 근거를 붙이지 않으면 오답: 근거 칸 안내 하나');
-check(await cw<boolean>('cw.state.wrongCountByPuzzle.P02_night_timeline === 1'), '[P02] 오답 1회 기록');
+check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) === 4, '[P02] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
+check(await cw<boolean>('!cw.state.wrongCountByPuzzle.P02_night_timeline'), '[P02] 오답 횟수는 그대로');
 await attachLink(page, 't2234', 'E06_torn_sleeve'); await attachLink(page, 't2241', 'E05_access_log'); await attachLink(page, 't2246', 'choi_s_thud'); await attachLink(page, 't2251', 'E06_torn_sleeve');
 await click('#puzzle [data-submit]'); await wait(60);
 check((await warnLines()).length === 1 && (await warnLines())[0].includes('방송표와 맞지 않는다'), '[P02] 방송을 사람 동선에 넣으면 충돌 문장 하나 (복도 방송표와 맞지 않는다)');
-check(await cw<boolean>('cw.state.wrongCountByPuzzle.P02_night_timeline === 2'), '[P02] 오답 2회 기록');
+check(await cw<boolean>('cw.state.wrongCountByPuzzle.P02_night_timeline === 1'), '[P02] 오답 1회 기록');
 await noIds('[P02] 오답 화면');
 await shot('stage5_p02');
 // P02 정답: 키보드 (충돌음 카드를 22:46 칸에 → 방송 카드는 바깥으로 밀려난다)
@@ -556,7 +557,7 @@ check(true, '[P03] E03 + E07 이 있으면 자동 개방');
 await noIds('[P03] 초기 화면');
 await click('#puzzle [data-chip="marked|position_changed"]'); await click('#puzzle [data-chip="marked|laceration_deleted"]'); await click('#puzzle [data-chip="marked|spelling_fix"]');
 await click('#puzzle [data-submit]'); await wait(60);
-check((await warnLines()).length === 1 && (await warnLines())[0].includes('근거 자료가 붙어 있지 않다'), '[P03] 근거 없이 제출하면 오답: 근거 칸 안내 하나');
+check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) >= 1, '[P03] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
 // 근거 고르기 목록: 가진 카드가 많아도 줄바꿈 + 최대 높이 + 스크롤이고, 선택한 줄이 항상 보인다
 await click('#puzzle [data-link="marked"]'); await wait(100);
 for (let i = 0; i < 16; i++) await press('ArrowDown');
@@ -629,7 +630,7 @@ const dragTo = async (token: string, zone: string) => {
 await dragTo('doc_selection', 'lee_hanshin'); await dragTo('doc_approval', 'lee_hyejeong');
 await dragTo('doc_schedule', 'baek_sunwoo'); await dragTo('doc_transfer', 'baek_sunwoo');
 await click('#puzzle [data-submit]'); await wait(60);
-check((await warnLines()).length === 1 && (await warnLines())[0].includes('근거 자료가 붙어 있지 않다'), '[P04] 근거 없이 제출하면 오답: 근거 칸 안내 하나');
+check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) >= 1, '[P04] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
 await attachCorrectLinks(page, 'P04_approval_chain');
 await click('#puzzle [data-submit]'); await wait(60);
 check((await warnLines()).length === 1 && (await warnLines())[0].includes('작성 약자와 맞지 않는다'), '[P04] LHJ/LHS 를 혼동하면 충돌 문장 하나 (위조 동의서 묶음의 작성 약자와 맞지 않는다)');
@@ -696,7 +697,7 @@ const row5 = await page.locator('#puzzle tr[data-zone="yujin"]').first().boundin
 await page.mouse.move(tk5!.x + tk5!.width / 2, tk5!.y + tk5!.height / 2); await page.mouse.down();
 await page.mouse.move(row5!.x + 30, row5!.y + row5!.height / 2, { steps: 8 }); await page.mouse.up(); await wait(100);
 await click('#puzzle [data-submit]'); await wait(60);
-check((await warnLines()).length === 1 && (await warnLines())[0].includes('근거 자료가 붙어 있지 않다'), '[P05] 근거 없이 제출하면 오답: 근거 칸 안내 하나');
+check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) >= 1, '[P05] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
 await attachCorrectLinks(page, 'P05_patient_code');
 await click('#puzzle [data-submit]'); await wait(60);
 check((await warnLines()).length === 1 && (await warnLines())[0].includes('특별 치료 장부와 맞지 않는다'), '[P05] 오답: 충돌 문장 하나, 자료 이름으로 (특별 치료 장부와 맞지 않는다)');

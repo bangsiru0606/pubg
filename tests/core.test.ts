@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   acquireEvidence, chooseEvidencePreservation, claims, createGameState, evidenceById, evidenceList, hintLevelFor,
   isBasementOpen, loadGame, puzzles, resolveClaim, resolveEnding, saveConclusion, saveGame, setReportTarget,
-  submitPuzzle, claimById, puzzleById, solvedClaimIds, type GameState, type PuzzleAnswer,
+  claimById, puzzleById, solvedClaimIds, type GameState, type PuzzleAnswer,
 } from '../src/core';
+import { submitPuzzle } from './helpers';
 
 const ALL_EXCEPT_E16 = evidenceList.map((e) => e.id).filter((id) => id !== 'E16_secure_receipt');
 const ANSWERS: Record<string, PuzzleAnswer> = Object.fromEntries(puzzles.map((p) => [p.id, p.correctSlots]));

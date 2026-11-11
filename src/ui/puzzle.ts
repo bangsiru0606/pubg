@@ -46,6 +46,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   }
   if (timeline) for (const k of tokenKeys()) where[k] = OUTSIDE;
 
+  let needLinks = new Set<string>(); // 근거를 붙이지 않아 제출이 막힌 칸 (근거 칸을 강조한다)
   const links: PuzzleLinks = {}; // 슬롯 → 붙인 근거 카드 (단서·진술)
   let pick: { slot: string; cursor: number } | null = null; // 근거 고르기 목록
   let conflicts: string[] = [];
@@ -98,7 +99,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   const lnkHtml = (slot: string) => {
     if (!isLinkSlot(p, slot)) return '';
     const on = answered(slot), id = links[slot];
-    return `<button class="lnk${id ? ' has' : ''}${!on ? ' off' : ''}${isFocus('link', slot) ? ' foc' : ''}" data-link="${esc(slot)}"${on ? '' : ' disabled'}>${id ? `근거: ${esc(linkTitle(s, id))}` : on ? '[근거 붙이기]' : '근거: (먼저 이 칸을 채운다)'}</button>`;
+    return `<button class="lnk${id ? ' has' : ''}${!on ? ' off' : ''}${needLinks.has(slot) && !id ? ' need' : ''}${isFocus('link', slot) ? ' foc' : ''}" data-link="${esc(slot)}"${on ? '' : ' disabled'}>${id ? `근거: ${esc(linkTitle(s, id))}` : on ? '[근거 붙이기]' : '근거: (먼저 이 칸을 채운다)'}</button>`;
   };
 
   // ---- 그리기 ----
@@ -178,7 +179,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   function choosePick(i: number) {
     if (!pick) return;
     const cands = linkCandidates(s);
-    if (i === 0) delete links[pick.slot]; else if (cands[i - 1]) links[pick.slot] = cands[i - 1].id;
+    if (i === 0) delete links[pick.slot]; else if (cands[i - 1]) { links[pick.slot] = cands[i - 1].id; needLinks.delete(pick.slot); }
     pick = null; note = ''; render();
   }
   function openPick(slot: string) { if (!answered(slot)) return; const cands = linkCandidates(s), cur = cands.findIndex((c) => c.id === links[slot]); pick = { slot, cursor: cur >= 0 ? cur + 1 : 1 }; render(); }
@@ -191,7 +192,8 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   function toggleChip(key: string) { const [slot, id] = key.split('|'); const a = marks[slot]; const i = a.indexOf(id); if (i >= 0) a.splice(i, 1); else a.push(id); render(); }
   function submit() {
     const r = submitPuzzle(s, puzzleId, toAnswer(), { ...links });
-    if (r.status === 'incomplete') { note = '모든 과제를 채운 뒤에 확인할 수 있다.'; conflicts = []; }
+    needLinks = new Set(r.missingLinks ?? []);
+    if (r.status === 'incomplete') { note = r.missingLinks?.length ? '근거를 붙이지 않은 칸이 있다.' : '모든 과제를 채운 뒤에 확인할 수 있다.'; conflicts = []; }
     else if (r.status === 'wrong') {
       conflicts = r.conflicts; note = r.conflicts.length ? '' : '아직 맞지 않는다. 자료를 다시 비교해 보자.';
       sfx('onPuzzleWrong'); // 확인 버튼을 누른 뒤에만 결과음

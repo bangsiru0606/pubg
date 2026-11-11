@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import real from '../src/data/dialogue.json';
 import {
   acquireEvidence, availableChoices, claimById, createGameState, enterNode, evidenceList, gradeOf, hasFlag, loadGame, puzzles, relatedEvidenceIds,
-  resolveEnding, saveConclusion, saveGame, setReportTarget, shownEvidence, startNodeOf, submitPuzzle, type Dialogues, type GameState, type KeyValueStore,
+  resolveEnding, saveConclusion, saveGame, setReportTarget, shownEvidence, startNodeOf, type Dialogues, type GameState, type KeyValueStore,
 } from '../src/core';
+import { submitPuzzle } from './helpers';
 import { areas, autoTriggered, isAvailable } from '../src/explore/interaction';
 import { buildProgress } from '../src/explore/playthrough';
 

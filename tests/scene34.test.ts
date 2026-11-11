@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import real from '../src/data/dialogue.json';
 import {
   acquireEvidence, condMet, createGameState, enterNode, getNode, hasFlag, isBasementOpen, presentEvidence, puzzles, shownEvidence,
-  startNodeOf, submitPuzzle, type Dialogues, type GameState,
+  startNodeOf, type Dialogues, type GameState,
 } from '../src/core';
+import { submitPuzzle } from './helpers';
 import { areas, isAvailable, nearest } from '../src/explore/interaction';
 
 const D = real.dialogues as unknown as Dialogues;

@@ -27,10 +27,34 @@ describe('근거 카드 연결 판정 (core/puzzle.ts)', () => {
       expect(r.conflicts[0]).toContain('내용을 말해 주지 않는다'); // 어느 자료인지 이름으로
     }
   });
-  it('근거가 비면 오답이고 어느 칸인지 말한다', () => {
-    const p = P('P02_night_timeline'), s = fresh(p.id), links = correctLinksOf(p); delete links.t2246;
-    const r = submitPuzzle(s, p.id, p.correctSlots, links);
-    expect(r.status).toBe('wrong'); expect(r.conflicts).toEqual(['‘22:46’ 칸에 근거 자료가 붙어 있지 않다.']);
+  it('근거를 붙이지 않은 칸이 있으면 incomplete: 오답 횟수·힌트 단계가 오르지 않고, 빈 칸 슬롯을 알려 준다', () => {
+    const p = P('P02_night_timeline'), s = fresh(p.id), links = correctLinksOf(p); delete links.t2246; delete links.t2234;
+    for (let i = 0; i < 8; i++) {
+      const r = submitPuzzle(s, p.id, p.correctSlots, links);
+      expect(r.status).toBe('incomplete'); expect(r.conflicts).toEqual([]); expect(r.missingLinks).toEqual(['t2234', 't2246']);
+    }
+    expect(s.wrongCountByPuzzle[p.id] ?? 0).toBe(0); expect(s.hintCountByPuzzle[p.id] ?? 0).toBe(0);
+    expect(submitPuzzle(s, p.id, p.correctSlots, {}).missingLinks).toHaveLength(4);
+    // 근거가 붙어 있지만 틀리면 지금처럼 오답
+    expect(submitPuzzle(s, p.id, p.correctSlots, { ...correctLinksOf(p), t2246: 'E01_last_letter' }).status).toBe('wrong');
+  });
+  it('근거 없이 판정하는 경로가 없다: submitPuzzle 은 links 를 반드시 받고, 호출하는 곳은 모두 근거를 넘긴다', async () => {
+    const { readFileSync, readdirSync } = await import('node:fs');
+    const core = readFileSync('src/core/puzzle.ts', 'utf8');
+    expect(core).toContain('export function submitPuzzle(s: GameState, puzzleId: string, a: PuzzleAnswer, links: PuzzleLinks): PuzzleResult');
+    expect(core).not.toContain('links === undefined'); expect(core).not.toContain('links?: PuzzleLinks'); expect(core).not.toContain('links ?? {}');
+    const files = ['src', 'tools', 'tests'].flatMap((d) => (readdirSync(d, { recursive: true }) as string[]).filter((f) => f.endsWith('.ts')).map((f) => `${d}/${f}`));
+    for (const f of files) {
+      if (f === 'src/core/puzzle.ts' || f === 'tests/helpers.ts' || f === 'tests/puzzle-links.test.ts') continue;
+      const src = readFileSync(f, 'utf8');
+      let at = src.indexOf('submitPuzzle(');
+      while (at >= 0) { // 호출 한 줄에 근거(links·correctLinksOf)가 있거나, tests 는 helpers.submitPuzzle 을 쓴다
+        const line = src.slice(at, src.indexOf('\n', at)), isDef = line.startsWith('submitPuzzle(s: GameState');
+        if (!isDef && !f.startsWith('tests/')) expect(/links|Links/.test(line), `${f}: ${line}`).toBe(true);
+        at = src.indexOf('submitPuzzle(', at + 1);
+      }
+      if (f.startsWith('tests/')) for (const l of src.split('\n')) if (l.startsWith('import') && l.includes('submitPuzzle') && l.includes("'../src/core'")) throw new Error(`${f}: 코어 submitPuzzle 을 직접 불러오지 않는다 (tests/helpers 를 쓴다)`);
+    }
   });
   it('맥락 단서(E01)는 고를 수는 있지만 근거로 인정되지 않는다', () => {
     const p = P('P01_scene_rebuild'), s = fresh(p.id);

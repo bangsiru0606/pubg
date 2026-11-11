@@ -216,5 +216,872 @@
       "generated/characters/baek/idle_0.png"
     ],
     "prompt": "Use case: stylized-concept\nAsset type: 2D exploration character sprite for ‘병원의 고해’\nPrimary request: Jeong Ha-neul, Korean woman patient, age 29, formerly a clinical laboratory researcher. Thin build, messy shoulder-length dark hair, withdrawn posture with head slightly lowered, facing screen-right. Shared pale blue-gray thin-striped patient uniform and matching trousers, but the RIGHT sleeve is torn below the elbow and hangs loose. Her LEFT wrist is completely bare with no wristband. She holds one small plain black notebook in one hand.\nInput images: Images 1–2 are the original game sprite references; Image 3 is the approved Baek Seon-woo sprite and is the primary target for canvas use, chunky pixel size, outline thickness, limited shading, anatomy, and detail density.\nScene/backdrop: perfectly flat solid chroma-key green #00FF00 across every background pixel\nStyle/medium: intentionally coarse low-resolution pixel art; large crisp rectangular pixel clusters; thick near-black outline; only 3–5 shading tones; simplified face and hands; exactly the same roughness and no more detail than Image 3\nComposition/framing: full body, screen-right-facing side/three-quarter view; centered; feet touch the bottom baseline; headroom and character scale match Image 3; 7:12 portrait canvas\nLighting/mood: restrained flat game-sprite lighting\nConstraints: exact canvas 672x1152; one character only; no floor or shadow; no scenery; no green or lime on character; no readable text, numbers, logo, signature, or watermark; no real-person resemblance\nAvoid: smooth vector edges, anti-aliased illustration, fine detail, tiny pixels, painterly rendering, exaggerated expression, left-facing pose\nAdditional invariant: show the torn right sleeve, bare left wrist, and black notebook clearly; do not swap left and right; no orange cult emblem."
+  },
+  {
+    "file": "portraits/oh_neutral.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/oh/idle_0.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: neutral dialogue portrait\nPrimary request: Oh Mi-ran, Korean woman in her early 50s, hospital head nurse. Graying dark hair pulled tightly into a low bun, tired eyes, dark navy nurse uniform under a white cardigan, small muted-orange pendant at the neck. Chest-up neat neutral expression: professional, composed, and visibly fatigued. Clipboard is outside the portrait crop.\nInput images: Images 1-2 define the original game portrait style, calm brushwork, muted color, chest-up composition, subject size, and eye level. Image 3 is the approved Baek neutral portrait and is the primary target for finish, dark background, lighting, and canvas usage. Image 4 is the approved character sprite and must control hairstyle, age, clothing, colors, and identifying accessory.\nScene/backdrop: simple near-black charcoal background like Image 3, not transparent\nStyle/medium: restrained semi-realistic digital painting with calm visible brushwork and muted colors; same finish and detail density as Image 3; not photorealistic or glossy\nComposition/framing: exact 768x1072 portrait; chest-up; centered; same subject scale, shoulder crop, eye height, and three-quarter angle as Image 3\nLighting/mood: soft low-key hospital-drama lighting, cold and controlled\nConstraints: one Korean person; preserve sprite identity, clothing, hair, age, and accessories; no readable text, numbers, logo, signature, watermark; no gore; no real-person resemblance\nAvoid: anime, beauty-glamour styling, bright colors, dramatic pose, different outfit, extra objects"
+  },
+  {
+    "file": "portraits/oh_guilty.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/oh/idle_0.png",
+      "generated/portraits/oh_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Oh Mi-ran showing clear guilt. Eyebrows slope upward toward the center, eyes lowered and avoiding the viewer, eyelids heavy, mouth closed with the corners slightly pulled down. The expression must read immediately as remorse and guilt, restrained rather than theatrical.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/oh_tearful.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/oh/idle_0.png",
+      "generated/portraits/oh_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Oh Mi-ran making a tearful confession. Inner eyebrows lifted and drawn together, eyes moist and visibly red-rimmed with one restrained tear at most, gaze finally meeting the viewer, mouth slightly open and trembling as she speaks. Clearly distinguishable from guilt.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/lee_neutral.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/lee/idle_0.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: neutral dialogue portrait\nPrimary request: Lee Hye-jeong, Korean woman in her early 30s, cult leader daughter in mourning. Jaw-length straight dark bob, black blouse, one small muted-orange brooch at the collar. Chest-up cold neutral expression, straight posture, emotionally closed. Document folder is outside the portrait crop.\nInput images: Images 1-2 define the original game portrait style, calm brushwork, muted color, chest-up composition, subject size, and eye level. Image 3 is the approved Baek neutral portrait and is the primary target for finish, dark background, lighting, and canvas usage. Image 4 is the approved character sprite and must control hairstyle, age, clothing, colors, and identifying accessory.\nScene/backdrop: simple near-black charcoal background like Image 3, not transparent\nStyle/medium: restrained semi-realistic digital painting with calm visible brushwork and muted colors; same finish and detail density as Image 3; not photorealistic or glossy\nComposition/framing: exact 768x1072 portrait; chest-up; centered; same subject scale, shoulder crop, eye height, and three-quarter angle as Image 3\nLighting/mood: soft low-key hospital-drama lighting, cold and controlled\nConstraints: one Korean person; preserve sprite identity, clothing, hair, age, and accessories; no readable text, numbers, logo, signature, watermark; no gore; no real-person resemblance\nAvoid: anime, beauty-glamour styling, bright colors, dramatic pose, different outfit, extra objects"
+  },
+  {
+    "file": "portraits/lee_contempt.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/lee/idle_0.png",
+      "generated/portraits/lee_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Lee Hye-jeong showing unmistakable contempt. One eyebrow slightly raised, eyes narrowed and looking down at the viewer, chin subtly lifted, one corner of the closed mouth raised in a restrained dismissive sneer.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/lee_tense.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/lee/idle_0.png",
+      "generated/portraits/lee_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Lee Hye-jeong under visible tension. Eyebrows pulled slightly inward and level, eyes opened wider than neutral with a fixed guarded stare, jaw tight, lips pressed into a thin straight line. No sneer; clearly distinguishable from contempt.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/choi_neutral.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/choi/idle_0.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: neutral dialogue portrait\nPrimary request: Choi Ok-ja, Korean woman patient in her 70s. White hair in a low bun, lined elderly face, pale blue-gray thin-striped patient uniform with an old brown shawl around the shoulders. Chest-up gentle warm smile, calm eyes, slightly stooped bearing. Rosary is outside the portrait crop.\nInput images: Images 1-2 define the original game portrait style, calm brushwork, muted color, chest-up composition, subject size, and eye level. Image 3 is the approved Baek neutral portrait and is the primary target for finish, dark background, lighting, and canvas usage. Image 4 is the approved character sprite and must control hairstyle, age, clothing, colors, and identifying accessory.\nScene/backdrop: simple near-black charcoal background like Image 3, not transparent\nStyle/medium: restrained semi-realistic digital painting with calm visible brushwork and muted colors; same finish and detail density as Image 3; not photorealistic or glossy\nComposition/framing: exact 768x1072 portrait; chest-up; centered; same subject scale, shoulder crop, eye height, and three-quarter angle as Image 3\nLighting/mood: soft low-key hospital-drama lighting, cold and controlled\nConstraints: one Korean person; preserve sprite identity, clothing, hair, age, and accessories; no readable text, numbers, logo, signature, watermark; no gore; no real-person resemblance\nAvoid: anime, beauty-glamour styling, bright colors, dramatic pose, different outfit, extra objects"
+  },
+  {
+    "file": "portraits/choi_devout.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/choi/idle_0.png",
+      "generated/portraits/choi_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Choi Ok-ja in devout certainty while praying. Both eyes gently but fully closed, eyebrows relaxed with quiet conviction, lips softly closed in a small assured smile. The expression must clearly read as peaceful religious certainty.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/choi_confused.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/choi/idle_0.png",
+      "generated/portraits/choi_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Choi Ok-ja in clear confusion. Eyebrows knitted unevenly, eyes open and searching slightly to one side, forehead creased, gentle smile gone, lips parted a little in uncertainty. Clearly distinguishable from neutral warmth and closed-eye devotion.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/han_neutral.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/han/idle_0.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: neutral dialogue portrait\nPrimary request: Han Yu-jin, Korean woman patient, age 34. Shoulder-length dark hair tied with one clearly visible muted-blue hair tie, pale blue-gray thin-striped patient uniform. Chest-up anxious neutral expression with slightly raised inner eyebrows and guarded eyes; shoulders subtly hunched.\nInput images: Images 1-2 define the original game portrait style, calm brushwork, muted color, chest-up composition, subject size, and eye level. Image 3 is the approved Baek neutral portrait and is the primary target for finish, dark background, lighting, and canvas usage. Image 4 is the approved character sprite and must control hairstyle, age, clothing, colors, and identifying accessory.\nScene/backdrop: simple near-black charcoal background like Image 3, not transparent\nStyle/medium: restrained semi-realistic digital painting with calm visible brushwork and muted colors; same finish and detail density as Image 3; not photorealistic or glossy\nComposition/framing: exact 768x1072 portrait; chest-up; centered; same subject scale, shoulder crop, eye height, and three-quarter angle as Image 3\nLighting/mood: soft low-key hospital-drama lighting, cold and controlled\nConstraints: one Korean person; preserve sprite identity, clothing, hair, age, and accessories; no readable text, numbers, logo, signature, watermark; no gore; no real-person resemblance\nAvoid: anime, beauty-glamour styling, bright colors, dramatic pose, different outfit, extra objects"
+  },
+  {
+    "file": "portraits/han_fear.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/han/idle_0.png",
+      "generated/portraits/han_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Han Yu-jin in unmistakable fear. Inner eyebrows raised sharply, eyes opened wide with visible whites and fixed alarm, lower eyelids tense, lips parted slightly as if breath caught. Restrained realism, but instantly readable terror.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/han_earnest.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/han/idle_0.png",
+      "generated/portraits/han_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Han Yu-jin speaking with quiet earnest urgency, as if whispering something vital. Inner eyebrows lifted but drawn together, eyes focused directly on the viewer rather than wide with fear, lips slightly parted in a small careful whisper. Clearly distinguishable from panic.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/chae_neutral.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/chae/idle_0.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: neutral dialogue portrait\nPrimary request: Chae So-yeon, Korean woman patient in her mid-20s. Short dark hair, pale blue-gray thin-striped patient uniform under a gray cleaning apron. Chest-up plain neutral expression, modest and tired, with restrained concern.\nInput images: Images 1-2 define the original game portrait style, calm brushwork, muted color, chest-up composition, subject size, and eye level. Image 3 is the approved Baek neutral portrait and is the primary target for finish, dark background, lighting, and canvas usage. Image 4 is the approved character sprite and must control hairstyle, age, clothing, colors, and identifying accessory.\nScene/backdrop: simple near-black charcoal background like Image 3, not transparent\nStyle/medium: restrained semi-realistic digital painting with calm visible brushwork and muted colors; same finish and detail density as Image 3; not photorealistic or glossy\nComposition/framing: exact 768x1072 portrait; chest-up; centered; same subject scale, shoulder crop, eye height, and three-quarter angle as Image 3\nLighting/mood: soft low-key hospital-drama lighting, cold and controlled\nConstraints: one Korean person; preserve sprite identity, clothing, hair, age, and accessories; no readable text, numbers, logo, signature, watermark; no gore; no real-person resemblance\nAvoid: anime, beauty-glamour styling, bright colors, dramatic pose, different outfit, extra objects"
+  },
+  {
+    "file": "portraits/chae_worried.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/chae/idle_0.png",
+      "generated/portraits/chae_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Chae So-yeon showing clear worry. Inner eyebrows raised and drawn together, eyes slightly widened and glancing aside, lips pressed with corners down. The expression must immediately read as anxious concern.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/chae_earnest.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/chae/idle_0.png",
+      "generated/portraits/chae_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Chae So-yeon seriously revealing something important. Eyebrows level and gently drawn together, eyes steady and looking directly at the viewer, lips slightly parted mid-sentence, expression sincere and resolved. Clearly distinguishable from worried side-glance.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/haneul_neutral.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/haneul/idle_0.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: neutral dialogue portrait\nPrimary request: Jeong Ha-neul, Korean woman patient, age 29, thin build and formerly a clinical laboratory researcher. Messy shoulder-length dark hair, pale blue-gray thin-striped patient uniform. Chest-up withdrawn guarded expression, head slightly lowered, eyes wary. The black notebook and torn sleeve are outside the portrait crop.\nInput images: Images 1-2 define the original game portrait style, calm brushwork, muted color, chest-up composition, subject size, and eye level. Image 3 is the approved Baek neutral portrait and is the primary target for finish, dark background, lighting, and canvas usage. Image 4 is the approved character sprite and must control hairstyle, age, clothing, colors, and identifying accessory.\nScene/backdrop: simple near-black charcoal background like Image 3, not transparent\nStyle/medium: restrained semi-realistic digital painting with calm visible brushwork and muted colors; same finish and detail density as Image 3; not photorealistic or glossy\nComposition/framing: exact 768x1072 portrait; chest-up; centered; same subject scale, shoulder crop, eye height, and three-quarter angle as Image 3\nLighting/mood: soft low-key hospital-drama lighting, cold and controlled\nConstraints: one Korean person; preserve sprite identity, clothing, hair, age, and accessories; no readable text, numbers, logo, signature, watermark; no gore; no real-person resemblance\nAvoid: anime, beauty-glamour styling, bright colors, dramatic pose, different outfit, extra objects"
+  },
+  {
+    "file": "portraits/haneul_shaken.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/haneul/idle_0.png",
+      "generated/portraits/haneul_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Jeong Ha-neul visibly shaken and avoiding eye contact. Eyebrows uneven and tense, eyes turned clearly aside and slightly down, lower eyelids strained, lips pressed thin with a subtle tremble. The expression must read immediately as disturbed inner turmoil.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "portraits/haneul_confession.png",
+    "size": [
+      768,
+      1072
+    ],
+    "kind": "portrait",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Art/Portraits/player_neutral.png",
+      "Art/Portraits/eunho_neutral.png",
+      "generated/portraits/baek_neutral.png",
+      "generated/characters/haneul/idle_0.png",
+      "generated/portraits/haneul_neutral.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: dialogue portrait expression variant\nPrimary request: Jeong Ha-neul giving an exhausted but direct confession. Eyebrows tired and slightly drawn together, heavy eyes looking straight at the viewer with clear resolve, lips parted as she speaks, no avoidance. Clearly distinguishable from guarded neutral and shaken side-glance.\nInput images: Images 1-3 are the approved game portrait style references. Image 4 is the approved character sprite for hair, clothing, age, colors, and identifying details. Image 5 is this exact person neutral portrait and is the strict identity/composition lock.\nScene/backdrop: exactly the same near-black charcoal background as Image 5\nStyle/medium: exactly the same restrained semi-realistic muted digital painting and detail density as Image 5\nComposition/framing: exact 768x1072; identical chest-up crop, head angle, eye height, camera, lighting, and subject scale as Image 5\nConstraints: same person, face structure, hair, clothing, accessories, background, and pose; change only eyebrows, eyes, and mouth to make the requested emotion instantly distinguishable; no text, logo, signature, watermark; no real-person resemblance\nAvoid: changing identity, age, hairstyle, outfit, camera angle, crop, background, lighting, or adding props"
+  },
+  {
+    "file": "backgrounds/director_wall.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "kind": "wall",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/wall.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating empty wall tile for a side-view 2D game\nPrimary request: director's office wall with dark walnut lower paneling and dark wallpaper above; formal, oppressive, muted.\nComposition: straight-on orthographic 1536x1024 wall elevation, horizontally repeatable, no perspective.\nConstraints: wall only; no door, window, furniture, signage, text, people, logo, signature, or watermark."
+  },
+  {
+    "file": "backgrounds/wood_floor.png",
+    "size": [
+      1792,
+      640
+    ],
+    "kind": "floor",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/floor.png",
+      "generated/backgrounds/lobby_floor_v2.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating floor texture tile for a side-view 2D game\nPrimary request: dark cold walnut wood planks, darker and cooler than the office floor, worn matte and subdued.\nComposition: exact 1792x640 orthographic flat horizontal rows, seamless and low contrast.\nConstraints: no trapezoids, converging lines, vanishing point, perspective, foreshortening, diagonal depth, objects, text, people, logo, signature, or watermark."
+  },
+  {
+    "file": "backgrounds/ward_wall.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "kind": "wall",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/wall.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating empty wall tile for a side-view 2D game\nPrimary request: hospital ward wall with faded pale blue-teal upper wall, gray waist protection, continuous handrail, restrained lower stains.\nComposition: straight-on orthographic 1536x1024 wall elevation, horizontally repeatable, no perspective.\nConstraints: no door, window, furniture, signage, text, people, logo, signature, or watermark."
+  },
+  {
+    "file": "backgrounds/ward_floor.png",
+    "size": [
+      1792,
+      640
+    ],
+    "kind": "floor",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/floor.png",
+      "generated/backgrounds/lobby_floor_v2.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating floor texture tile for a side-view 2D game\nPrimary request: worn blue-gray linoleum, not green-gray, with subtle old low sheen and restrained flat tile seams.\nComposition: exact 1792x640 orthographic flat horizontal rows, seamless and low contrast.\nConstraints: no trapezoids, converging lines, vanishing point, perspective, foreshortening, diagonal depth, objects, text, people, logo, signature, or watermark."
+  },
+  {
+    "file": "backgrounds/patientroom_wall.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "kind": "wall",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/wall.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating empty wall tile for a side-view 2D game\nPrimary request: pale gray patient-room wall with one thin continuous oxygen pipe rail at bed-head height; sparse, clinical, slightly stained.\nComposition: straight-on orthographic 1536x1024 wall elevation, horizontally repeatable, no perspective.\nConstraints: no door, window, furniture, signage, text, people, logo, signature, or watermark."
+  },
+  {
+    "file": "backgrounds/staff_wall.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "kind": "wall",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/wall.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating empty wall tile for a side-view 2D game\nPrimary request: cold ivory-gray upper wall above dark wood wainscot; orderly, rigid, emotionally cold, restrained wear.\nComposition: straight-on orthographic 1536x1024 wall elevation, horizontally repeatable, no perspective.\nConstraints: no door, window, furniture, signage, text, people, logo, signature, or watermark."
+  },
+  {
+    "file": "backgrounds/nurse_wall.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "kind": "wall",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/wall.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating empty wall tile for a side-view 2D game\nPrimary request: nurse-station wall with white ceramic tile below and pale gray paint above, weak cool fluorescent feeling.\nComposition: straight-on orthographic 1536x1024 wall elevation, horizontally repeatable, no perspective.\nConstraints: no door, window, furniture, signage, text, people, logo, signature, or watermark."
+  },
+  {
+    "file": "backgrounds/basement_wall.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "kind": "wall",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/wall.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating empty wall tile for a side-view 2D game\nPrimary request: exposed gray concrete blocks, thick utility pipe along the top, damp stains; darkest wall in the set.\nComposition: straight-on orthographic 1536x1024 wall elevation, horizontally repeatable, no perspective.\nConstraints: no door, window, furniture, signage, text, people, logo, signature, or watermark."
+  },
+  {
+    "file": "backgrounds/basement_floor.png",
+    "size": [
+      1792,
+      640
+    ],
+    "kind": "floor",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/floor.png",
+      "generated/backgrounds/lobby_floor_v2.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: horizontally repeating floor texture tile for a side-view 2D game\nPrimary request: cracked gray concrete basement floor with restrained shallow irregular cracks and dark damp mottling.\nComposition: exact 1792x640 orthographic flat horizontal rows, seamless and low contrast.\nConstraints: no trapezoids, converging lines, vanishing point, perspective, foreshortening, diagonal depth, objects, text, people, logo, signature, or watermark."
+  },
+  {
+    "file": "props/door_hospital.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Primary request: hospital room door with faded blue-gray steel frame, plain off-white slab, small upper glass window, blank nameplate.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/door_director.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Primary request: heavy dark walnut director-office door with a small framed muted orange circular order emblem above it.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/door_staff.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Primary request: simple worn ivory-painted wooden staff-room door with blank nameplate.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/stairs_up.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Primary request: side-view upward stairs entrance with straight steps and blue-gray metal handrail.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/stairs_down.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Primary request: side-view downward stairs entrance with straight steps and blue-gray metal handrail.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/stairs_basement.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Primary request: dark basement stair entrance with partly open iron gate and loosened gray chain.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/cleaning_cart.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Primary request: compact gray cleaning cart with blue-gray bucket, secured mop, and dark gray trash bag.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/papers_floor.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/lobby_wall.png"
+    ],
+    "prompt": "Primary request: tiny flat cluster of a few off-white papers with faint gray lines, no readable text.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/altar.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/director_wall.png"
+    ],
+    "prompt": "Primary request: angular dull brass prayer lectern with broad base and slanted reading top.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/blood_mark.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/director_wall.png"
+    ],
+    "prompt": "Primary request: tiny flat dark brown-red wiped stain with restrained rubbed smear.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/director_desk.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/director_wall.png"
+    ],
+    "prompt": "Primary request: large heavy dark-walnut director desk with broad simple paneling and empty surface.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/director_chair.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/director_wall.png"
+    ],
+    "prompt": "Primary request: high-backed dark brown leather director chair with simple arms and base.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/order_emblem.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/director_wall.png"
+    ],
+    "prompt": "Primary request: wall-hanging dark wooden frame with simple muted orange circular light motif.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/bed_ward.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/patientroom_wall.png"
+    ],
+    "prompt": "Primary request: side-view steel hospital bed with thin mattress, pillow, and faded blue-gray blanket.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/bed_empty.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/patientroom_wall.png"
+    ],
+    "prompt": "Primary request: side-view empty steel hospital bed with bare off-white mattress only.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/broadcast_board.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/ward_wall.png"
+    ],
+    "prompt": "Primary request: wall speaker above timetable board using only grid and faint lines.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/baek_pc.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/staff_wall.png"
+    ],
+    "prompt": "Primary request: old blue-gray CRT monitor, keyboard, and compact printer assembly with blank screen.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/nurse_counter.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/nurse_wall.png"
+    ],
+    "prompt": "Primary request: pale nurse counter with low medicine cabinet and clipboard of faint lines.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/lee_desk.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/staff_wall.png"
+    ],
+    "prompt": "Primary request: orderly dark-wood office desk with closed folders and paper tray.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/ledger_shelf.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/basement_wall.png"
+    ],
+    "prompt": "Primary request: old blue-gray steel shelf with sparse worn unlabeled ledgers.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/code_chart.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/basement_wall.png"
+    ],
+    "prompt": "Primary request: large pinned worn chart with grid and faint lines, no readable content.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/belongings_locker.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/basement_wall.png"
+    ],
+    "prompt": "Primary request: steel multi-compartment belongings locker with exactly one empty door open.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "props/cold_crate.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/door.png",
+      "Resources/Art/Office/window.png",
+      "Resources/Art/Office/desk_bg.png",
+      "Resources/Art/Office/evidence_board.png",
+      "generated/backgrounds/basement_wall.png"
+    ],
+    "prompt": "Primary request: closed blue-gray refrigerated transport crate with attached clipboard of faint lines.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
   }
 ]

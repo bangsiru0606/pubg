@@ -11,7 +11,7 @@ export function creditsBlock(creditsMd: string | null): string {
   const text = lines.join('\n');
   const bgm = !lines.length ? ['- **배경음악**: 준비 중']
     : [`- **배경음악** (곡별 출처):`, ...lines.map((l) => `  - ${l}`),
-      ...(/eleven/i.test(text) ? ['  - 배경음악 일부는 Eleven Music(ElevenLabs 무료 플랜)으로 생성했다. 비상업적 이용.'] : []),
+      ...(/eleven/i.test(text) ? [`  - 배경음악${lines.every((l) => /eleven/i.test(l)) ? '은' : ' 일부는'} Eleven Music(ElevenLabs 무료 플랜)으로 생성했다. 비상업적 이용.`] : []),
       ...(/ace-?step/i.test(text) ? ['  - 배경음악 일부는 ACE-Step으로 생성했다.'] : [])];
   return ['- **그림**: Codex(`$imagegen`)로 생성. 탐색 화면의 기준 그림체는 craft_on 기존 에셋.', '- **개발**: Claude Code, Codex', '- **효과음**: 코드로 직접 합성 (외부 음원 없음)', ...bgm].join('\n');
 }

@@ -23,9 +23,9 @@ npm run dev            # 개발 서버 (F9: 디버그 메뉴 — 씬 1~7 점프�
 npm test               # Vitest
 npm run validate       # 데이터 ID 참조 무결성 검사
 npm run assets         # art/source → public/assets 정규화
-npm run play           # build:release 후 release/ConfessionWard_v1.0_web/index.html 을 기본 브라우저로 연다 (플레이 시험)
+npm run play           # build:release 후 release/ConfessionWard_v1.0_web/index.html 을 기본 브라우저로 연다 (플레이 시험, ALLOW_PENDING=1 로 동작)
 npm run build:release  # release/ConfessionWard_v1.0_web.zip 생성 (index.html 더블클릭 실행)
-npm run test:release   # zip을 풀어 file://로 열고 자동 플레이 확인 (Playwright)
+npm run test:release   # zip을 풀어 file://로 열고 자동 플레이 확인 (Playwright). 생성 대기(pending) 에셋이 남아 있으면 실패 — 중간 단계는 ALLOW_PENDING=1 npm run test:release
 npm run build           # tsc + vite build (dist/)
 npm run screenshot      # release zip을 열어 사무실 화면을 ×4로 캡처 (docs/screenshots/)
 npm run test:e2e        # 테스트 전용 대사 포함 빌드(.tmp/e2e)로 이동·대화·수첩 자동 검증 (SHOTS=1 이면 docs/screenshots 에 캡처)

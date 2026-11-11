@@ -51,6 +51,7 @@ for (const [aid, a] of Object.entries(areas)) {
 const charIds = new Set(characters.map((c) => c.id));
 const warnings: string[] = [];
 const pendingPortraits = new Set<string>();
+let pendingSummary = { batch3: 0, batch4: 0, batch5: 0 };
 const exprOf = new Map(characters.map((c) => [c.id, c as unknown as { portrait: string | null; expressions?: string[] }]));
 for (const c of characters as unknown as { id: string; portrait: string | null; expressions?: string[] }[]) {
   if (!c.portrait) continue;
@@ -188,10 +189,25 @@ for (const [key, lines] of Object.entries(endingLines)) {
     for (const it of a.interactables) if ('art' in it && it.art) want.add(it.art);
     Object.values(a.npcSprite ?? {}).forEach((s) => want.add(`${s}_idle_0`));
   }
+  const specPending = new Set<string>(((JSON.parse(readFileSync('art/asset-spec.json', 'utf8')) as { pending?: string[] }).pending) ?? []);
   const missingTex = [...want].filter((k) => !have.has(k)).sort();
-  if (missingTex.length) warnings.push(`아직 없는 텍스처 ${missingTex.length}개: ${missingTex.join(', ')}`);
-  if (pendingPortraits.size) warnings.push(`아직 없는 초상 ${pendingPortraits.size}개: ${[...pendingPortraits].sort().join(', ')}`);
+  const hardMissing = missingTex.filter((k) => !specPending.has(k)), pendingTex = missingTex.filter((k) => specPending.has(k));
+  for (const k of hardMissing) err(`텍스처 ${k}: 지도에 지정됐고 pending 도 아닌데 파일이 없다 (asset-spec 의 pending 에 넣거나 에셋을 추가할 것)`);
+  for (const k of specPending) if (have.has(k)) err(`텍스처 ${k}: 파일이 있는데 asset-spec pending 에 남아 있다 (import-generated --apply 가 지운다)`);
+  const pendingChars = (characters as unknown as { id: string; pending?: boolean }[]).filter((c) => c.pending);
+  for (const c of pendingChars) if (!(exprOf.get(c.id)?.portrait)) err(`characters/${c.id}: pending 인데 portrait 가 없다`);
+  const BG_KEYS = new Set(['director_wall', 'wood_floor', 'ward_wall', 'ward_floor', 'patientroom_wall', 'staff_wall', 'nurse_wall', 'basement_wall', 'basement_floor']);
+  const pendingPortraitChars = new Set(pendingChars.map((c) => c.id));
+  for (const f of pendingPortraits) { // 파일이 없는 초상은 그 인물이 pending 일 때만 허용 (아니면 오류)
+    const owner = (characters as unknown as { id: string; portrait: string | null }[]).find((c) => c.portrait && f.startsWith(`${c.portrait}_`));
+    if (owner && !pendingPortraitChars.has(owner.id)) err(`초상 ${f}: 파일이 없는데 ${owner.id} 가 pending 이 아니다`);
+  }
+  for (const c of pendingChars) if ((c as unknown as { expressions?: string[]; portrait: string }).expressions?.every((x) => existsSync(`public/assets/illust/${(c as unknown as { portrait: string }).portrait}_${x}.png`))) err(`characters/${c.id}: 초상 파일이 모두 있는데 pending 이 남아 있다`);
+  pendingSummary = { batch3: pendingChars.length * 3, batch4: pendingTex.filter((k) => BG_KEYS.has(k)).length, batch5: pendingTex.filter((k) => !BG_KEYS.has(k)).length };
+  if (pendingTex.length) warnings.push(`생성 대기(pending) 텍스처 ${pendingTex.length}개: ${pendingTex.join(', ')}`);
+  if (pendingChars.length) warnings.push(`생성 대기(pending) 초상 인물 ${pendingChars.length}명 (${pendingChars.map((c) => c.id).join(', ')})`);
 }
+if (pendingSummary.batch3 + pendingSummary.batch4 + pendingSummary.batch5) warnings.push(`pending 합계: 배치 3(초상) ${pendingSummary.batch3}장, 배치 4(구역 배경) ${pendingSummary.batch4}장, 배치 5(소품) ${pendingSummary.batch5}장`);
 if (warnings.length) console.warn(warnings.map((w) => `! ${w}`).join('\n'));
 if (errors.length) { console.error(errors.map((e) => `✗ ${e}`).join('\n')); process.exit(1); }
 console.log(`validate OK (단서 ${evidenceList.length}, 질문 ${claims.length}, 퍼즐 ${puzzles.length}, 엔딩 ${endings.length}, 구역 ${Object.keys(areas).length}, 대사 미작성 NPC ${missing})`);

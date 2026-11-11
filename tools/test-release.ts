@@ -6,6 +6,18 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { launch } from './browser';
 
+// 생성 대기(pending) 에셋이 남아 있으면 제출 빌드로 인정하지 않는다 (플레이 시험은 ALLOW_PENDING=1 로 경고만)
+{
+  const spec = JSON.parse(readFileSync('art/asset-spec.json', 'utf8')) as { pending?: string[] };
+  const chars = (JSON.parse(readFileSync('src/data/characters.json', 'utf8')).characters as { id: string; pending?: boolean }[]).filter((c) => c.pending);
+  const n = (spec.pending?.length ?? 0) + chars.length;
+  if (n) {
+    const msg = `생성 대기(pending) 항목 ${n}개 남음: 텍스처 ${spec.pending?.length ?? 0}개, 초상 인물 ${chars.length}명`;
+    if (process.env.ALLOW_PENDING === '1') console.warn(`! ${msg} (ALLOW_PENDING=1 이라 계속한다)`);
+    else { console.error(`FAIL ${msg} — 모두 적용하거나 ALLOW_PENDING=1 로 실행한다`); process.exit(1); }
+  }
+}
+
 const dir = mkdtempSync(join(tmpdir(), 'cw-'));
 new AdmZip('release/ConfessionWard_v1.0_web.zip').extractAllTo(dir, true);
 const url = pathToFileURL(join(dir, 'ConfessionWard_v1.0_web', 'index.html')).href;

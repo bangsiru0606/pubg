@@ -37,3 +37,16 @@ describe('생성 에셋 가져오기 (manifest → asset-spec 초안)', () => {
     expect(() => draftFromManifest([{ file: 'characters/x/idle_0.png', kind: 'sprite', facing: null }], base)).toThrow(/facing/);
   });
 });
+
+describe('pending 정리 (import --apply)', () => {
+  it('들어온 텍스처 id 와 표정 3장이 모두 들어온 인물의 pending 을 지운다', async () => {
+    const { clearPending } = await import('../tools/import-generated');
+    const spec = { pending: ['lobby_wall', 'ward_wall', 'altar'] };
+    const chars = [{ id: 'oh_miran', portrait: 'oh', expressions: ['neutral', 'guilty', 'tearful'], pending: true }, { id: 'lee_hyejeong', portrait: 'lee', expressions: ['neutral', 'contempt', 'tense'], pending: true }];
+    const m = [...['neutral', 'guilty', 'tearful'].map((x) => `portraits/oh_${x}.png`), 'portraits/lee_neutral.png'].map((file) => ({ file, kind: 'portrait' as const }));
+    clearPending(spec, chars, m as never, ['ward_wall']);
+    expect(spec.pending).toEqual(['lobby_wall', 'altar']);
+    expect(chars[0].pending).toBeUndefined();   // 3장 모두 있음
+    expect(chars[1].pending).toBe(true);        // 1장뿐
+  });
+});

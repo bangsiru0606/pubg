@@ -6,7 +6,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname } from 'node:path';
 
 export interface ManifestEntry { file: string; size?: number[]; kind: string; facing?: 'left' | 'right' | null; chromaKey?: boolean }
-export interface Spec { ignoreGenerated?: string[]; sequences: any[]; sprites: any[]; illust: string[]; [k: string]: unknown }
+export interface Spec { ignoreGenerated?: string[]; pending?: string[]; sequences: any[]; sprites: any[]; illust: string[]; [k: string]: unknown }
 
 /** 이전계획 3.3.1: 소품 높이(px). 표에 없으면 90 으로 두고 draft 표시를 남긴다. */
 export const PROP_HEIGHT: Record<string, number> = {
@@ -46,6 +46,13 @@ export function draftFromManifest(manifest: ManifestEntry[], spec: Pick<Spec, 's
   return draft;
 }
 
+/** 파일이 들어온 항목의 pending 을 지운다: 텍스처는 새로 만든 spec 항목 id, 초상은 3개 표정이 모두 manifest 에 있는 인물 */
+export function clearPending(spec: { pending?: string[] }, chars: { id: string; portrait: string | null; expressions?: string[]; pending?: boolean }[], manifest: ManifestEntry[], added: string[]) {
+  if (spec.pending) spec.pending = spec.pending.filter((id) => !added.includes(id));
+  const have = new Set(manifest.map((e) => e.file));
+  for (const c of chars) if (c.pending && c.portrait && (c.expressions ?? []).every((x) => have.has(`portraits/${c.portrait}_${x}.png`))) delete c.pending;
+}
+
 if (process.argv[1]?.endsWith('import-generated.ts')) {
   const MANIFEST = 'art/source/generated/manifest.json';
   if (!existsSync(MANIFEST)) { console.log('manifest 가 아직 없다 — 생성 에셋이 준비되면 다시 실행한다.'); process.exit(0); }
@@ -54,6 +61,9 @@ if (process.argv[1]?.endsWith('import-generated.ts')) {
   const n = draft.sequences.length + draft.sprites.length + draft.illust.length;
   if (process.argv.includes('--apply')) {
     spec.sequences.push(...draft.sequences); spec.sprites.push(...draft.sprites); spec.illust.push(...draft.illust);
+    const chars = JSON.parse(readFileSync('src/data/characters.json', 'utf8'));
+    clearPending(spec as { pending?: string[] }, chars.characters, JSON.parse(readFileSync(MANIFEST, 'utf8')), [...draft.sprites.map((s) => s.id), ...draft.sequences.map((q) => q.id)]);
+    writeFileSync('src/data/characters.json', JSON.stringify(chars, null, 1) + '\n');
     writeFileSync('art/asset-spec.json', JSON.stringify(spec, null, 2) + '\n');
     console.log(`asset-spec.json 에 ${n}개 항목을 추가했다.`);
   } else {

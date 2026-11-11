@@ -4,7 +4,7 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync, rmSync, readdirSync } f
 import { join, basename } from 'node:path';
 import { readFileSync as readFile } from 'node:fs';
 import { breatheFrame } from './breathe';
-import { applyOutline, measureOutlineColor } from './outline';
+import { applyOutline, measureOutlineColor, padForOutline } from './outline';
 import { binarizeAlpha, despillEdges, removeChromaKey } from './chroma';
 
 /** 원본 읽기: chromaKey 지정 시 #00FF00 배경 제거 + 가장자리 초록 번짐 정리 */
@@ -28,11 +28,11 @@ mkdirSync(join(OUT, 'illust'), { recursive: true });
 async function normalizeSprite(s: any) {
   const trimmed = sharp(await load(join(SRC, s.src), s.chromaKey)).trim({ threshold: 1 });
   const buf = await trimmed.png().toBuffer();
-  let img = sharp(buf).resize({ height: s.height, kernel: 'lanczos3' });
-  if (s.outline) { // 소품: 알파 정리 후 외곽선 보정 (기준 색은 한지수 스프라이트라 시퀀스 처리 뒤에 한다)
+  let img = sharp(buf).resize({ height: s.outline ? s.height - 1 : s.height, kernel: 'lanczos3' });
+  if (s.outline) { // 소품: 알파 정리 → 위·좌·우 여백 1px → 바깥 외곽선 (기준 색은 한지수 스프라이트라 시퀀스 처리 뒤에 한다). 높이 규격은 유지.
     let b: Buffer = await img.png().toBuffer();
     if (s.chromaKey) b = await binarizeAlpha(b);
-    img = sharp(await applyOutline(b, await outlineColor()));
+    img = sharp(await applyOutline(await padForOutline(b), await outlineColor()));
   }
   await save(img, `${s.id}.png`, spec.colours, s.id);
 }
@@ -49,9 +49,11 @@ for (const q of spec.sequences) {
     const src = await load(join(SRC, q.src, `${f}.png`), q.chromaKey);
     const meta = await sharp(src).metadata();
     const w = Math.round((meta.width! * q.canvasHeight) / meta.height!);
-    const resized = await sharp(src).resize(w, q.canvasHeight, { kernel: 'lanczos3' }).png().toBuffer();
+    const h = q.outline ? q.canvasHeight - 1 : q.canvasHeight; // 외곽선용 위 여백 1px 을 빼고 만든다 (캔버스 높이 90 유지)
+    const resized = await sharp(src).resize(w, h, { kernel: 'lanczos3' }).png().toBuffer();
     const keyed = q.chromaKey ? await binarizeAlpha(resized) : resized;
-    return { f, w, buf: q.outline ? await applyOutline(keyed, await outlineColor()) : keyed }; // 외곽선 보정은 숨쉬기 프레임을 만들기 전에 적용한다
+    if (!q.outline) return { f, w, buf: keyed };
+    return { f, w: w + 2, buf: await applyOutline(await padForOutline(keyed), await outlineColor()) }; // 좌우 여백 1px 씩 // 외곽선 보정은 숨쉬기 프레임을 만들기 전에 적용한다
   }));
   if (q.breathe) frames.push({ f: 'idle_1', w: frames[0].w, buf: await breatheFrame(frames[0].buf) }); // idle_0 한 장에서 숨쉬기 프레임을 만든다
   const total = frames.reduce((a, x) => a + x.w, 0);
@@ -68,11 +70,15 @@ for (const q of spec.sequences) {
 
 for (const s of outlined) await normalizeSprite(s);
 
+// 생성 대기(pending) 중인 인물의 초상은 아직 승인·적용 전이므로 게임에 넣지 않는다 (import-generated --apply 가 pending 을 지우면 들어간다)
+const pendingBases = (JSON.parse(readFileSync('src/data/characters.json', 'utf8')).characters as { portrait: string | null; pending?: boolean }[]).filter((c) => c.pending && c.portrait).map((c) => `${c.portrait}_`);
+const isPendingPortrait = (file: string) => pendingBases.some((b) => file.startsWith(b));
+
 // 클로즈업·초상·컷신은 정규화하지 않고 그대로 복사
 for (const p of spec.illust as string[]) {
   if (p.endsWith('/*.png')) {
     const dir = p.slice(0, -6);
-    for (const f of readdirSync(join(SRC, dir))) cpSync(join(SRC, dir, f), join(OUT, 'illust', f));
+    for (const f of readdirSync(join(SRC, dir))) if (!isPendingPortrait(f)) cpSync(join(SRC, dir, f), join(OUT, 'illust', f)); // 승인 전(pending) 인물의 초상은 복사하지 않는다
   } else cpSync(join(SRC, p), join(OUT, 'illust', basename(p)));
 }
 // 근접 조사 소품: 투명 여백을 뺀 실제 그림 영역(bbox)과 클릭 판정용 마스크(40열)를 src/data/illust-masks.json 에 쓴다 (file:// 에서는 캔버스로 읽을 수 없다)

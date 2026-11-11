@@ -10,6 +10,8 @@
     "validate": "tsx tools/validate-data.ts",
     "assets": "tsx tools/normalize-assets.ts",
     "readme:credits": "tsx tools/readme-credits.ts",
+    "sfx": "tsx tools/sfx/generate-sfx.ts",
+    "sfx:report": "tsx tools/sfx/analyze-sfx.ts",
     "release:shots": "tsx tools/release-shots.ts",
     "build:release": "tsx tools/build-release.ts",
     "test:release": "tsx tools/test-release.ts",

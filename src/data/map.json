@@ -115,7 +115,8 @@
      "to": "room_director",
      "spawnX": 410,
      "kind": "door",
-     "requires": "office_access_granted"
+     "requires": "office_access_granted",
+     "art": "door_director"
     },
     {
      "type": "examine",
@@ -123,7 +124,8 @@
      "x": 690,
      "name": "바닥의 서류",
      "evidenceId": "E03_preliminary_exam",
-     "requires": "baek_left"
+     "requires": "baek_left",
+     "art": "papers_floor"
     },
     {
      "type": "transition",
@@ -133,7 +135,8 @@
      "to": "b1",
      "spawnX": 50,
      "kind": "stairs",
-     "requires": "@basement_open"
+     "requires": "@basement_open",
+     "art": "stairs_basement"
     },
     {
      "type": "transition",
@@ -144,7 +147,8 @@
      "spawnX": 50,
      "kind": "stairs",
      "requires": "flag_scene_rebuilt",
-     "lockedDialogue": "mono_stairs_locked"
+     "lockedDialogue": "mono_stairs_locked",
+     "art": "stairs_up"
     }
    ],
    "props": [
@@ -155,7 +159,8 @@
      "h": 24,
      "color": "#8d949a",
      "label": "청소 카트",
-     "showWhen": "baek_left"
+     "showWhen": "baek_left",
+     "tex": "cleaning_cart"
     }
    ],
    "npcSprite": {
@@ -182,7 +187,8 @@
      "label": "복도로 나가기",
      "to": "floor1",
      "spawnX": 635,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_director"
     },
     {
      "type": "examine",
@@ -190,7 +196,8 @@
      "x": 90,
      "name": "기도대 아래",
      "evidenceId": "E02_altar_blood",
-     "dialogueId": "mono_altar"
+     "dialogueId": "mono_altar",
+     "art": "altar"
     },
     {
      "type": "examine",
@@ -198,7 +205,8 @@
      "x": 630,
      "name": "책상 아래",
      "evidenceId": "E04_wristband_fragment",
-     "dialogueId": "mono_wristband"
+     "dialogueId": "mono_wristband",
+     "art": "director_desk"
     },
     {
      "type": "examine",
@@ -211,6 +219,30 @@
       "E03_preliminary_exam",
       "E04_wristband_fragment"
      ]
+    }
+   ],
+   "bg": {
+    "wall": "director_wall",
+    "floor": "wood_floor"
+   },
+   "objects": [
+    {
+     "id": "blood",
+     "tex": "blood_mark",
+     "x": 125,
+     "bottom": 0
+    },
+    {
+     "id": "chair",
+     "tex": "director_chair",
+     "x": 700,
+     "bottom": 0
+    },
+    {
+     "id": "emblem",
+     "tex": "order_emblem",
+     "x": 470,
+     "bottom": 100
     }
    ]
   },
@@ -227,7 +259,8 @@
      "label": "[1층 내려가기]",
      "to": "floor1",
      "spawnX": 1570,
-     "kind": "stairs"
+     "kind": "stairs",
+     "art": "stairs_down"
     },
     {
      "type": "transition",
@@ -236,7 +269,8 @@
      "label": "[201호] 들어가기",
      "to": "room_choi",
      "spawnX": 50,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_hospital"
     },
     {
      "type": "transition",
@@ -245,7 +279,8 @@
      "label": "[202호] 들어가기",
      "to": "room_han",
      "spawnX": 50,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_hospital"
     },
     {
      "type": "transition",
@@ -254,7 +289,8 @@
      "label": "[203호] 들어가기",
      "to": "room_jeong",
      "spawnX": 50,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_hospital"
     },
     {
      "type": "transition",
@@ -265,7 +301,8 @@
      "spawnX": 50,
      "kind": "stairs",
      "requires": "flag_night_timeline",
-     "lockedDialogue": "mono_floor3_locked"
+     "lockedDialogue": "mono_floor3_locked",
+     "art": "stairs_up"
     },
     {
      "type": "examine",
@@ -273,9 +310,14 @@
      "x": 1080,
      "name": "복도 방송표",
      "dialogueId": "mono_broadcast",
-     "puzzleId": "P02_night_timeline"
+     "puzzleId": "P02_night_timeline",
+     "art": "broadcast_board"
     }
-   ]
+   ],
+   "bg": {
+    "wall": "ward_wall",
+    "floor": "ward_floor"
+   }
   },
   "room_choi": {
    "name": "201호 병실",
@@ -290,7 +332,8 @@
      "label": "복도로 나가기",
      "to": "floor2",
      "spawnX": 320,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_hospital"
     },
     {
      "type": "npc",
@@ -305,7 +348,19 @@
    },
    "npcFacing": {
     "choi": "left"
-   }
+   },
+   "bg": {
+    "wall": "patientroom_wall",
+    "floor": "ward_floor"
+   },
+   "objects": [
+    {
+     "id": "bed",
+     "tex": "bed_ward",
+     "x": 380,
+     "bottom": 0
+    }
+   ]
   },
   "room_han": {
    "name": "202호 병실",
@@ -320,7 +375,8 @@
      "label": "복도로 나가기",
      "to": "floor2",
      "spawnX": 590,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_hospital"
     },
     {
      "type": "npc",
@@ -335,7 +391,19 @@
    },
    "npcFacing": {
     "han": "left"
-   }
+   },
+   "bg": {
+    "wall": "patientroom_wall",
+    "floor": "ward_floor"
+   },
+   "objects": [
+    {
+     "id": "bed",
+     "tex": "bed_ward",
+     "x": 380,
+     "bottom": 0
+    }
+   ]
   },
   "room_jeong": {
    "name": "203호 병실",
@@ -350,7 +418,8 @@
      "label": "복도로 나가기",
      "to": "floor2",
      "spawnX": 760,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_hospital"
     },
     {
      "type": "npc",
@@ -374,7 +443,19 @@
    "npcFacing": {
     "chae": "left",
     "haneul": "left"
-   }
+   },
+   "bg": {
+    "wall": "patientroom_wall",
+    "floor": "ward_floor"
+   },
+   "objects": [
+    {
+     "id": "bed_empty",
+     "tex": "bed_empty",
+     "x": 520,
+     "bottom": 0
+    }
+   ]
   },
   "floor3": {
    "name": "3층 관계자 구역",
@@ -389,7 +470,8 @@
      "label": "[2층 내려가기]",
      "to": "floor2",
      "spawnX": 1300,
-     "kind": "stairs"
+     "kind": "stairs",
+     "art": "stairs_down"
     },
     {
      "type": "transition",
@@ -398,7 +480,8 @@
      "label": "[부원장실] 들어가기",
      "to": "room_baek",
      "spawnX": 50,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_staff"
     },
     {
      "type": "transition",
@@ -407,7 +490,8 @@
      "label": "[간호사실] 들어가기",
      "to": "room_oh",
      "spawnX": 50,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_staff"
     },
     {
      "type": "transition",
@@ -416,9 +500,14 @@
      "label": "[이혜정실] 들어가기",
      "to": "room_lee",
      "spawnX": 50,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_staff"
     }
-   ]
+   ],
+   "bg": {
+    "wall": "staff_wall",
+    "floor": "wood_floor"
+   }
   },
   "room_baek": {
    "name": "부원장실",
@@ -433,7 +522,8 @@
      "label": "복도로 나가기",
      "to": "floor3",
      "spawnX": 365,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_staff"
     },
     {
      "type": "npc",
@@ -449,7 +539,8 @@
      "name": "부원장 PC",
      "evidenceId": "E07_report_revision",
      "requires": "baek_refused",
-     "puzzleId": "P03_revision_diff"
+     "puzzleId": "P03_revision_diff",
+     "art": "baek_pc"
     }
    ],
    "npcSprite": {
@@ -457,6 +548,10 @@
    },
    "npcFacing": {
     "baek": "left"
+   },
+   "bg": {
+    "wall": "staff_wall",
+    "floor": "wood_floor"
    }
   },
   "room_oh": {
@@ -472,7 +567,8 @@
      "label": "복도로 나가기",
      "to": "floor3",
      "spawnX": 580,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_staff"
     },
     {
      "type": "npc",
@@ -489,7 +585,8 @@
      "evidenceIds": [
       "E09_sedative_gap",
       "E05_access_log"
-     ]
+     ],
+     "art": "nurse_counter"
     }
    ],
    "npcSprite": {
@@ -497,6 +594,10 @@
    },
    "npcFacing": {
     "miran": "left"
+   },
+   "bg": {
+    "wall": "nurse_wall",
+    "floor": "ward_floor"
    }
   },
   "room_lee": {
@@ -512,7 +613,8 @@
      "label": "복도로 나가기",
      "to": "floor3",
      "spawnX": 895,
-     "kind": "door"
+     "kind": "door",
+     "art": "door_staff"
     },
     {
      "type": "npc",
@@ -530,7 +632,8 @@
       "E10_consent_forms",
       "E11_transfer_order"
      ],
-     "puzzleId": "P04_approval_chain"
+     "puzzleId": "P04_approval_chain",
+     "art": "lee_desk"
     }
    ],
    "npcSprite": {
@@ -538,7 +641,19 @@
    },
    "npcFacing": {
     "lee": "left"
-   }
+   },
+   "bg": {
+    "wall": "staff_wall",
+    "floor": "wood_floor"
+   },
+   "objects": [
+    {
+     "id": "emblem",
+     "tex": "order_emblem",
+     "x": 500,
+     "bottom": 100
+    }
+   ]
   },
   "b1": {
    "name": "지하 1층 창고",
@@ -553,35 +668,40 @@
      "label": "[1층으로 올라가기]",
      "to": "floor1",
      "spawnX": 1390,
-     "kind": "stairs"
+     "kind": "stairs",
+     "art": "stairs_up"
     },
     {
      "type": "examine",
      "id": "ledger",
      "x": 270,
      "name": "특별 치료 장부",
-     "evidenceId": "E12_ledger"
+     "evidenceId": "E12_ledger",
+     "art": "ledger_shelf"
     },
     {
      "type": "examine",
      "id": "idmap",
      "x": 405,
      "name": "코드 연결표",
-     "evidenceId": "E13_identity_map"
+     "evidenceId": "E13_identity_map",
+     "art": "code_chart"
     },
     {
      "type": "examine",
      "id": "belongings",
      "x": 810,
      "name": "유품 보관함",
-     "evidenceId": "E14_belongings_diary"
+     "evidenceId": "E14_belongings_diary",
+     "art": "belongings_locker"
     },
     {
      "type": "examine",
      "id": "manifest",
      "x": 945,
      "name": "운송표",
-     "evidenceId": "E15_transport_manifest"
+     "evidenceId": "E15_transport_manifest",
+     "art": "cold_crate"
     },
     {
      "type": "npc",
@@ -613,6 +733,10 @@
    },
    "npcFacing": {
     "haneul_b1": "left"
+   },
+   "bg": {
+    "wall": "basement_wall",
+    "floor": "basement_floor"
    }
   }
  },

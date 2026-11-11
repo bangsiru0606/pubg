@@ -21,7 +21,6 @@ const needEvLater: [string, string][] = [];
 for (const [aid, a] of Object.entries(areas)) {
   const where = `map/${aid}`;
   if (a.minX >= a.maxX) err(`${where}: 범위 이상`);
-  for (const o of a.objects ?? []) if (!existsSync(`public/assets/${o.tex}.png`)) err(`${where}: 누락 에셋 ${o.tex}`);
   for (const it of a.interactables) {
     const w = `${where}/${it.id}`;
     if (it.x < a.minX || it.x > a.maxX) err(`${w}: 구역 밖`);
@@ -50,7 +49,14 @@ for (const [aid, a] of Object.entries(areas)) {
   for (const f of dataFiles) if (readFileSync(`src/data/${f}`, 'utf8').includes(defaultName)) err(`${f}: 플레이어 이름 "${defaultName}" 하드코딩 — {player} 토큰을 쓸 것`);
 }
 const charIds = new Set(characters.map((c) => c.id));
-for (const c of characters) if (c.portrait && !existsSync(`public/assets/illust/${c.portrait}_neutral.png`)) err(`characters/${c.id}: 초상 ${c.portrait} 없음`);
+const warnings: string[] = [];
+const pendingPortraits = new Set<string>();
+const exprOf = new Map(characters.map((c) => [c.id, c as unknown as { portrait: string | null; expressions?: string[] }]));
+for (const c of characters as unknown as { id: string; portrait: string | null; expressions?: string[] }[]) {
+  if (!c.portrait) continue;
+  if (c.expressions) { if (!c.expressions.includes('neutral')) err(`characters/${c.id}: expressions 에 neutral 필요`); }
+  else if (!existsSync(`public/assets/illust/${c.portrait}_neutral.png`)) err(`characters/${c.id}: 초상 ${c.portrait} 없음`);
+}
 for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues }) as [string, Dialogue][]) {
   if (!d.nodes[d.start]) err(`dialogue ${did}: start 노드 없음`);
   for (const r of d.restart ?? []) if (!d.nodes[r.node]) err(`dialogue ${did}: restart 노드 없음 ${r.node}`);
@@ -58,7 +64,14 @@ for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues 
     const w = `dialogue ${did}/${nid}`;
     if (real.dialogues[did as keyof typeof real.dialogues] && !['spec', 'new', 'craft_on'].includes(n.source ?? '')) err(`${w}: source(spec|new) 표시 없음`);
     if (!charIds.has(n.speaker)) err(`${w}: 없는 인물 ${n.speaker}`);
-    if (n.portrait && !existsSync(`public/assets/illust/${n.portrait}.png`)) err(`${w}: 없는 초상 ${n.portrait}`);
+    if (n.portrait) {
+      const ch = exprOf.get(n.speaker);
+      if (ch?.expressions) { // 생성 초상: 접두어_표정 형식이어야 한다. 파일이 아직 없으면 경고만 (배치 3 도착 전)
+        const ok = ch.expressions.some((x) => n.portrait === `${ch.portrait}_${x}`);
+        if (!ok) err(`${w}: 초상 ${n.portrait} 는 ${n.speaker} 의 표정(${ch.expressions.join('/')})이 아니다`);
+        else if (!existsSync(`public/assets/illust/${n.portrait}.png`)) pendingPortraits.add(n.portrait);
+      } else if (!existsSync(`public/assets/illust/${n.portrait}.png`)) err(`${w}: 없는 초상 ${n.portrait}`);
+    }
     const refs = [n.next, ...(n.choices ?? []).map((c) => c.next), ...(n.present ?? []).map((p) => p.next)].filter(Boolean) as string[];
     for (const c of n.onEnter?.contradict ?? []) if (!Object.values(real.dialogues).some((dd) => Object.values((dd as unknown as Dialogue).nodes).some((x) => x.statement?.id === c))) err(`${w}: 없는 진술 ${c}`);
     for (const r of refs) if (!d.nodes[r]) err(`${w}: 없는 노드 ${r}`);
@@ -165,5 +178,20 @@ for (const [key, lines] of Object.entries(endingLines)) {
   });
 }
 
+// 지정됐지만 아직 없는 텍스처·초상 (경고만: 없으면 색 사각형·마름모·회색 실루엣으로 대체된다)
+{
+  const have = new Set(Object.keys(JSON.parse(readFileSync('public/assets/assets.json', 'utf8'))));
+  const want = new Set<string>();
+  for (const a of Object.values(areas)) {
+    if (a.bg) [a.bg.wall, a.bg.floor, a.bg.topband].forEach((k) => k && want.add(k));
+    (a.objects ?? []).forEach((o) => want.add(o.tex)); (a.props ?? []).forEach((p) => p.tex && want.add(p.tex));
+    for (const it of a.interactables) if ('art' in it && it.art) want.add(it.art);
+    Object.values(a.npcSprite ?? {}).forEach((s) => want.add(`${s}_idle_0`));
+  }
+  const missingTex = [...want].filter((k) => !have.has(k)).sort();
+  if (missingTex.length) warnings.push(`아직 없는 텍스처 ${missingTex.length}개: ${missingTex.join(', ')}`);
+  if (pendingPortraits.size) warnings.push(`아직 없는 초상 ${pendingPortraits.size}개: ${[...pendingPortraits].sort().join(', ')}`);
+}
+if (warnings.length) console.warn(warnings.map((w) => `! ${w}`).join('\n'));
 if (errors.length) { console.error(errors.map((e) => `✗ ${e}`).join('\n')); process.exit(1); }
 console.log(`validate OK (단서 ${evidenceList.length}, 질문 ${claims.length}, 퍼즐 ${puzzles.length}, 엔딩 ${endings.length}, 구역 ${Object.keys(areas).length}, 대사 미작성 NPC ${missing})`);

@@ -211,7 +211,8 @@
        "text": "몇 시까지 들으셨나요?",
        "next": "c2"
       }
-     ]
+     ],
+     "portrait": "choi_devout"
     },
     "c2": {
      "speaker": "choi_okja",
@@ -221,7 +222,8 @@
       "setFlags": [
        "choi_done"
       ]
-     }
+     },
+     "portrait": "choi_confused"
     }
    },
    "restart": [
@@ -241,7 +243,8 @@
      "next": "y2",
      "statement": {
       "id": "han_s_transfer"
-     }
+     },
+     "portrait": "han_fear"
     },
     "y2": {
      "speaker": "han_jisu",
@@ -261,7 +264,8 @@
       "setFlags": [
        "han_done"
       ]
-     }
+     },
+     "portrait": "han_earnest"
     }
    },
    "restart": [
@@ -281,7 +285,8 @@
      "next": "s2",
      "statement": {
       "id": "chae_s_return"
-     }
+     },
+     "portrait": "chae_worried"
     },
     "s2": {
      "speaker": "han_jisu",
@@ -301,7 +306,8 @@
       "setFlags": [
        "chae_done"
       ]
-     }
+     },
+     "portrait": "chae_earnest"
     }
    },
    "restart": [
@@ -330,7 +336,8 @@
      "speaker": "jeong_haneul",
      "text": "…은지는 여기 없어요.",
      "source": "spec",
-     "next": "h3"
+     "next": "h3",
+     "portrait": "haneul_neutral"
     },
     "h3": {
      "speaker": "han_jisu",
@@ -350,7 +357,8 @@
        ],
        "next": "h5"
       }
-     ]
+     ],
+     "portrait": "haneul_shaken"
     },
     "h5": {
      "speaker": "han_jisu",
@@ -366,7 +374,8 @@
      "next": "h7",
      "statement": {
       "id": "haneul_s_denial"
-     }
+     },
+     "portrait": "haneul_shaken"
     },
     "h7": {
      "speaker": "han_jisu",
@@ -383,7 +392,8 @@
       "setFlags": [
        "haneul_pressed"
       ]
-     }
+     },
+     "portrait": "haneul_shaken"
     }
    },
    "restart": [
@@ -500,7 +510,8 @@
        ],
        "next": "o2"
       }
-     ]
+     ],
+     "portrait": "oh_neutral"
     },
     "o2": {
      "speaker": "han_jisu",
@@ -526,7 +537,8 @@
       "setFlags": [
        "oh_admitted"
       ]
-     }
+     },
+     "portrait": "oh_guilty"
     },
     "o4": {
      "speaker": "han_jisu",
@@ -539,7 +551,8 @@
      "speaker": "oh_miran",
      "text": "문이 열리고 하늘이가 뛰쳐나왔어요. 소매가 찢어져 있었어요.",
      "source": "spec",
-     "next": "o6"
+     "next": "o6",
+     "portrait": "oh_guilty"
     },
     "o6": {
      "speaker": "oh_miran",
@@ -548,7 +561,8 @@
      "next": "o7",
      "revises": {
       "id": "oh_s_first"
-     }
+     },
+     "portrait": "oh_tearful"
     },
     "o7": {
      "speaker": "han_jisu",
@@ -568,7 +582,8 @@
       "setFlags": [
        "oh_done"
       ]
-     }
+     },
+     "portrait": "oh_tearful"
     }
    },
    "restart": [
@@ -589,7 +604,8 @@
      "speaker": "lee_hyejeong",
      "text": "아버지가 돌아가신 날까지 환자들을 선동하실 겁니까?",
      "source": "spec",
-     "next": "l2"
+     "next": "l2",
+     "portrait": "lee_contempt"
     },
     "l2": {
      "speaker": "han_jisu",
@@ -606,7 +622,8 @@
       "setFlags": [
        "lee_refused"
       ]
-     }
+     },
+     "portrait": "lee_neutral"
     },
     "l4": {
      "speaker": "han_jisu",
@@ -619,7 +636,8 @@
      "speaker": "lee_hyejeong",
      "text": "아버지 없는 병원은 안전하지 않으니까요.",
      "source": "spec",
-     "next": "l6"
+     "next": "l6",
+     "portrait": "lee_tense"
     },
     "l6": {
      "speaker": "han_jisu",
@@ -729,7 +747,8 @@
      "speaker": "jeong_haneul",
      "text": "그걸 찾았군요.",
      "source": "spec",
-     "next": "f2"
+     "next": "f2",
+     "portrait": "haneul_neutral"
     },
     "f2": {
      "speaker": "han_jisu",
@@ -742,7 +761,8 @@
      "speaker": "jeong_haneul",
      "text": "침대가 비고, 목걸이가 지하로 내려간 날이요. 그래도 살아 있을 가능성을 놓지 못했어요.",
      "source": "spec",
-     "next": "f4"
+     "next": "f4",
+     "portrait": "haneul_shaken"
     },
     "f4": {
      "speaker": "han_jisu",
@@ -780,7 +800,8 @@
         "fc3"
        ]
       }
-     ]
+     ],
+     "portrait": "haneul_shaken"
     },
     "fc1": {
      "speaker": "jeong_haneul",
@@ -791,7 +812,8 @@
       "setFlags": [
        "fc1"
       ]
-     }
+     },
+     "portrait": "haneul_confession"
     },
     "fc2": {
      "speaker": "jeong_haneul",
@@ -802,7 +824,8 @@
       "setFlags": [
        "fc2"
       ]
-     }
+     },
+     "portrait": "haneul_confession"
     },
     "fc3": {
      "speaker": "jeong_haneul",
@@ -813,7 +836,8 @@
       "setFlags": [
        "fc3"
       ]
-     }
+     },
+     "portrait": "haneul_shaken"
     },
     "f6": {
      "speaker": "han_jisu",
@@ -826,7 +850,8 @@
      "speaker": "jeong_haneul",
      "text": "알아요. 그 사람이 은지를 죽였다고 해서 제 손이 없어지는 건 아니니까.",
      "source": "spec",
-     "next": "f8"
+     "next": "f8",
+     "portrait": "haneul_confession"
     },
     "f8": {
      "speaker": "broadcast",

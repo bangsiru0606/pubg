@@ -47,7 +47,8 @@
       "facing": "right",
       "chromaKey": true,
       "breathe": true,
-      "draft": true
+      "draft": true,
+      "outline": true
     },
     {
       "id": "oh",
@@ -60,7 +61,8 @@
       "facing": "right",
       "chromaKey": true,
       "breathe": true,
-      "draft": true
+      "draft": true,
+      "outline": true
     },
     {
       "id": "lee",
@@ -73,7 +75,8 @@
       "facing": "right",
       "chromaKey": true,
       "breathe": true,
-      "draft": true
+      "draft": true,
+      "outline": true
     },
     {
       "id": "choi",
@@ -86,7 +89,8 @@
       "facing": "right",
       "chromaKey": true,
       "breathe": true,
-      "draft": true
+      "draft": true,
+      "outline": true
     },
     {
       "id": "han",
@@ -99,7 +103,8 @@
       "facing": "right",
       "chromaKey": true,
       "breathe": true,
-      "draft": true
+      "draft": true,
+      "outline": true
     },
     {
       "id": "chae",
@@ -112,7 +117,8 @@
       "facing": "right",
       "chromaKey": true,
       "breathe": true,
-      "draft": true
+      "draft": true,
+      "outline": true
     },
     {
       "id": "haneul",
@@ -125,7 +131,8 @@
       "facing": "right",
       "chromaKey": true,
       "breathe": true,
-      "draft": true
+      "draft": true,
+      "outline": true
     }
   ],
   "sprites": [

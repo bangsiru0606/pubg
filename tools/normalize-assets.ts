@@ -2,7 +2,9 @@
 import sharp from 'sharp';
 import { cpSync, mkdirSync, readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
+import { readFileSync as readFile } from 'node:fs';
 import { breatheFrame } from './breathe';
+import { applyOutline, measureOutlineColor } from './outline';
 import { binarizeAlpha, despillEdges, removeChromaKey } from './chroma';
 
 /** 원본 읽기: chromaKey 지정 시 #00FF00 배경 제거 + 가장자리 초록 번짐 정리 */
@@ -23,11 +25,23 @@ async function save(img: ReturnType<typeof sharp>, out: string, colours: number,
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(join(OUT, 'illust'), { recursive: true });
 
-for (const s of spec.sprites) {
+async function normalizeSprite(s: any) {
   const trimmed = sharp(await load(join(SRC, s.src), s.chromaKey)).trim({ threshold: 1 });
   const buf = await trimmed.png().toBuffer();
-  await save(sharp(buf).resize({ height: s.height, kernel: 'lanczos3' }), `${s.id}.png`, spec.colours, s.id);
+  let img = sharp(buf).resize({ height: s.height, kernel: 'lanczos3' });
+  if (s.outline) { // 소품: 알파 정리 후 외곽선 보정 (기준 색은 한지수 스프라이트라 시퀀스 처리 뒤에 한다)
+    let b: Buffer = await img.png().toBuffer();
+    if (s.chromaKey) b = await binarizeAlpha(b);
+    img = sharp(await applyOutline(b, await outlineColor()));
+  }
+  await save(img, `${s.id}.png`, spec.colours, s.id);
 }
+for (const s of spec.sprites) if (!s.outline) await normalizeSprite(s);
+const outlined = spec.sprites.filter((s: any) => s.outline);
+
+/** 기준 외곽선 색: 정규화된 한지수 스프라이트(player_idle_0) 가장자리의 최빈 어두운 색 (한 번만 측정) */
+let outlineRgb: [number, number, number] | null = null;
+const outlineColor = async () => (outlineRgb ??= await measureOutlineColor(readFile(join(OUT, 'player_idle_0.png'))));
 
 // 시퀀스: 같은 캐릭터의 모든 프레임을 가로로 이어 붙여 한 번에 양자화 → 프레임별로 다시 자름 (프레임 간 팔레트 동일)
 for (const q of spec.sequences) {
@@ -36,7 +50,8 @@ for (const q of spec.sequences) {
     const meta = await sharp(src).metadata();
     const w = Math.round((meta.width! * q.canvasHeight) / meta.height!);
     const resized = await sharp(src).resize(w, q.canvasHeight, { kernel: 'lanczos3' }).png().toBuffer();
-    return { f, w, buf: q.chromaKey ? await binarizeAlpha(resized) : resized };
+    const keyed = q.chromaKey ? await binarizeAlpha(resized) : resized;
+    return { f, w, buf: q.outline ? await applyOutline(keyed, await outlineColor()) : keyed }; // 외곽선 보정은 숨쉬기 프레임을 만들기 전에 적용한다
   }));
   if (q.breathe) frames.push({ f: 'idle_1', w: frames[0].w, buf: await breatheFrame(frames[0].buf) }); // idle_0 한 장에서 숨쉬기 프레임을 만든다
   const total = frames.reduce((a, x) => a + x.w, 0);
@@ -50,6 +65,8 @@ for (const q of spec.sequences) {
     left += x.w;
   }
 }
+
+for (const s of outlined) await normalizeSprite(s);
 
 // 클로즈업·초상·컷신은 정규화하지 않고 그대로 복사
 for (const p of spec.illust as string[]) {
@@ -80,5 +97,6 @@ for (const p of (spec.masks ?? []) as string[]) {
   masks[basename(p, '.png')] = { W: info.width, H: info.height, x: x0, y: y0, w: bw, h: bh, bits };
 }
 writeFileSync('src/data/illust-masks.json', JSON.stringify(masks));
+writeFileSync('src/data/illust-list.json', JSON.stringify(readdirSync(join(OUT, 'illust')).filter((f) => f.endsWith('.png')).map((f) => f.slice(0, -4)).sort()));
 writeFileSync(join(OUT, 'assets.json'), JSON.stringify(manifest, null, 1));
 console.log(`assets: ${Object.keys(manifest).length} normalized`);

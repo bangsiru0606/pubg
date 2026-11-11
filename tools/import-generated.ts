@@ -9,7 +9,13 @@ export interface ManifestEntry { file: string; size?: number[]; kind: string; fa
 export interface Spec { ignoreGenerated?: string[]; sequences: any[]; sprites: any[]; illust: string[]; [k: string]: unknown }
 
 /** 이전계획 3.3.1: 소품 높이(px). 표에 없으면 90 으로 두고 draft 표시를 남긴다. */
-export const PROP_HEIGHT: Record<string, number> = { door: 117, stairs: 90, cleaning_cart: 54, bed: 40, desk: 59, chair: 40, altar: 50 };
+export const PROP_HEIGHT: Record<string, number> = {
+  // 이전계획 2장·3.3.1 규격
+  door: 117, door_hospital: 117, door_director: 117, door_staff: 117, stairs_up: 90, stairs_down: 90, stairs_basement: 90,
+  cleaning_cart: 54, bed_ward: 40, bed_empty: 40, director_desk: 59, lee_desk: 59, director_chair: 40, altar: 50,
+  // 규격에 수치가 없는 소품의 초안 값 (그림이 도착하면 화면을 보고 조정한다)
+  papers_floor: 10, blood_mark: 8, order_emblem: 32, broadcast_board: 54, baek_pc: 40, nurse_counter: 70, ledger_shelf: 80, code_chart: 60, belongings_locker: 70, cold_crate: 40,
+};
 export const WALL_HEIGHT = 270; // 6유닛
 export const FLOOR_HEIGHT = 112; // 바닥선 y=158 아래
 
@@ -27,13 +33,13 @@ export function draftFromManifest(manifest: ManifestEntry[], spec: Pick<Spec, 's
     const frames = list.map((e) => basename(e.file, '.png')).sort();
     // idle_0 한 장뿐이면 정규화 때 숨쉬기 프레임(idle_1)을 만든다
     const breathe = frames.length === 1 && frames[0] === 'idle_0';
-    draft.sequences.push({ id, src: `generated/${dirname(list[0].file)}`, frames, canvasHeight: 90, colours: 64, facing, chromaKey: !!list[0].chromaKey, ...(breathe ? { breathe: true } : {}), draft: true });
+    draft.sequences.push({ id, src: `generated/${dirname(list[0].file)}`, frames, canvasHeight: 90, colours: 64, facing, chromaKey: !!list[0].chromaKey, outline: true, ...(breathe ? { breathe: true } : {}), draft: true });
   }
   for (const m of manifest.filter((e) => ['wall', 'floor', 'prop'].includes(e.kind))) {
     const id = basename(m.file, '.png');
     if (haveSprite.has(id)) continue;
     const known = m.kind === 'prop' ? PROP_HEIGHT[id] : undefined;
-    draft.sprites.push({ id, src: `generated/${m.file}`, height: m.kind === 'wall' ? WALL_HEIGHT : m.kind === 'floor' ? FLOOR_HEIGHT : known ?? 90, chromaKey: !!m.chromaKey, draft: true, ...(m.kind === 'prop' && known === undefined ? { note: '높이를 이전계획 3.3.1 에서 확인' } : {}) });
+    draft.sprites.push({ id, src: `generated/${m.file}`, ...(m.kind === 'prop' ? { outline: true } : {}), height: m.kind === 'wall' ? WALL_HEIGHT : m.kind === 'floor' ? FLOOR_HEIGHT : known ?? 90, chromaKey: !!m.chromaKey, draft: true, ...(m.kind === 'prop' && known === undefined ? { note: '높이를 이전계획 3.3.1 에서 확인' } : {}) });
   }
   for (const dir of new Set(manifest.filter((e) => ['portrait', 'illust'].includes(e.kind)).map((e) => `generated/${dirname(e.file)}/*.png`)))
     if (!haveIllust.has(dir)) draft.illust.push(dir);

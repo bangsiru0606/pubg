@@ -14,7 +14,19 @@ page.on('pageerror', (e) => errors.push(String(e)));
 const cw = (fn: string) => page.evaluate(`(() => { const cw = window.__cw; return ${fn}; })()`);
 const wait = (ms: number) => page.waitForTimeout(ms);
 const key = async (k: string, n = 1) => { for (let i = 0; i < n; i++) { await page.keyboard.press(k); await wait(40); } };
+/** 내용 없는 빈 요소(글자·이미지·자식 없이 보이는 상자)를 찾는다 */
+const emptyBoxes = async (name: string) => {
+  const list = await page.evaluate(() => [...document.querySelectorAll('#ui *')].filter((e) => {
+    const r = e.getBoundingClientRect(), cs = getComputedStyle(e);
+    if (r.width < 6 || r.height < 6 || cs.visibility === 'hidden' || cs.display === 'none') return false;
+    if (e.children.length || (e.textContent ?? '').trim() || ['IMG', 'SVG', 'LINE', 'INPUT', 'BR'].includes(e.tagName.toUpperCase())) return false;
+    const visible = cs.backgroundImage !== 'none' || (cs.backgroundColor !== 'rgba(0, 0, 0, 0)') || cs.borderTopWidth !== '0px';
+    return visible;
+  }).map((e) => `${e.tagName.toLowerCase()}.${e.className}`));
+  if (list.length) console.log(`빈 요소 [${name}]: ${[...new Set(list)].join(', ')}`);
+};
 const shot = async (name: string) => {
+  await emptyBoxes(name);
   for (const [w, h, suffix] of [[1920, 1080, ''], [1280, 720, '_1280']] as const) {
     await page.setViewportSize({ width: w, height: h }); await wait(200);
     await page.screenshot({ path: `docs/screenshots/stage7_ui_${phase}_${name}${suffix}.png` });

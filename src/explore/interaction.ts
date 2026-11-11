@@ -6,7 +6,7 @@ import { condMet, hasFlag, type GameState } from '../core';
 interface Gate { requires?: string; requiresEvidence?: string[]; hideWhen?: string; showWhen?: string }
 export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string; art?: string; auto?: boolean }
 export interface Npc extends Gate { type: 'npc'; id: string; x: number; name: string; dialogueId: string; autoTrigger?: { x: number; width: number }; autoWhen?: string[]; silent?: boolean } // autoWhen: 모든 플래그가 서면 한 번 자동 시작, silent: 그림·프롬프트 없는 장면 사건
-export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[] }
+export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[]; art?: string }
 export type Interactable = Transition | Npc | Examine;
 export interface Prop { id: string; x: number; w: number; h: number; color: string; label: string; showWhen?: string; tex?: string }
 export interface OpeningStep { do: 'dialogue' | 'camera' | 'appear' | 'hide' | 'face' | 'wait' | 'walk' | 'unlock' | 'hints'; id?: string; docs?: boolean; to?: string; smooth?: number; settle?: boolean; actor?: string; dir?: 'left' | 'right'; sec?: number; gap?: number; toX?: number; speed?: number; texts?: string[] }

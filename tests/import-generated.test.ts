@@ -17,7 +17,7 @@ const base = { sequences: (spec.sequences as any[]).filter(gen), sprites: (spec.
 describe('생성 에셋 가져오기 (manifest → asset-spec 초안)', () => {
   it('kind·facing·chromaKey 를 옮기고 높이는 규격으로 채운다', () => {
     const d = draftFromManifest(M, base);
-    expect(d.sequences).toEqual([{ id: 'baek', src: 'generated/characters/baek', frames: ['idle_0', 'idle_1'], canvasHeight: 90, colours: 64, facing: 'right', chromaKey: true, draft: true }]);
+    expect(d.sequences).toEqual([{ id: 'baek', src: 'generated/characters/baek', frames: ['idle_0', 'idle_1'], canvasHeight: 90, colours: 64, facing: 'right', chromaKey: true, outline: true, draft: true }]);
     // idle_1 을 쓰지 않기로 하면(ignoreGenerated) idle_0 한 장 + breathe
     const b = draftFromManifest(M, { ...base, ignoreGenerated: ['characters/baek/idle_1.png'] });
     expect(b.sequences[0]).toMatchObject({ frames: ['idle_0'], breathe: true });

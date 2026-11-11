@@ -24,37 +24,72 @@
   {
    "id": "jeong_haneul",
    "name": "정하늘",
-   "portrait": null
+   "portrait": "haneul",
+   "expressions": [
+    "neutral",
+    "shaken",
+    "confession"
+   ]
   },
   {
    "id": "baek_sunwoo",
    "name": "백선우",
-   "portrait": "baek"
+   "portrait": "baek",
+   "expressions": [
+    "neutral",
+    "cold",
+    "tense"
+   ]
   },
   {
    "id": "oh_miran",
    "name": "오미란",
-   "portrait": null
+   "portrait": "oh",
+   "expressions": [
+    "neutral",
+    "guilty",
+    "tearful"
+   ]
   },
   {
    "id": "lee_hyejeong",
    "name": "이혜정",
-   "portrait": null
+   "portrait": "lee",
+   "expressions": [
+    "neutral",
+    "contempt",
+    "tense"
+   ]
   },
   {
    "id": "choi_okja",
    "name": "최옥자",
-   "portrait": null
+   "portrait": "choi",
+   "expressions": [
+    "neutral",
+    "devout",
+    "confused"
+   ]
   },
   {
    "id": "han_yujin",
    "name": "한유진",
-   "portrait": null
+   "portrait": "han",
+   "expressions": [
+    "neutral",
+    "fear",
+    "earnest"
+   ]
   },
   {
    "id": "chae_soyeon",
    "name": "채소연",
-   "portrait": null
+   "portrait": "chae",
+   "expressions": [
+    "neutral",
+    "worried",
+    "earnest"
+   ]
   },
   {
    "id": "broadcast",

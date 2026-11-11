@@ -109,7 +109,10 @@ export class ExploreScene extends Phaser.Scene {
   private drawInteractable(a: (typeof areas)[string], it: Interactable) {
     const g = GROUND_Y;
     if (it.type === 'transition') {
-      if (it.art && this.textures.exists(it.art)) return; // 아트가 있는 문·계단은 placeholder 를 그리지 않는다
+      if (it.art && this.textures.exists(it.art)) { // 아트가 있는 문·계단은 그림으로, 없으면 아래 placeholder
+        if (!(a.objects ?? []).some((o) => o.tex === it.art)) this.add.image(it.x, g, it.art).setOrigin(0.5, 1).setDepth(it.kind === 'door' ? 4 : 3);
+        return;
+      }
       const stairs = it.kind === 'stairs';
       this.add.rectangle(it.x, g, stairs ? 56 : 40, stairs ? 96 : 104, stairs ? 0x8a9096 : 0x2a2622).setOrigin(0.5, 1).setDepth(3).setStrokeStyle(1, 0x000000, 0.6);
       if (stairs) for (let i = 1; i < 5; i++) this.add.rectangle(it.x, g - i * 18, 56, 1, 0x000000, 0.35).setOrigin(0.5, 1).setDepth(4);
@@ -120,6 +123,8 @@ export class ExploreScene extends Phaser.Scene {
         this.add.rectangle(it.x, g, 30, 66, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
         this.add.rectangle(it.x, g - 66, 22, 24, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
       }
+    } else if (it.art && this.textures.exists(it.art)) { // 조사 지점 그림이 있으면 노란 마름모 대신 그림 (그림 자체가 조사 대상)
+      this.add.image(it.x, g, it.art).setOrigin(0.5, 1).setDepth(3);
     } else if (!it.closeup && isAvailable(it, this.state)) {
       this.add.rectangle(it.x, g - 14, 12, 12, 0xe8d36a).setAngle(45).setDepth(5).setStrokeStyle(1, 0x000000, 0.6); // 조사 지점
     }

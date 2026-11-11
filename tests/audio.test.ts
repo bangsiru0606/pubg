@@ -8,12 +8,12 @@ import { canPlay, loopEnvelope, loopFade, pickBgm, resolveTrack, sfxGain, sfxVar
 import { checkAudio, parseCredits } from '../tools/audio-assets';
 
 const TRACKS = ['bgm_title', 'bgm_office', 'bgm_hospital', 'bgm_interrogation', 'bgm_basement', 'bgm_confession', 'bgm_report', 'bgm_ending_light', 'bgm_ending_dark'];
-const SFX = ['knock', 'door_open', 'door_close', 'stairs', 'footstep', 'page_flip', 'evidence_get', 'statement_update', 'puzzle_correct', 'puzzle_wrong', 'hint', 'ui_move', 'ui_confirm', 'type_blip', 'broadcast_chime', 'heartbeat', 'transfer_done', 'fade_whoosh'];
+const SFX = ['knock', 'door_open', 'door_close', 'stairs', 'gate_clank', 'footstep', 'page_flip', 'evidence_get', 'statement_update', 'puzzle_correct', 'puzzle_wrong', 'hint', 'ui_move', 'ui_confirm', 'type_blip', 'broadcast_chime', 'heartbeat', 'transfer_done', 'fade_whoosh'];
 const src = (f: string) => readFileSync(f, 'utf8');
 const fb = audio.bgm.fallback as Record<string, string>;
 
 describe('소리 데이터 (docs/사운드_계획.md)', () => {
-  it('트랙 9곡·효과음 18종 이름이 계획서와 같다', () => {
+  it('트랙 9곡·효과음 19종 이름이 계획서와 같다', () => {
     expect(Object.keys(audio.bgm.tracks).sort()).toEqual([...TRACKS].sort());
     expect(Object.keys(audio.sfx.sounds).sort()).toEqual([...SFX].sort());
     expect([...new Set(Object.values(audio.sfx.events))].sort()).toEqual([...SFX].sort()); // 18종 모두 이벤트에 연결됨

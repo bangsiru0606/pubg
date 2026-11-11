@@ -93,7 +93,7 @@ if (process.argv[1]?.endsWith('analyze-sfx.ts')) {
   await sharp(img, { raw: { width: SW, height: SHH, channels: 3 } }).composite([{ input: svg }]).png().toFile('docs/screenshots/sfx_sheet.png');
 
   // 미리듣기: 계획서 2.2 순서대로 18종(변주가 있는 것은 _1)을 0.7초 간격으로 이어 붙인다 (커밋하지 않는다)
-  const order = ['knock', 'door_open', 'door_close', 'stairs', 'footstep_1', 'page_flip', 'evidence_get', 'statement_update', 'puzzle_correct', 'puzzle_wrong', 'hint', 'ui_move', 'ui_confirm', 'type_blip_1', 'broadcast_chime', 'heartbeat', 'transfer_done', 'fade_whoosh'];
+  const order = ['knock', 'door_open', 'door_close', 'stairs', 'gate_clank', 'footstep_1', 'page_flip', 'evidence_get', 'statement_update', 'puzzle_correct', 'puzzle_wrong', 'hint', 'ui_move', 'ui_confirm', 'type_blip_1', 'broadcast_chime', 'heartbeat', 'transfer_done', 'fade_whoosh'];
   const sr = items[0].sr, gap = Math.round(0.7 * sr), parts: Float64Array[] = [];
   let at = 0; const lines: string[] = [];
   for (const n of order) { const it = items.find((q) => q.name === n)!; lines.push(`${(at / sr).toFixed(2)}s  ${n}`); parts.push(it.x, new Float64Array(gap)); at += it.x.length + gap; }

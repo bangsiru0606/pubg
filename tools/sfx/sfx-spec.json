@@ -979,6 +979,82 @@
           "gain": 1
         }
       ]
+    },
+    "gate_clank": {
+      "duration": 0.55,
+      "rmsDb": -21,
+      "master": {
+        "highpass": 180,
+        "lowpass": 6000
+      },
+      "layers": [
+        {
+          "type": "sine",
+          "freq": 440,
+          "harmonics": [
+            [
+              2.76,
+              0.6
+            ],
+            [
+              5.4,
+              0.4
+            ],
+            [
+              8.9,
+              0.2
+            ]
+          ],
+          "at": [
+            0,
+            0.17
+          ],
+          "atGain": [
+            1,
+            0.6
+          ],
+          "attack": 0.001,
+          "decay": 0.09,
+          "dur": 0.36,
+          "gain": 1
+        },
+        {
+          "type": "noise",
+          "filter": {
+            "kind": "bp",
+            "freq": 3500,
+            "q": 3
+          },
+          "tremolo": {
+            "rate": 55,
+            "depth": 0.7
+          },
+          "attack": 0.002,
+          "decay": 0.05,
+          "dur": 0.2,
+          "gain": 0.5
+        },
+        {
+          "type": "noise",
+          "filter": {
+            "kind": "bp",
+            "freq": 4500,
+            "q": 2
+          },
+          "at": [
+            0,
+            0.17
+          ],
+          "atGain": [
+            1,
+            0.6
+          ],
+          "attack": 0.0005,
+          "decay": 0.004,
+          "dur": 0.03,
+          "gain": 0.7
+        }
+      ]
     }
   }
 }

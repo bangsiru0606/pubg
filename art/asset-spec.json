@@ -22,7 +22,7 @@
     {
       "id": "eunho",
       "src": "Art/ParkEunho",
-      "facing": "right",
+      "facing": "left",
       "frames": [
         "idle_0",
         "idle_1",
@@ -34,7 +34,8 @@
         "walk_5"
       ],
       "canvasHeight": 90,
-      "colours": 64
+      "colours": 64,
+      "note": "원본 그림(idle·walk 모두)이 왼쪽을 본다 — 이전에 right 로 잘못 적어 걸을 때 몸이 반대로 향했다"
     },
     {
       "id": "baek",

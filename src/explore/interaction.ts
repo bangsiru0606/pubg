@@ -81,6 +81,8 @@ export function flipFor(spriteId: string, wantLeft: boolean): boolean {
   if (!f) throw new Error(`asset-spec 에 facing 이 없는 스프라이트: ${spriteId}`);
   return wantLeft ? f === 'right' : f === 'left';
 }
+/** 걷는 방향(출발 x → 도착 x)에서 몸 방향을 정한다. 걷기는 항상 이것만 쓰고, 데이터의 facing 값은 멈춰 있을 때만 쓴다. */
+export const walkFlip = (spriteId: string, fromX: number, toX: number): boolean => flipFor(spriteId, toX < fromX);
 /** flipX 값으로 실제 바라보는 방향 계산 (테스트·검증용) */
 export const facesLeft = (spriteId: string, flipX: boolean) => (facingOf[spriteId] === 'left') !== flipX;
 export function talkStand(playerX: number, npcX: number, minX: number, maxX: number): { x: number; playerFacesLeft: boolean } {

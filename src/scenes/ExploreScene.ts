@@ -6,7 +6,7 @@ import {
   acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, puzzles, setFlag, type GameState,
 } from '../core';
 import {
-  GROUND_Y, OPENING, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, showsSparkle, promptOf, themes,
+  GROUND_Y, OPENING, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, showsSparkle, walkFlip, promptOf, themes,
   triggerKey, talkStand, type Examine, type Interactable, type Npc, type Transition,
 } from '../explore/interaction';
 import { openCloseup } from '../ui/closeup';
@@ -352,7 +352,7 @@ export class ExploreScene extends Phaser.Scene {
         case 'walk': {
           const sp = this.actorOf(s.actor!), key = OPENING.actors[s.actor!].sprite;
           const toX = s.toX ?? this.player.x + (s.gap ?? 56);
-          sp.setFlipX(flipFor(key, toX < sp.x)).play(`${key}_walk`, true);
+          sp.setFlipX(walkFlip(key, sp.x, toX)).play(`${key}_walk`, true);
           while (Math.abs(sp.x - toX) > 0.5 && !this.skip) { sp.x += Math.sign(toX - sp.x) * Math.min(Math.abs(toX - sp.x), (s.speed ?? 135) * (this.lastDt / 1000)); await this.frame(); }
           sp.x = toX; sp.play(`${key}_idle`, true);
           if (s.actor === 'eunho' && s.toX === undefined) sp.setFlipX(flipFor(key, true)); // 도착하면 플레이어(왼쪽)를 본다

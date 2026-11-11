@@ -176,20 +176,20 @@ describe('12.4 퍼즐', () => {
   it('3. P03 맞춤법 변경을 선택하면 정답 처리하지 않는다', () => {
     const { r } = sub('P03_revision_diff', { marked: ['position_changed', 'laceration_deleted', 'spelling_fix'] });
     expect(r.status).toBe('wrong');
-    expect(r.conflicts.join()).toContain('맞춤법');
+    expect(r.conflicts).toHaveLength(1); expect(r.conflicts.join()).toContain('띄어쓰기');
     expect(sub('P03_revision_diff', { marked: [...ANSWERS.P03_revision_diff.marked, 'spelling_fix'] }).r.status).toBe('wrong');
   });
   it('4. P04 LHJ/LHS 혼동 시 선정·승인 권한 충돌 표시', () => {
     const { r } = sub('P04_approval_chain', { doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['baek_sunwoo'] });
     expect(r.status).toBe('wrong');
-    expect(r.conflicts.join()).toContain('권한이 충돌');
+    expect(r.conflicts).toHaveLength(1); expect(r.conflicts.join()).toContain('작성 약자');
   });
   it('5. P05 나이·혈액형만 맞추고 입원번호·유품·자료 연결이 없으면 확정되지 않는다', () => {
     const p = ANSWERS.P05_patient_code;
     const partial = { ...p, admissionMatch: ['yujin'], belongingMatch: ['yujin'], linkedSources: ['E14_belongings_diary'], identity: ['yujin'] };
     const { r } = sub('P05_patient_code', partial);
     expect(r.status).toBe('wrong');
-    expect(r.conflicts.join()).toContain('입원번호가 다릅니다');
+    expect(r.conflicts).toHaveLength(1); expect(r.conflicts.join()).toContain('연결표');
     // 일기장 하나로만 연결해도 불가
     expect(sub('P05_patient_code', { ...p, linkedSources: ['E14_belongings_diary'] }).r.status).toBe('wrong');
   });

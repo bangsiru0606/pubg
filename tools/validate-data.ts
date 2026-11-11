@@ -33,6 +33,7 @@ for (const [aid, a] of Object.entries(areas)) {
       if (it.spawnX < t.minX || it.spawnX > t.maxX) err(`${w}: spawnX 가 ${it.to} 범위 밖`);
       for (const u of t.interactables) if (u.type === 'transition' && Math.abs(it.spawnX - u.x) <= INTERACT_RANGE) err(`${w}: 도착 위치 ${it.spawnX} 가 ${it.to}/${u.id} 의 상호작용 범위(${INTERACT_RANGE}px) 안`);
       if (it.cutscene && !existsSync(`public/assets/illust/${it.cutscene}.webp`)) err(`${w}: 없는 컷신 ${it.cutscene}`);
+      for (const ev of [it.sfx, it.lockedSfx]) if (ev && !(ev in audioData.sfx.events)) err(`${w}: audio.json 에 없는 효과음 이벤트 ${ev}`);
       if (it.cutsceneDialogue && !dialogueIds.has(it.cutsceneDialogue)) err(`${w}: 없는 컷신 독백 ${it.cutsceneDialogue}`);
       if ((it.requires || it.requiresEvidence?.length) && !it.lockedDialogue) err(`${w}: 잠금 조건(requires)이 있는 이동 지점은 lockedDialogue(잠김 독백)가 있어야 한다`);
     }
@@ -227,6 +228,17 @@ for (const [key, lines] of Object.entries(endingLines)) {
     const L = Math.min(...ents.map(([x, ww]) => x - ww / 2), ...(spawns[aid] ?? [])), R = Math.max(...ents.map(([x, ww]) => x + ww / 2), ...(spawns[aid] ?? []));
     if (a.minX < L - 100) err(`map/${aid}: 왼쪽 끝(${a.minX})에서 가장 바깥 물체(${Math.round(L)})까지 빈 바닥이 100px 넘게 이어진다`);
     if (a.maxX > R + 100) err(`map/${aid}: 오른쪽 끝(${a.maxX})에서 가장 바깥 물체(${Math.round(R)})까지 빈 바닥이 100px 넘게 이어진다`);
+  }
+}
+{ // 퍼즐 근거 규칙(evidenceLinks): 슬롯·허용 근거가 실재하고, 맥락 단서는 근거가 아니다
+  const statementIds = new Set<string>();
+  for (const d of Object.values({ ...real.dialogues, ...fixture.dialogues }) as unknown as Dialogue[]) for (const n of Object.values(d.nodes)) if (n.statement) statementIds.add(n.statement.id);
+  for (const p of puzzles) {
+    if (!p.evidenceLinks) { err(`${p.id}: evidenceLinks 가 없다 (근거 카드 연결 규칙)`); continue; }
+    for (const [slot, ids] of Object.entries(p.evidenceLinks)) {
+      if (!p.slots.includes(slot)) err(`${p.id}: evidenceLinks 의 알 수 없는 슬롯 ${slot}`);
+      for (const id of ids) { const e = evidenceById.get(id); if (!e && !statementIds.has(id)) err(`${p.id}/${slot}: 없는 근거 ${id}`); if (e?.sourceType === 'context') err(`${p.id}/${slot}: 맥락 단서 ${id} 는 근거가 될 수 없다`); }
+    }
   }
 }
 { // 구역 연출(stage) 단계와 대사 표시 방식(voice)

@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import './ui/ui.css';
-import { acquireEvidence, claims, createGameState, enterNode, getNode, puzzles, saveConclusion, setFlag, setReportTarget, submitPuzzle } from './core';
-import { dialogues, isTestBuild } from './explore/content';
+import { acquireEvidence, claims, createGameState, saveConclusion, setFlag, setReportTarget } from './core';
+import { isTestBuild } from './explore/content';
 import { audioTrace, debugSeekToEnd, debugState as audioState, sfx as playSfx } from './audio/audio';
+import { applyScene } from './explore/playthrough';
 import { ExploreScene } from './scenes/ExploreScene';
 import { openDialogue } from './ui/dialogue';
 import { openEnding } from './ui/ending';
@@ -58,14 +59,10 @@ if (isTestBuild) {
   /** 씬 5 직전 상태로 건너뛴다: 씬 1~4 의 단서·퍼즐·진술·플래그를 모두 얻은 상태 (분기 시험용) */
   const ff = (scene5Done = false) => {
     const s = scene.state;
-    for (const id of ['E01_last_letter', 'E02_altar_blood', 'E03_preliminary_exam', 'E04_wristband_fragment', 'E05_access_log', 'E06_torn_sleeve', 'E07_report_revision', 'E08_miran_revised', 'E09_sedative_gap', 'E10_consent_forms', 'E11_transfer_order']) acquireEvidence(s, id);
-    for (const p of puzzles.filter((q) => ['P01', 'P02', 'P03', 'P04'].some((k) => q.id.startsWith(k)))) submitPuzzle(s, p.id, p.correctSlots);
-    for (const [d, n] of [['han_yujin', 'y3'], ['han_yujin', 'y1'], ['baek_lobby', 'b1'], ['choi_okja', 'c1'], ['jeong_haneul', 'h1']] as const) enterNode(s, getNode(dialogues, d, n));
+    for (let n = 1; n <= (scene5Done ? 5 : 4); n++) applyScene(s, n); // 씬별 대사·조사·퍼즐 (퍼즐은 근거 카드까지 붙여 푼다)
     for (const f of ['intro_done', 'baek_left', 'office_access_granted', 'choi_done', 'han_done', 'chae_done', 'broadcast_seen', 'haneul_met', 'basement_announced', 'cutscene_done:hospital_intro']) setFlag(s, f);
     for (const a of ['office', 'floor1', 'room_director', 'floor2', 'floor3', 'room_baek', 'room_oh', 'room_lee']) if (!s.visitedAreaIds.includes(a)) s.visitedAreaIds.push(a);
     if (scene5Done) { // 씬 5 까지 끝낸 상태: 지하 단서·P05 해결·정하늘 고백 → 씬 6 이 바로 시작된다
-      for (const id of ['E12_ledger', 'E13_identity_map', 'E14_belongings_diary', 'E15_transport_manifest']) acquireEvidence(s, id);
-      submitPuzzle(s, 'P05_patient_code', puzzles.find((q) => q.id === 'P05_patient_code')!.correctSlots);
       for (const f of ['diary_closed', 'haneul_confessed']) setFlag(s, f);
     }
     scene.state.currentSceneId = 'floor1';
@@ -79,6 +76,7 @@ if (isTestBuild) {
       notebook: (tab: number) => openNotebook(scene.state, () => {}, tab),
       puzzle: (id: string) => openPuzzle(scene.state, id, () => {}),
       ending: () => openEnding(scene.state, { onRetry: () => {}, onRestart: () => {}, onTitle: () => {} }),
+      prepare: (n: number) => applyScene(scene.state, n, true, { puzzles: false }), // 씬 n 의 대사·조사까지 마친, 퍼즐이 열리기 직전 상태
       acquire: (ids: string[]) => ids.forEach((id) => acquireEvidence(scene.state, id)),
       conclude: (good: boolean) => { /* 질문 A~D 를 모두 맞게 저장하고 보고 대상을 외부 수사기관으로 */
         const G: Record<string, [string[], string[]]> = { claim_a: [['E02_altar_blood', 'E03_preliminary_exam'], ['E07_report_revision']], claim_b: [['E04_wristband_fragment', 'E08_miran_revised'], ['E05_access_log']], claim_c: [['E07_report_revision', 'E08_miran_revised'], ['E06_torn_sleeve']], claim_d: [['E12_ledger', 'E14_belongings_diary'], ['E15_transport_manifest']] };

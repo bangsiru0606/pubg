@@ -106,7 +106,8 @@ describe('씬 4 관계자 구역', () => {
     expect(s.evidenceIds).toContain('E08_miran_revised');
   });
   it('재고표 한 곳에서 E09·E05, 이혜정 책상 한 곳에서 E10·E11', () => {
-    expect((find('room_oh', 'stock') as { evidenceIds: string[] }).evidenceIds).toEqual(['E09_sedative_gap', 'E05_access_log']);
+    expect((find('room_oh', 'stock') as { evidenceIds: string[] }).evidenceIds).toEqual(['E09_sedative_gap']); // E05 는 2층 복도 방송표에서 얻는다 (P02 의 22:41 근거라서 P02 보다 먼저 있어야 한다)
+    expect((find('floor2', 'broadcast') as { evidenceIds: string[] }).evidenceIds).toEqual(['E05_access_log']);
     expect((find('room_lee', 'desk') as { evidenceIds: string[] }).evidenceIds).toEqual(['E10_consent_forms', 'E11_transfer_order']);
   });
   it('P04: 문서 4종·인물 3, LHJ/LHS 혼동 시 권한 충돌, 해결하면 E10·E11 검증', () => {
@@ -116,7 +117,7 @@ describe('씬 4 관계자 구역', () => {
     const s = createGameState(); acquireEvidence(s, 'E10_consent_forms'); acquireEvidence(s, 'E11_transfer_order');
     const swapped = submitPuzzle(s, 'P04_approval_chain', { ...p.correctSlots, doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'] });
     expect(swapped.status).toBe('wrong');
-    expect(swapped.conflicts.join()).toContain('선정 권한과 승인 권한이 충돌');
+    expect(swapped.conflicts.join()).toContain('작성 약자와 맞지 않는다');
     expect(submitPuzzle(s, 'P04_approval_chain', p.correctSlots).status).toBe('solved');
     expect(s.verifiedEvidenceIds).toEqual(expect.arrayContaining(['E10_consent_forms', 'E11_transfer_order']));
   });
@@ -136,7 +137,7 @@ describe('P02 시간 배열', () => {
     const s = createGameState();
     const r = submitPuzzle(s, p.id, { t2234: ['key_lost'], t2241: ['door_open'], t2246: ['sermon'], t2251: ['return_room'] });
     expect(r.status).toBe('wrong');
-    expect(r.conflicts.join()).toContain('시간이 충돌');
+    expect(r.conflicts.join()).toContain('방송표와 맞지 않는다');
     expect(p.tokens).toHaveLength(5);
     expect(Object.values(p.correctSlots).flat()).not.toContain('sermon');
     expect(submitPuzzle(s, p.id, p.correctSlots).status).toBe('solved');
@@ -161,7 +162,8 @@ describe('5단계 보완', () => {
     for (const z of p.zones!) { expect(z.label).not.toMatch(/LH|BSW|\(/); expect(z.sub).toBeTruthy(); }
     expect(p.correctSlots).toEqual({ doc_selection: ['lee_hyejeong'], doc_approval: ['lee_hanshin'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['lee_hyejeong'] });
     const transfer = p.tasks!.find((t) => t.slot === 'doc_transfer')!;
-    expect(transfer.detail).toBe('서명: 이혜정 · 권한: 이송 지시');
+    expect(transfer.detail).toBeUndefined(); // 카드에는 답의 근거 요약을 쓰지 않는다 (원문 E10·E11 에서 읽는다)
+    expect(shownEvidence(createGameState(), 'E11_transfer_order')!.body).toContain('서명: 이혜정 / 권한: 이송 지시');
     expect(JSON.stringify(p.tasks)).not.toContain('BSW_ADMIN');
     const s = createGameState();
     expect(submitPuzzle(s, p.id, { ...p.correctSlots, doc_transfer: ['baek_sunwoo'] }).status).toBe('wrong');
@@ -175,7 +177,7 @@ describe('5단계 보완', () => {
     expect(e03).toContain('의식없음, 미약 호흡');
     expect(fin).toContain('의식 없음, 발견 당시 사망');
     expect(e03[e03.length - 1]).toBe('※ 부원장 재검토 요청');
-    expect(fin[0]).toBe('※ 부원장 재검토 요청'); // 문장 위치 이동
+    expect(fin[1]).toBe('* 부원장 재검토 요청'); // 문장 위치 이동 + 머리 기호 변경 (둘 다 의미 변경이 아니다)
   });
   it('E01 원문 끝에 봉투 정보(입원번호 EW-0827)가 있고 새 문장으로 표시된다', () => {
     const e = shownEvidence(createGameState(), 'E01_last_letter')!;

@@ -182,7 +182,7 @@ export class ExploreScene extends Phaser.Scene {
   // ---------- 상호작용 ----------
   private interact(it: Interactable) {
     if (!isAvailable(it, this.state)) {
-      if (it.type === 'transition' && it.lockedDialogue) { setPrompt(null); openDialogue(this.state, it.lockedDialogue); } // 잠긴 이유 한 줄 독백
+      if (it.type === 'transition' && it.lockedDialogue) { setPrompt(null); if (it.lockedSfx) sfx(it.lockedSfx); openDialogue(this.state, it.lockedDialogue); } // 잠긴 이유 한 줄 독백 (지하 철창문은 쇠 소리도)
       return;
     }
     if (it.type === 'transition') this.useTransition(it);
@@ -194,6 +194,7 @@ export class ExploreScene extends Phaser.Scene {
 
   private useTransition(it: Transition) {
     const flag = it.cutscene ? `cutscene_done:${it.cutscene}` : '';
+    if (it.sfx) sfx(it.sfx); // 철창문 등 전용 소리
     transitionSfx(it.kind, this.areaId, it.to);
     if (!it.cutscene || hasFlag(this.state, flag)) { void this.go(it.to, it.spawnX); return; }
     setFlag(this.state, flag); sfx('onFadeWhoosh');

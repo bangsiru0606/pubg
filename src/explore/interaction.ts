@@ -4,7 +4,7 @@ import spec from '../../art/asset-spec.json';
 import { condMet, hasFlag, type GameState } from '../core';
 
 interface Gate { requires?: string; requiresEvidence?: string[]; hideWhen?: string; showWhen?: string }
-export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string; cutsceneDialogue?: string; art?: string; auto?: boolean }
+export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string; cutsceneDialogue?: string; art?: string; auto?: boolean; sfx?: string; lockedSfx?: string }
 export interface Npc extends Gate { type: 'npc'; id: string; x: number; name: string; dialogueId: string; autoTrigger?: { x: number; width: number }; autoWhen?: string[]; silent?: boolean } // autoWhen: 모든 플래그가 서면 한 번 자동 시작, silent: 그림·프롬프트 없는 장면 사건
 export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[]; art?: string; artBottom?: number; sparkle?: boolean }
 export type Interactable = Transition | Npc | Examine;

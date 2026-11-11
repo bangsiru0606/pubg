@@ -2,7 +2,7 @@
 // 각 씬에서 거치는 조사 지점·대사 노드·퍼즐을 그대로 적용하므로, 단서 검증 상태·진술·플래그가 실제 플레이와 같다.
 // 6단계 코어 테스트의 "모든 조사 지점과 대사를 거친 상태"도 이 함수(buildProgress(7))를 쓴다.
 import real from '../data/dialogue.json';
-import { acquireEvidence, createGameState, enterNode, presentEvidence, puzzles, setFlag, submitPuzzle, type Dialogues, type GameState } from '../core';
+import { acquireEvidence, correctLinksOf, createGameState, enterNode, presentEvidence, puzzles, setFlag, submitPuzzle, type Dialogues, type GameState } from '../core';
 import { areas } from './interaction';
 
 const D = real.dialogues as unknown as Dialogues;
@@ -29,7 +29,8 @@ function applyExamine(s: GameState, areaId: string, id: string) {
   for (const e of [...(it.evidenceId ? [it.evidenceId] : []), ...(it.evidenceIds ?? [])]) acquireEvidence(s, e);
 }
 
-export function applyScene(s: GameState, scene: number, secure = true) {
+/** 씬 `scene` 에서 거치는 대사·조사·퍼즐을 적용한다. opts.puzzles=false 면 퍼즐은 풀지 않는다 (퍼즐이 열리기 직전 상태: 화면 확인·근거 점검용). */
+export function applyScene(s: GameState, scene: number, secure = true, opts: { puzzles?: boolean } = {}) {
   if (scene === 6) { // 씬 6: 증거 보존 선택
     enterNode(s, D.eunho_message.nodes.m1);
     enterNode(s, D.eunho_message.nodes[secure ? 'a1' : 'b1']);
@@ -44,7 +45,7 @@ export function applyScene(s: GameState, scene: number, secure = true) {
   }
   for (const [a, id] of st.examines ?? []) applyExamine(s, a, id);
   for (const f of st.flags ?? []) setFlag(s, f);
-  for (const p of st.puzzles ?? []) submitPuzzle(s, p, puzzles.find((q) => q.id === p)!.correctSlots);
+  if (opts.puzzles !== false) for (const id of st.puzzles ?? []) { const p = puzzles.find((q) => q.id === id)!; submitPuzzle(s, id, p.correctSlots, correctLinksOf(p)); } // 근거 카드까지 붙여 푼 상태
 }
 
 /** 씬 `scene`(1~7)을 시작하는 시점의 상태. 앞선 씬을 모두 거친 것으로 만든다. */

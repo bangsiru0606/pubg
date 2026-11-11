@@ -90,7 +90,7 @@ describe('씬 5·P05', () => {
   });
   it('오답은 충돌 조건만 알려 준다', () => {
     const r = submitPuzzle(createGameState(), 'P05_patient_code', { ...P('P05_patient_code').correctSlots, identity: ['yujin'] });
-    expect(r.status).toBe('wrong'); expect(r.conflicts).toEqual(['혈액형은 일치하지만 나이와 입원번호가 다릅니다.']);
+    expect(r.status).toBe('wrong'); expect(r.conflicts).toEqual(['특별 치료 장부와 맞지 않는다.']); // 한 번에 하나, 자료 이름으로
   });
   it('E14 원문을 닫으면 계단 쪽에서 정하늘이 나타나 자동으로 대화한다', () => {
     const s = createGameState();

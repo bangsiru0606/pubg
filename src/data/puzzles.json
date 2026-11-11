@@ -34,14 +34,14 @@
    "impactPosition:desk_side"
   ],
   "conflicts": {
-   "impactPosition:desk_side": "책상 옆 충돌은 기도대 아래 혈흔 위치와 맞지 않는다.",
-   "impactPosition:desk_chair": "처음부터 의자에 있었다면 '바닥에서 확인'한 예비 검안 메모와 맞지 않는다.",
-   "finalPosition:altar_floor": "최종 보고서는 '의자에서 발견'이라고 적었다.",
-   "finalPosition:desk_side": "최종 보고서는 '의자에서 발견'이라고 적었다.",
-   "movedObjects:syringe": "주사기는 후두부 상처의 위치를 설명하지 못한다.",
-   "movedObjects:altar": "기도대 받침 아래 혈흔은 그대로 남아 있어 기도대를 옮긴 흔적이 없다.",
-   "movedObjects:!chair": "의자 다리에 끌린 자국이 남아 있다.",
-   "movedObjects:!body": "예비 검안 메모와 최종 보고서가 적은 원장의 위치가 서로 다르다."
+   "impactPosition:desk_side": "기도대 아래 혈흔과 맞지 않는다.",
+   "impactPosition:desk_chair": "예비 검안 메모와 맞지 않는다.",
+   "finalPosition:altar_floor": "백선우의 진술과 맞지 않는다.",
+   "finalPosition:desk_side": "백선우의 진술과 맞지 않는다.",
+   "movedObjects:syringe": "예비 검안 메모의 상처 기록과 맞지 않는다.",
+   "movedObjects:altar": "기도대 아래 혈흔과 맞지 않는다.",
+   "movedObjects:!chair": "찢어진 손목띠 조각의 현장 메모와 맞지 않는다.",
+   "movedObjects:!body": "예비 검안 메모와 백선우의 진술을 함께 보면 빠진 항목이 있다."
   },
   "hintTexts": [
    "혈흔 위치와 두 기록의 발견 위치를 다시 비교해 보세요.",
@@ -50,10 +50,9 @@
   ],
   "title": "현장 위치 재구성 — 원장실 평면도",
   "info": [
-   "기도대 받침 아래 혈흔 방향",
-   "의자 다리의 끌린 자국",
-   "예비 검안 메모: “바닥에서 확인”",
-   "최종 보고서: “의자에서 발견”"
+   "원장 토큰 둘을 평면도의 위치에 놓는다",
+   "각 과제에는 그렇게 판단한 근거 자료를 붙인다",
+   "둘 사이에 이동된 대상을 표시한다"
   ],
   "zones": [
    {
@@ -130,7 +129,7 @@
    },
    {
     "slot": "finalPosition",
-    "label": "최종 보고서 작성 당시 원장의 위치",
+    "label": "공식 설명 속 원장의 위치",
     "kind": "place",
     "options": [
      {
@@ -180,7 +179,20 @@
     "E04_wristband_fragment"
    ]
   },
-  "solvedDialogue": "mono_p01_solved"
+  "solvedDialogue": "mono_p01_solved",
+  "evidenceLinks": {
+   "impactPosition": [
+    "E03_preliminary_exam",
+    "E02_altar_blood"
+   ],
+   "finalPosition": [
+    "baek_s_natural"
+   ],
+   "movedObjects": [
+    "E04_wristband_fragment",
+    "E03_preliminary_exam"
+   ]
+  }
  },
  {
   "id": "P02_night_timeline",
@@ -218,9 +230,19 @@
    "*:sermon"
   ],
   "conflicts": {
-   "*:sermon": "설교 방송은 사람의 동선이 아니라 예약 재생이다. 시간이 충돌한다.",
-   "t2241:key_lost": "마스터키가 사라진 뒤에야 문이 열릴 수 있다.",
-   "t2234:door_open": "22:34 시점에는 아직 문이 열린 기록이 없다."
+   "*:sermon": "예약 재생이라고 적힌 복도 방송표와 맞지 않는다.",
+   "t2234:door_open": "원장실 출입 기록과 맞지 않는다.",
+   "t2234:thud": "최옥자의 진술과 맞지 않는다.",
+   "t2234:return_room": "찢어진 환자복 소매(채소연의 진술)와 맞지 않는다.",
+   "t2241:key_lost": "원장실 출입 기록과 맞지 않는다.",
+   "t2241:thud": "최옥자의 진술과 맞지 않는다.",
+   "t2241:return_room": "찢어진 환자복 소매(채소연의 진술)와 맞지 않는다.",
+   "t2246:key_lost": "찢어진 환자복 소매(채소연의 진술)와 맞지 않는다.",
+   "t2246:door_open": "원장실 출입 기록과 맞지 않는다.",
+   "t2246:return_room": "찢어진 환자복 소매(채소연의 진술)와 맞지 않는다.",
+   "t2251:key_lost": "찢어진 환자복 소매(채소연의 진술)와 맞지 않는다.",
+   "t2251:door_open": "원장실 출입 기록과 맞지 않는다.",
+   "t2251:thud": "최옥자의 진술과 맞지 않는다."
   },
   "hintTexts": [
    "출입 기록과 채소연의 진술 시각을 확인해 보세요.",
@@ -281,7 +303,21 @@
     "broadcast_seen"
    ]
   },
-  "solvedDialogue": "mono_p02_solved"
+  "solvedDialogue": "mono_p02_solved",
+  "evidenceLinks": {
+   "t2234": [
+    "E06_torn_sleeve"
+   ],
+   "t2241": [
+    "E05_access_log"
+   ],
+   "t2246": [
+    "choi_s_thud"
+   ],
+   "t2251": [
+    "E06_torn_sleeve"
+   ]
+  }
  },
  {
   "id": "P03_revision_diff",
@@ -306,11 +342,15 @@
   },
   "distractors": [
    "marked:spelling_fix",
-   "marked:sentence_order"
+   "marked:sentence_order",
+   "marked:time_format",
+   "marked:symbol_change"
   ],
   "conflicts": {
-   "marked:spelling_fix": "맞춤법 수정은 문장의 의미를 바꾸지 않는다.",
-   "marked:sentence_order": "문장 순서 변경은 사실 관계를 바꾸지 않는다."
+   "marked:spelling_fix": "검안 기록 수정 이력은 띄어쓰기 수정을 의미 변경으로 기록하지 않는다.",
+   "marked:sentence_order": "검안 기록 수정 이력은 문장 위치 이동을 의미 변경으로 기록하지 않는다.",
+   "marked:time_format": "검안 기록 수정 이력은 시각 표기 형식을 의미 변경으로 기록하지 않는다.",
+   "marked:symbol_change": "검안 기록 수정 이력은 머리 기호를 의미 변경으로 기록하지 않는다."
   },
   "hintTexts": [
    "의미가 달라진 항목만 표시하세요. 발견 위치와 상태를 보세요.",
@@ -328,7 +368,8 @@
    {
     "title": "최종 기록",
     "lines": [
-     "※ 부원장 재검토 요청",
+     "22시 52분 최초 확인",
+     "* 부원장 재검토 요청",
      "발견 위치: 책상 의자",
      "기존 심장 질환에 의한 급성 심정지 추정",
      "의식 없음, 발견 당시 사망"
@@ -364,6 +405,14 @@
      {
       "id": "sentence_order",
       "label": "‘부원장 재검토 요청’ 문장 위치 이동"
+     },
+     {
+      "id": "time_format",
+      "label": "‘22:52’ → ‘22시 52분’ 시각 표기 형식"
+     },
+     {
+      "id": "symbol_change",
+      "label": "‘※’ → ‘*’ 머리 기호"
      }
     ]
    }
@@ -375,7 +424,13 @@
    ]
   },
   "solvedDialogue": "mono_p03_solved",
-  "subtitle": "예비 기록·최종 기록·수정 이력을 겹쳐 본다. 의미가 달라진 항목 세 개를 표시한다."
+  "subtitle": "세 문서를 겹쳐 보고 의미가 바뀐 항목과 근거를 고른다",
+  "evidenceLinks": {
+   "marked": [
+    "E07_report_revision",
+    "E03_preliminary_exam"
+   ]
+  }
  },
  {
   "id": "P04_approval_chain",
@@ -413,12 +468,14 @@
    "doc_selection:lee_hanshin"
   ],
   "conflicts": {
-   "doc_selection:lee_hanshin": "선정 권한과 승인 권한이 충돌한다. 문서의 작성 약자를 다시 확인하세요.",
-   "doc_approval:lee_hyejeong": "선정 권한과 승인 권한이 충돌한다. 문서의 작성 약자를 다시 확인하세요.",
-   "doc_schedule:lee_hanshin": "시술 일정은 승인 권한이 아니라 진행 권한의 문서다.",
-   "doc_schedule:lee_hyejeong": "시술 일정은 선정 권한이 아니라 진행 권한의 문서다.",
-   "doc_transfer:lee_hanshin": "이송 지시서의 서명은 원장 승인 계정과 다르다.",
-   "doc_transfer:baek_sunwoo": "이송 지시서의 서명과 권한은 시술 진행 담당의 것이 아니다."
+   "doc_selection:lee_hanshin": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_selection:baek_sunwoo": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_approval:lee_hyejeong": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_approval:baek_sunwoo": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_schedule:lee_hanshin": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_schedule:lee_hyejeong": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_transfer:lee_hanshin": "화장·환자 이송 지시의 서명과 맞지 않는다.",
+   "doc_transfer:baek_sunwoo": "화장·환자 이송 지시의 서명과 맞지 않는다."
   },
   "hintTexts": [
    "영문 약자와 문서의 권한·수정 계정을 함께 보세요.",
@@ -428,7 +485,7 @@
   "layout": "connect",
   "title": "특별 치료 승인 체계",
   "info": [
-   "문서의 약자·권한·수정 계정을 함께 본다",
+   "문서 카드를 인물에 연결하고, 근거 자료를 붙인다",
    "필체만으로는 판단하지 않는다"
   ],
   "zones": [
@@ -466,7 +523,6 @@
     "label": "대상자 선정표",
     "token": "대상자 선정표",
     "kind": "place",
-    "detail": "약자 LHJ · 권한: 선정 · 동의서와 같은 필체",
     "options": [
      {
       "id": "lee_hyejeong",
@@ -487,7 +543,6 @@
     "label": "원장 승인표",
     "token": "원장 승인표",
     "kind": "place",
-    "detail": "약자 LHS · 권한: 최종 승인",
     "options": [
      {
       "id": "lee_hyejeong",
@@ -508,7 +563,6 @@
     "label": "시술 일정표",
     "token": "시술 일정표",
     "kind": "place",
-    "detail": "약자 BSW · 권한: 시술 진행",
     "options": [
      {
       "id": "lee_hyejeong",
@@ -529,7 +583,6 @@
     "label": "이송 지시서",
     "token": "이송 지시서",
     "kind": "place",
-    "detail": "서명: 이혜정 · 권한: 이송 지시",
     "options": [
      {
       "id": "lee_hyejeong",
@@ -552,7 +605,21 @@
     "E11_transfer_order"
    ]
   },
-  "solvedDialogue": "mono_p04_solved"
+  "solvedDialogue": "mono_p04_solved",
+  "evidenceLinks": {
+   "doc_selection": [
+    "E10_consent_forms"
+   ],
+   "doc_approval": [
+    "E10_consent_forms"
+   ],
+   "doc_schedule": [
+    "E10_consent_forms"
+   ],
+   "doc_transfer": [
+    "E11_transfer_order"
+   ]
+  }
  },
  {
   "id": "P05_patient_code",
@@ -607,20 +674,20 @@
    "identity:yujin"
   ],
   "conflicts": {
-   "identity:yujin": "혈액형은 일치하지만 나이와 입원번호가 다릅니다.",
-   "identity:unknown": "나이는 일치하지만 혈액형과 입원번호가 다릅니다.",
-   "identity:haneul": "나이와 혈액형이 모두 다릅니다.",
-   "admissionMatch:yujin": "입원번호 앞자리가 EW-08이 아닙니다.",
-   "linkedSources:E15_transport_manifest": "운송표는 환자의 신원을 알려 주지 않는다.",
-   "belongingMatch:yujin": "파란 머리끈은 한유진의 진술에 나온 노란 실팔찌가 아니다.",
-   "belongingMatch:haneul": "검은 수첩은 한유진의 진술에 나온 노란 실팔찌가 아니다.",
-   "belongingMatch:unknown": "흰 묵주는 한유진의 진술에 나온 노란 실팔찌가 아니다.",
-   "ageMatch:yujin": "한유진은 34세다. 장부는 27세다.",
-   "ageMatch:haneul": "정하늘은 29세다. 장부는 27세다.",
-   "bloodMatch:haneul": "정하늘은 A형이다. 장부는 B형이다.",
-   "bloodMatch:unknown": "신원 미상은 O형이다. 장부는 B형이다.",
-   "admissionMatch:haneul": "입원번호 앞자리가 EW-08이 아닙니다.",
-   "admissionMatch:unknown": "입원번호 앞자리가 EW-08이 아닙니다."
+   "identity:yujin": "특별 치료 장부와 맞지 않는다.",
+   "identity:unknown": "특별 치료 장부와 맞지 않는다.",
+   "identity:haneul": "특별 치료 장부와 맞지 않는다.",
+   "admissionMatch:yujin": "환자번호-코드 연결표와 맞지 않는다.",
+   "admissionMatch:haneul": "환자번호-코드 연결표와 맞지 않는다.",
+   "admissionMatch:unknown": "환자번호-코드 연결표와 맞지 않는다.",
+   "linkedSources:E15_transport_manifest": "생체 보존물 운송표는 환자의 신원을 가리키지 않는다.",
+   "belongingMatch:yujin": "한유진의 진술과 맞지 않는다.",
+   "belongingMatch:haneul": "한유진의 진술과 맞지 않는다.",
+   "belongingMatch:unknown": "한유진의 진술과 맞지 않는다.",
+   "ageMatch:yujin": "특별 치료 장부와 맞지 않는다.",
+   "ageMatch:haneul": "특별 치료 장부와 맞지 않는다.",
+   "bloodMatch:haneul": "특별 치료 장부와 맞지 않는다.",
+   "bloodMatch:unknown": "특별 치료 장부와 맞지 않는다."
   },
   "hintTexts": [
    "나이·혈액형만으로는 후보가 둘 남습니다. 입원번호와 유품 표식을 보세요.",
@@ -629,7 +696,7 @@
   ],
   "layout": "logic",
   "title": "P-271 환자 코드 대조",
-  "subtitle": "장부 항목: P-271 / 27세 / B형 / EW-08** / 처리 완료 · 선정 LHJ / 승인 LHS / 진행 BSW",
+  "subtitle": "후보 표를 자료와 대조한다",
   "info": [],
   "table": {
    "columns": [
@@ -722,7 +789,7 @@
   "tasks": [
    {
     "slot": "identity",
-    "label": "④ P-271 은 누구인가 (토큰을 후보 행에 놓는다)",
+    "label": "④ P-271 은 누구인가",
     "token": "P-271",
     "kind": "place",
     "options": [
@@ -746,7 +813,7 @@
    },
    {
     "slot": "ageMatch",
-    "label": "① 장부의 나이(27세)와 일치",
+    "label": "① 장부 항목과 나이가 일치",
     "kind": "mark",
     "options": [
      {
@@ -769,7 +836,7 @@
    },
    {
     "slot": "bloodMatch",
-    "label": "② 혈액형(B형)과 일치",
+    "label": "② 장부 항목과 혈액형이 일치",
     "kind": "mark",
     "options": [
      {
@@ -792,7 +859,7 @@
    },
    {
     "slot": "admissionMatch",
-    "label": "③ 입원번호 앞자리(EW-08)와 일치",
+    "label": "③ 연결표 입원번호와 일치",
     "kind": "mark",
     "options": [
      {
@@ -815,7 +882,7 @@
    },
    {
     "slot": "belongingMatch",
-    "label": "⑤ 한유진이 본 노란 실팔찌와 같은 유품 표식",
+    "label": "⑤ 한유진 진술의 유품 표식과 일치",
     "kind": "mark",
     "options": [
      {
@@ -875,6 +942,24 @@
     "E15_transport_manifest"
    ]
   },
-  "solvedDialogue": "mono_p05_solved"
+  "solvedDialogue": "mono_p05_solved",
+  "evidenceLinks": {
+   "ageMatch": [
+    "E12_ledger"
+   ],
+   "bloodMatch": [
+    "E12_ledger"
+   ],
+   "admissionMatch": [
+    "E13_identity_map"
+   ],
+   "belongingMatch": [
+    "han_s_bracelet",
+    "E14_belongings_diary"
+   ],
+   "identity": [
+    "E13_identity_map"
+   ]
+  }
  }
 ]

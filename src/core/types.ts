@@ -36,6 +36,7 @@ export interface Puzzle {
   openWhen?: { flags?: string[]; evidence?: string[] }; // 자동으로 열리는 조건
   solvedDialogue?: string;                              // 해결 직후 독백 (중간 결론만)
   sourceEvidenceIds: string[]; verifiedEvidenceIds: string[];
+  evidenceLinks?: Record<string, string[]>; // 슬롯 → 허용 근거(단서 ID 또는 진술 ID). 있으면 그 칸에 근거 카드를 붙여야 정답이다 (판정은 core/puzzle.ts)
   slots: string[]; correctSlots: Record<string, string[]>;
   distractors: string[]; conflicts: Record<string, string>; hintTexts: string[];
 }

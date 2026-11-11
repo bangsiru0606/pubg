@@ -136,7 +136,9 @@
      "kind": "stairs",
      "requires": "@basement_open",
      "art": "stairs_basement",
-     "lockedDialogue": "mono_basement_locked"
+     "lockedDialogue": "mono_basement_locked",
+     "sfx": "onGate",
+     "lockedSfx": "onGate"
     },
     {
      "type": "transition",
@@ -371,7 +373,10 @@
      "name": "복도 방송표",
      "dialogueId": "mono_broadcast",
      "puzzleId": "P02_night_timeline",
-     "art": "broadcast_board"
+     "art": "broadcast_board",
+     "evidenceIds": [
+      "E05_access_log"
+     ]
     }
    ],
    "bg": {
@@ -649,8 +654,7 @@
      "x": 360,
      "name": "재고표",
      "evidenceIds": [
-      "E09_sedative_gap",
-      "E05_access_log"
+      "E09_sedative_gap"
      ],
      "art": "nurse_counter"
     }

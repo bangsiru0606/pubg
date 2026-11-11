@@ -54,7 +54,9 @@
   "sourceCharacterId": "",
   "timestamp": "사건 현장",
   "body": [
-   "정ㅎ / 2병동 / 04"
+   "정ㅎ / 2병동 / 04",
+   "",
+   "현장 메모: 책상 의자 다리 아래 바닥에 끌린 듯한 긁힌 자국이 길게 남아 있다."
   ],
   "reveal": {
    "flag": "haneul_met",
@@ -68,7 +70,7 @@
   "title": "원장실 출입 기록",
   "description": "22시 41분 청소용 마스터키로 원장실 문이 열린 기록.",
   "sourceType": "record",
-  "acquiredSceneId": "room_oh",
+  "acquiredSceneId": "floor2",
   "sourceCharacterId": "",
   "timestamp": "22:41",
   "body": [
@@ -83,7 +85,12 @@
   "sourceType": "testimony",
   "acquiredSceneId": "room_jeong",
   "sourceCharacterId": "chae_soyeon",
-  "timestamp": "22:51"
+  "timestamp": "22:51",
+  "body": [
+   "채소연의 진술",
+   "22:34 정하늘이 병실을 나감. 채소연이 맡아 두던 청소용 마스터키도 그때 사라졌다.",
+   "22:51 정하늘이 찢어진 소매 차림으로 병실에 돌아옴. 손목띠는 없었다."
+  ]
  },
  {
   "id": "E07_report_revision",
@@ -129,7 +136,16 @@
   "sourceType": "record",
   "acquiredSceneId": "room_lee",
   "sourceCharacterId": "lee_hyejeong",
-  "timestamp": "최근 8개월"
+  "timestamp": "최근 8개월",
+  "body": [
+   "특별 치료 동의서 묶음 (최근 8개월분 중 대조용 서식 3종)",
+   "",
+   "[대상자 선정표] 작성: LHJ / 권한: 선정 / 비고: 동의서 서명란과 같은 필체",
+   "[원장 승인표] 작성: LHS / 권한: 최종 승인",
+   "[시술 일정표] 작성: BSW / 권한: 시술 진행",
+   "",
+   "※ 동의서 서명란은 모두 같은 사람의 필체다. 환자 본인의 필체와 다르다."
+  ]
  },
  {
   "id": "E11_transfer_order",
@@ -143,6 +159,8 @@
    "14:00 원장 화장 절차 우선 진행",
    "18:00 특별 치료 대상 6인 외부 이송",
    "지하 보관 자료 동시 반출",
+   "서명: 이혜정 / 권한: 이송 지시",
+   "원장 승인 계정의 결재 기록은 없다.",
    "— 이혜정"
   ]
  },

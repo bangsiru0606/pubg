@@ -66,8 +66,8 @@
    "nodes": {
     "b1": {
      "speaker": "baek_sunwoo",
-     "text": "오늘 새벽 원장님께서 지병으로 돌아가셨습니다. 면회는 다음 주로 미뤄 주십시오.",
-     "source": "spec",
+     "text": "오늘 새벽 원장님께서 지병으로 돌아가셨습니다. 집무실 의자에 앉으신 채 발견됐고, 면회는 다음 주로 미뤄 주십시오.",
+     "source": "new",
      "statement": {
       "id": "baek_s_natural"
      },
@@ -139,8 +139,8 @@
    "nodes": {
     "m": {
      "speaker": "han_jisu",
-     "text": "환자 물건이 원장 책상 밑에서 찢어진 채 나왔다.",
-     "source": "spec",
+     "text": "환자 물건이 원장 책상 밑에서 찢어진 채 나왔다. 의자 다리 아래 바닥에는 무언가를 끌어다 놓은 듯한 긁힌 자국이 길게 남아 있다.",
+     "source": "new",
      "portrait": "player_neutral",
      "onEnter": {
       "acquire": [
@@ -230,6 +230,16 @@
        "choi_done"
       ]
      },
+     "portrait": "choi_confused",
+     "next": "c3"
+    },
+    "c3": {
+     "speaker": "choi_okja",
+     "text": "…아, 그러고 보니 설교가 한창일 때 아래층 어디선가 쿵 하고 둔탁한 소리가 났어요. 벽시계가 10시 46분이었으니 기억하지요. 기도를 방해받기 싫어서 베개로 귀를 막았어요.",
+     "source": "new",
+     "statement": {
+      "id": "choi_s_thud"
+     },
      "portrait": "choi_confused"
     }
    },
@@ -304,8 +314,8 @@
     },
     "s3": {
      "speaker": "chae_soyeon",
-     "text": "소등 방송이 끝난 뒤요. 11시 전이었어요. 언니는 계속 ‘은지가 이미 늦었대’라고 했어요.",
-     "source": "spec",
+     "text": "10시 51분이었어요. 병실 벽시계를 봤거든요. 언니는 계속 ‘은지가 이미 늦었대’라고 했어요.",
+     "source": "new",
      "onEnter": {
       "acquire": [
        "E06_torn_sleeve"
@@ -692,7 +702,7 @@
    "nodes": {
     "m": {
      "speaker": "han_jisu",
-     "text": "복도 방송표다. ‘기도 설교’ 칸에는 ‘예약 재생’이라고만 적혀 있다. 재생하는 사람은 없다.",
+     "text": "복도 방송표다. ‘기도 설교’ 칸에는 ‘예약 재생’이라고만 적혀 있다. 재생하는 사람은 없다. 방송표 아래 단말기에는 야간 출입 기록 출력지가 꽂혀 있다.",
      "source": "new",
      "portrait": "player_neutral",
      "onEnter": {
@@ -701,6 +711,9 @@
       ],
       "contradict": [
        "choi_s_prayer"
+      ],
+      "acquire": [
+       "E05_access_log"
       ]
      },
      "voice": "inner"

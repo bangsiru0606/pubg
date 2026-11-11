@@ -29,8 +29,7 @@
     "neutral",
     "shaken",
     "confession"
-   ],
-   "pending": true
+   ]
   },
   {
    "id": "baek_sunwoo",
@@ -50,8 +49,7 @@
     "neutral",
     "guilty",
     "tearful"
-   ],
-   "pending": true
+   ]
   },
   {
    "id": "lee_hyejeong",
@@ -61,8 +59,7 @@
     "neutral",
     "contempt",
     "tense"
-   ],
-   "pending": true
+   ]
   },
   {
    "id": "choi_okja",
@@ -72,8 +69,7 @@
     "neutral",
     "devout",
     "confused"
-   ],
-   "pending": true
+   ]
   },
   {
    "id": "han_yujin",
@@ -83,8 +79,7 @@
     "neutral",
     "fear",
     "earnest"
-   ],
-   "pending": true
+   ]
   },
   {
    "id": "chae_soyeon",
@@ -94,8 +89,7 @@
     "neutral",
     "worried",
     "earnest"
-   ],
-   "pending": true
+   ]
   },
   {
    "id": "broadcast",

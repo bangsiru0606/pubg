@@ -1,0 +1,11 @@
+# BGM 출처
+
+- bgm_title: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+- bgm_office: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+- bgm_hospital: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+- bgm_interrogation: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+- bgm_basement: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+- bgm_confession: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+- bgm_report: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+- bgm_ending_light: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+- bgm_ending_dark: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11

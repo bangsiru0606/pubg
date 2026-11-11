@@ -191,6 +191,60 @@
       "height": 112,
       "chromaKey": false,
       "draft": true
+    },
+    {
+      "id": "director_wall",
+      "src": "generated/backgrounds/director_wall.png",
+      "height": 270,
+      "chromaKey": false
+    },
+    {
+      "id": "ward_wall",
+      "src": "generated/backgrounds/ward_wall.png",
+      "height": 270,
+      "chromaKey": false
+    },
+    {
+      "id": "patientroom_wall",
+      "src": "generated/backgrounds/patientroom_wall.png",
+      "height": 270,
+      "chromaKey": false
+    },
+    {
+      "id": "staff_wall",
+      "src": "generated/backgrounds/staff_wall.png",
+      "height": 270,
+      "chromaKey": false
+    },
+    {
+      "id": "nurse_wall",
+      "src": "generated/backgrounds/nurse_wall.png",
+      "height": 270,
+      "chromaKey": false
+    },
+    {
+      "id": "basement_wall",
+      "src": "generated/backgrounds/basement_wall.png",
+      "height": 270,
+      "chromaKey": false
+    },
+    {
+      "id": "wood_floor",
+      "src": "generated/backgrounds/wood_floor.png",
+      "height": 112,
+      "chromaKey": false
+    },
+    {
+      "id": "ward_floor",
+      "src": "generated/backgrounds/ward_floor.png",
+      "height": 112,
+      "chromaKey": false
+    },
+    {
+      "id": "basement_floor",
+      "src": "generated/backgrounds/basement_floor.png",
+      "height": 112,
+      "chromaKey": false
     }
   ],
   "illust": [
@@ -219,8 +273,6 @@
   "pending": [
     "altar",
     "baek_pc",
-    "basement_floor",
-    "basement_wall",
     "bed_empty",
     "bed_ward",
     "belongings_locker",
@@ -231,23 +283,16 @@
     "cold_crate",
     "director_chair",
     "director_desk",
-    "director_wall",
     "door_director",
     "door_hospital",
     "door_staff",
     "ledger_shelf",
     "lee_desk",
     "nurse_counter",
-    "nurse_wall",
     "order_emblem",
     "papers_floor",
-    "patientroom_wall",
-    "staff_wall",
     "stairs_basement",
     "stairs_down",
-    "stairs_up",
-    "ward_floor",
-    "ward_wall",
-    "wood_floor"
+    "stairs_up"
   ]
 }

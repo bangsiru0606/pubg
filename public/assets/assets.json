@@ -35,6 +35,42 @@
   "w": 314,
   "h": 112
  },
+ "director_wall": {
+  "w": 405,
+  "h": 270
+ },
+ "ward_wall": {
+  "w": 405,
+  "h": 270
+ },
+ "patientroom_wall": {
+  "w": 405,
+  "h": 270
+ },
+ "staff_wall": {
+  "w": 405,
+  "h": 270
+ },
+ "nurse_wall": {
+  "w": 405,
+  "h": 270
+ },
+ "basement_wall": {
+  "w": 405,
+  "h": 270
+ },
+ "wood_floor": {
+  "w": 314,
+  "h": 112
+ },
+ "ward_floor": {
+  "w": 314,
+  "h": 112
+ },
+ "basement_floor": {
+  "w": 314,
+  "h": 112
+ },
  "player_idle_0": {
   "w": 53,
   "h": 90

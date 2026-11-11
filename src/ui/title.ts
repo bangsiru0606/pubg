@@ -14,6 +14,12 @@ let closeCurrent: (() => void) | null = null;
 /** 열려 있는 타이틀을 닫는다 (시험용 훅에서 사용) */
 export const closeTitleNow = () => closeCurrent?.();
 
+/** 같은 출처 문구를 쓰는 곡들을 한 줄로 묶는다 ("bgm_a: X", "bgm_b: X" → "a·b (2곡): X"). 화면에 다 들어가게 하려는 것이다. */
+export function groupCredits(lines: string[]): string[] {
+  const groups = new Map<string, string[]>(), plain: string[] = [];
+  for (const l of lines) { const m = /^(\w+):\s*(.+)$/.exec(l); if (m) groups.set(m[2], [...(groups.get(m[2]) ?? []), m[1].replace(/^bgm_/, '')]); else plain.push(l); }
+  return [...[...groups].map(([rest, names]) => `${names.join(', ')} (${names.length}곡): ${rest}`), ...plain];
+}
 const VOLS = [['master', '마스터 음량'], ['bgm', '배경음 음량'], ['sfx', '효과음 음량']] as const;
 const bar = (v: number) => `${'■'.repeat(Math.round(v * 10))}${'□'.repeat(10 - Math.round(v * 10))} ${Math.round(v * 100)}%`;
 
@@ -30,7 +36,7 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
   ];
   const close = () => { popModal('title'); box.remove(); closeCurrent = null; };
   closeCurrent = close;
-  const bgmLines = (bgmCredits as string[]).length ? (bgmCredits as string[]) : [credits.bgmPending];
+  const bgmLines = (bgmCredits as string[]).length ? groupCredits(bgmCredits as string[]) : [credits.bgmPending];
   function render() {
     const hint = isUnlocked() ? '' : '<div class="anykey">아무 키나 눌러 시작</div>';
     if (page === 'settings') {
@@ -41,7 +47,7 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
         <button class="opt${setSel === 4 ? ' sel' : ''}" data-v="4">돌아가기</button></div>
         <div class="foot">↑↓ 이동 · ←→ 음량 · Enter 선택 · Esc 돌아가기</div>`;
     } else if (page === 'info') {
-      box.innerHTML = `<div class="tt" style="font-size:18px">정보</div><div class="ctrl" style="text-align:left">
+      box.innerHTML = `<div class="tt" style="font-size:18px">정보</div><div class="ctrl info" style="text-align:left">
         <div>${esc(credits.title)}</div>${credits.lines.map((l) => `<div>${esc(l)}</div>`).join('')}
         <div style="margin-top:4px;color:#6b4a1a;font-weight:bold">배경음악 출처</div>${bgmLines.map((l) => `<div>${esc(l)}</div>`).join('')}</div>
         <div class="foot">Enter / Esc 돌아가기</div>`;

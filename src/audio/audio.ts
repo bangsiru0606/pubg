@@ -3,9 +3,9 @@
 // 어떤 장면에서 무엇을 틀지는 src/data/audio.json, 있는 파일 목록은 정규화가 만드는 src/data/audio-list.json.
 import data from '../data/audio.json';
 import list from '../data/audio-list.json';
-import { bgmGain, canPlay, clamp01, loopEnvelope, pickBgm, sfxGain, sfxVariants, type Volumes } from './resolve';
+import { bgmGain, canPlay, clamp01, loopEnvelope, loopFade, pickBgm, sfxGain, sfxVariants, type Volumes } from './resolve';
 
-const FADE_S = 1.5, TICK_MS = 50, KEY = 'cw_audio';
+const FADE_S = 1.5, LOOP_X = 2, TICK_MS = 50, KEY = 'cw_audio'; // LOOP_X: 반복 곡 이음새 교차 길이(초)
 type TrackCfg = { loop?: boolean; gain?: number };
 const tracks = data.bgm.tracks as Record<string, TrackCfg>;
 const sounds = data.sfx.sounds as Record<string, { volume?: number }>;
@@ -18,6 +18,9 @@ try { const o = JSON.parse(localStorage.getItem(KEY) ?? 'null'); if (o) vol = { 
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(vol)); } catch { /* 무시 */ } };
 
 let unlocked = false;
+/** 재생 기록 (시험·확인용): 어떤 BGM 이 시작됐고 어떤 효과음이 났는지 */
+const trace: string[] = [];
+export const audioTrace = (clear = false) => { const t = trace.slice(); if (clear) trace.length = 0; return t; };
 const unlockListeners = new Set<() => void>();
 /** 첫 키 입력·클릭이 있었는가 (그 전에는 소리를 내지 않는다) */
 export const isUnlocked = () => unlocked;
@@ -30,7 +33,7 @@ window.addEventListener('keydown', unlock, { capture: true });
 window.addEventListener('pointerdown', unlock, { capture: true });
 
 // ---------- BGM ----------
-interface Chan { name: string; el: HTMLAudioElement; level: number; target: number; cfg: TrackCfg } // level: 교차 페이드 진행(0~1)
+interface Chan { name: string; el: HTMLAudioElement; next: HTMLAudioElement | null; level: number; target: number; cfg: TrackCfg } // level: 교차 페이드 진행(0~1)
 let chans: Chan[] = [];
 let base: string | null = null;
 const stack = new Map<string, string>();
@@ -47,9 +50,10 @@ function apply() {
   const cur = chans.find((c) => c.target === 1);
   if (cur?.name !== want) {
     for (const c of chans) c.target = 0;
+    trace.push(`BGM ${want ?? '(무음)'}`);
     if (want) {
       const el = mk('bgm', want);
-      if (el) { const cfg = tracks[want] ?? {}; el.loop = cfg.loop !== false; el.volume = 0; chans.push({ name: want, el, level: 0, target: 1, cfg }); play(el); }
+      if (el) { const cfg = tracks[want] ?? {}; el.loop = false; el.volume = 0; chans.push({ name: want, el, next: null, level: 0, target: 1, cfg }); play(el); } // 반복은 tick 이 교차 페이드로 직접 잇는다
     }
   }
   if (!timer && chans.length) timer = window.setInterval(tick, TICK_MS);
@@ -59,19 +63,32 @@ function tick() {
   const step = TICK_MS / 1000 / FADE_S;
   for (const c of chans) {
     c.level = c.target > c.level ? Math.min(c.target, c.level + step) : Math.max(c.target, c.level - step);
-    const env = loopEnvelope(c.el.currentTime, c.el.duration, FADE_S); // 앞뒤 페이드 (길이를 모르면 1)
-    try { c.el.volume = clamp01(c.level * env * bgmGain(vol, c.cfg.gain)); } catch { /* 무시 */ }
+    const g = c.level * bgmGain(vol, c.cfg.gain), dur = c.el.duration;
+    try {
+      if (c.cfg.loop === false) { c.el.volume = clamp01(g * loopEnvelope(c.el.currentTime, dur, FADE_S)); continue; } // 반복 안 하는 곡: 끝에서 서서히 사라진다
+      if (!Number.isFinite(dur) || dur <= LOOP_X * 2) { c.el.volume = clamp01(g); if (c.el.ended) { c.el.currentTime = 0; play(c.el); } continue; } // 아직 길이를 모른다 / 아주 짧은 곡
+      const remain = dur - c.el.currentTime;
+      if (!c.next && (remain <= LOOP_X || c.el.ended)) { c.next = mk('bgm', c.name); if (c.next) { c.next.volume = 0; play(c.next); } }
+      if (c.next) { // 끝(out)과 처음(in)을 교차: 이음새에 공백이 없다
+        const [o, i] = loopFade(c.el.ended ? 0 : remain, LOOP_X);
+        c.el.volume = clamp01(g * o); c.next.volume = clamp01(g * i);
+        if (c.el.ended || remain <= 0.03) { c.el.pause(); c.el = c.next; c.next = null; }
+      } else c.el.volume = clamp01(g);
+    } catch { /* 무시 */ }
   }
-  for (const c of chans.filter((x) => x.level <= 0 && x.target === 0)) { try { c.el.pause(); } catch { /* 무시 */ } }
+  for (const c of chans.filter((x) => x.level <= 0 && x.target === 0)) { try { c.el.pause(); c.next?.pause(); } catch { /* 무시 */ } }
   chans = chans.filter((c) => !(c.level <= 0 && c.target === 0));
   if (!chans.length) { clearInterval(timer); timer = 0; }
 }
 
 /** 기본 BGM (구역·타이틀). 이름은 audio.json 의 트랙 이름 */
-export function bgmBase(track: string | null) { base = track; apply(); }
+let pending = false;
+/** 같은 틱에 여러 번 바뀌어도(대화 끝 → 보고서 시작 등) 마지막 결과 하나만 적용한다 — 곡이 잠깐 시작됐다 끊기지 않게 */
+const schedule = () => { if (pending) return; pending = true; queueMicrotask(() => { pending = false; apply(); }); };
+export function bgmBase(track: string | null) { base = track; schedule(); }
 /** 대화·퍼즐·보고서·엔딩 같은 덮어쓰기 요청. key 별로 하나, 가장 나중 것이 이긴다 */
-export function bgmPush(key: string, track: string | undefined) { if (!track) return; stack.delete(key); stack.set(key, track); apply(); }
-export function bgmPop(key: string) { if (stack.delete(key)) apply(); }
+export function bgmPush(key: string, track: string | undefined) { if (!track) return; stack.delete(key); stack.set(key, track); schedule(); }
+export function bgmPop(key: string) { if (stack.delete(key)) schedule(); }
 export const areaTrack = (areaId: string) => (data.bgm.area as Record<string, string>)[areaId] ?? null;
 export const sceneTrack = (name: 'title' | 'report') => data.bgm.scene[name];
 export const dialogueTrack = (id: string) => (data.bgm.dialogue as Record<string, string>)[id];
@@ -93,6 +110,7 @@ export function sfx(event: string) {
   const el = mk('sfx', vs[n]);
   if (!el) return;
   el.volume = clamp01(sfxGain(vol, sounds[name]?.volume));
+  trace.push(`SFX ${event}→${vs[n]} @${el.volume.toFixed(2)}`);
   list2.push(el);
   const done = () => { const i = list2.indexOf(el); if (i >= 0) list2.splice(i, 1); };
   el.addEventListener('ended', done); el.addEventListener('error', done);
@@ -114,4 +132,7 @@ export function toggleMute() { vol = { ...vol, muted: !vol.muted }; save(); refr
 function refresh() { if (chans.length) tick(); }
 
 /** 시험용: 현재 상태 (e2e 훅에서만 부른다) */
-export const debugState = () => ({ unlocked, base, stack: [...stack.entries()], bgm: chans.map((c) => ({ name: c.name, target: c.target, level: +c.level.toFixed(2), paused: c.el.paused })), sfxActive: Object.fromEntries([...active].map(([k, v]) => [k, v.length])), vol });
+export const debugState = () => ({ unlocked, base, stack: [...stack.entries()], bgm: chans.map((c) => ({ name: c.name, target: c.target, level: +c.level.toFixed(2), paused: c.el.paused, volume: +c.el.volume.toFixed(3), next: c.next ? +c.next.volume.toFixed(3) : null, nextT: c.next ? +c.next.currentTime.toFixed(2) : null, t: +c.el.currentTime.toFixed(1), dur: +(c.el.duration || 0).toFixed(1) })), sfxActive: Object.fromEntries([...active].map(([k, v]) => [k, v.length])), vol });
+
+/** 시험용: 지금 재생 중인 BGM 을 끝에서 `secFromEnd` 초 앞으로 옮긴다 (반복 이음새 확인) */
+export const debugSeekToEnd = (secFromEnd: number) => { const c = chans.find((x) => x.target === 1); if (c && Number.isFinite(c.el.duration)) c.el.currentTime = Math.max(0, c.el.duration - secFromEnd); };

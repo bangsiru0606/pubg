@@ -82,7 +82,7 @@ export class ExploreScene extends Phaser.Scene {
     this.state.currentSceneId = id;
     this.state.playerX = spawnX;
     if (!this.state.visitedAreaIds.includes(id)) this.state.visitedAreaIds.push(id);
-    bgmBase(areaTrack(id));
+    if (this.started) bgmBase(areaTrack(id)); // 타이틀·이름 입력 중에는 타이틀 음악을 유지한다 (새 게임·퀵 시작은 각자 지정)
     const a = areas[id], g = GROUND_Y, w = a.maxX - a.minX;
     this.minX = a.minX; this.maxX = a.maxX;
 

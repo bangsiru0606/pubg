@@ -18,5 +18,7 @@ export const bgmGain = (v: Volumes, trackGain = 1) => (v.muted ? 0 : clamp01(v.m
 export const sfxGain = (v: Volumes, soundGain = 1) => (v.muted ? 0 : clamp01(v.master) * clamp01(v.sfx) * soundGain);
 /** 루프 곡의 앞뒤 페이드: 재생 위치 t(초)와 길이 dur 에서 0~1 */
 export const loopEnvelope = (t: number, dur: number, fade: number) => (dur > 0 && Number.isFinite(dur) ? clamp01(Math.min(t / fade, (dur - t) / fade)) : 1);
+/** 반복 곡의 이음새: 끝이 `x`초 남은 시점부터 끝(out)과 처음(in)을 같은 힘(등파워)으로 교차한다. remain = 남은 초 */
+export const loopFade = (remain: number, x: number): [number, number] => { const p = clamp01(1 - remain / x); return [Math.cos((p * Math.PI) / 2), Math.sin((p * Math.PI) / 2)]; };
 /** 같은 소리의 동시 재생 수 제한 */
 export const canPlay = (active: number, max = 3) => active < max;

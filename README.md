@@ -49,7 +49,17 @@ zip 압축 해제 후 `index.html` 더블클릭으로 실행 (Chrome / Edge 권�
 - **그림**: Codex(`$imagegen`)로 생성. 탐색 화면의 기준 그림체는 craft_on 기존 에셋.
 - **개발**: Claude Code, Codex
 - **효과음**: 코드로 직접 합성 (외부 음원 없음)
-- **배경음악**: 준비 중
+- **배경음악** (곡별 출처):
+  - bgm_title: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+  - bgm_office: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+  - bgm_hospital: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+  - bgm_interrogation: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+  - bgm_basement: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+  - bgm_confession: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+  - bgm_report: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+  - bgm_ending_light: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+  - bgm_ending_dark: ElevenLabs Music (Eleven Music v2.5, 무료 플랜), 2026-11-11
+  - 배경음악은 Eleven Music(ElevenLabs 무료 플랜)으로 생성했다. 비상업적 이용.
 <!-- credits:end -->
 
 ---

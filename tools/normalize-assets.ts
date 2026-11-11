@@ -127,4 +127,10 @@ writeFileSync('src/data/illust-list.json', JSON.stringify(readdirSync(join(OUT, 
 writeFileSync(join(OUT, 'assets.json'), JSON.stringify(manifest, null, 1));
 const au = normalizeAudio();
 for (const w of au.warnings) console.warn(`! 소리 경고 — ${w}`);
+if (au.stats.length) { // BGM 음량·길이 표 (전 → 후)
+  const f = (n: number | undefined) => (n === undefined || Number.isNaN(n) ? '-' : n.toFixed(1));
+  console.log('BGM 재인코딩 (통합 음량 LUFS / 참 피크 dBTP / 길이 초)');
+  for (const t of au.stats) console.log(`  ${t.name.padEnd(18)} ${f(t.before?.i).padStart(6)} → ${f(t.after?.i).padStart(6)} LUFS · 피크 ${f(t.before?.tp).padStart(5)} → ${f(t.after?.tp).padStart(5)} · ${f(t.srcSec).padStart(6)}s → ${f(t.outSec).padStart(6)}s${t.loop ? ` (반복 · 시작 +${f(t.trimStart)}s · 끝 -${f(t.trimEnd)}s)` : ' (반복 안 함)'}`);
+  mkdirSync('.tmp', { recursive: true }); writeFileSync('.tmp/audio-report.json', JSON.stringify(au.stats, null, 1));
+}
 console.log(`assets: ${Object.keys(manifest).length} normalized, audio: BGM ${au.list.bgm.length}곡 · 효과음 ${au.list.sfx.length}개 (${(au.total / 1048576).toFixed(1)}MB, 재인코딩 ${au.reencoded}·복사 ${au.copied}, ${au.ffmpeg ? 'ffmpeg' : 'ffmpeg 없음'})`);

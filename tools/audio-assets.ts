@@ -6,6 +6,7 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
+import audioData from '../src/data/audio.json' with { type: 'json' };
 import { join } from 'node:path';
 
 export const AUDIO_BUDGET = 16 * 1024 * 1024;
@@ -13,8 +14,8 @@ export const BGM_MAX_SECONDS = 150; // 이보다 긴 곡은 경고 (실패 아�
 
 /** CREDITS.md → 화면에 보일 줄들 (제목·표 서식·강조 기호를 걷어 낸다) */
 export function parseCredits(md: string): string[] {
-  return md.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !/^[-|:\s]+$/.test(l))
-    .map((l) => l.replace(/^#+\s*/, '').replace(/^[-*]\s+/, '').replace(/\*\*|`/g, '').replace(/^\||\|$/g, '').replace(/\s*\|\s*/g, ' · ').trim()).filter(Boolean);
+  return md.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !/^[-|:\s]+$/.test(l))
+    .map((l) => l.replace(/^[-*]\s+/, '').replace(/\*\*|`/g, '').replace(/^\||\|$/g, '').replace(/\s*\|\s*/g, ' · ').trim()).filter(Boolean);
 }
 
 /** ffmpeg: devDependency ffmpeg-static 의 실행 파일을 쓴다 (없으면 시스템 ffmpeg, 둘 다 없으면 null → 원본 복사) */
@@ -42,9 +43,57 @@ export function durationOf(ff: string | null, file: string): number {
 }
 export const OGG_MIN_SECONDS = 1; // 이 길이 이상의 효과음은 OGG(Vorbis)로 줄인다
 
+// ---- BGM: 2-pass loudnorm(-23 LUFS, 참 피크 -2 dBTP 이하) + 반복 곡의 앞뒤 무음 정리 ----
+export const BGM_LUFS = -23, BGM_TP_LIMIT = -2;
+export interface Loud { i: number; tp: number; lra: number; thresh: number; offset: number }
+/** ffmpeg loudnorm(print_format=json) 출력에서 측정값을 읽는다 */
+export function parseLoudnorm(stderr: string): Loud | null {
+  const blocks = stderr.match(/\{[^{}]*"input_i"[^{}]*\}/g);
+  if (!blocks) return null;
+  try { const j = JSON.parse(blocks[blocks.length - 1]); return { i: +j.input_i, tp: +j.input_tp, lra: +j.input_lra, thresh: +j.input_thresh, offset: +j.target_offset }; } catch { return null; }
+}
+/** 앞·뒤의 거의 무음(-45dB 미만)만 걷어 낸다. 곡 중간의 조용한 구간은 그대로 둔다. */
+export const TRIM_FILTER = 'silenceremove=start_periods=1:start_threshold=-45dB:detection=peak,areverse,silenceremove=start_periods=1:start_threshold=-45dB:detection=peak,areverse';
+/** 원본의 앞·뒤 무음 길이(초): silencedetect -45dB, 0.3초 이상인 구간만 */
+export function edgeSilence(ff: string, file: string, dur: number): { start: number; end: number } {
+  const t = spawnSync(ff, ['-hide_banner', '-i', file, '-af', 'silencedetect=noise=-45dB:d=0.3', '-f', 'null', '-'], { encoding: 'utf8' }).stderr ?? '';
+  const starts = [...t.matchAll(/silence_start: ([\d.]+)/g)].map((m) => +m[1]), ends = [...t.matchAll(/silence_end: ([\d.]+)/g)].map((m) => +m[1]);
+  const start = starts[0] !== undefined && starts[0] < 0.05 && ends[0] !== undefined ? ends[0] : 0;
+  const lastStart = starts[starts.length - 1], tail = lastStart !== undefined && (ends.length < starts.length || dur - ends[ends.length - 1] < 0.05) ? dur - lastStart : 0;
+  return { start, end: tail };
+}
+export interface BgmStat { name: string; loop: boolean; srcSec: number; outSec: number; trimmed: boolean; trimStart: number; trimEnd: number; before: { i: number; tp: number } | null; after: { i: number; tp: number } | null }
+
+function measure(ff: string, file: string, pre: string): Loud | null {
+  const af = `${pre ? pre + ',' : ''}loudnorm=I=${BGM_LUFS}:TP=${BGM_TP_LIMIT}:LRA=11:print_format=json`;
+  return parseLoudnorm(spawnSync(ff, ['-hide_banner', '-nostats', '-i', file, '-af', af, '-f', 'null', '-'], { encoding: 'utf8' }).stderr ?? '');
+}
+/** 한 곡을 재인코딩한다 (원본은 건드리지 않는다). 성공하면 통계를 돌려준다. */
+export function encodeBgm(ff: string, from: string, to: string, name: string, loop: boolean): BgmStat | null {
+  const pre = loop ? TRIM_FILTER : '';
+  const before = measure(ff, from, ''), m = measure(ff, from, pre);
+  if (!m) return null;
+  const encode = (tp: number, gain: number) => spawnSync(ff, ['-y', '-loglevel', 'error', '-i', from, '-vn', '-af',
+    `${pre ? pre + ',' : ''}loudnorm=I=${BGM_LUFS}:TP=${tp}:LRA=11:measured_I=${m.i}:measured_TP=${m.tp}:measured_LRA=${m.lra}:measured_thresh=${m.thresh}:offset=${m.offset}:linear=true${gain ? `,volume=${gain.toFixed(2)}dB` : ''},aresample=44100`,
+    '-c:a', 'libmp3lame', '-b:a', '96k', '-ac', '2', '-ar', '44100', to]).status === 0;
+  // loudnorm 은 파형이 넓게 움직이는 곡에서 목표를 조금 비껴가므로, 결과를 다시 재서 ±0.4 LU 안으로 보정한다 (피크 -2 dBTP 한도 안에서)
+  let gain = 0;
+  if (!encode(BGM_TP_LIMIT - 0.5, gain)) return null; // MP3 로 다시 압축하면 피크가 조금 오르므로 여유를 둔다
+  let after = measure(ff, to, '');
+  for (let k = 0; k < 4 && after; k++) {
+    const need = BGM_LUFS - after.i;
+    if (after.tp > BGM_TP_LIMIT) gain -= after.tp - BGM_TP_LIMIT + 0.2;
+    else if (Math.abs(need) > 0.4 && after.tp + need <= BGM_TP_LIMIT - 0.1) gain += need;
+    else break;
+    if (!encode(BGM_TP_LIMIT - 0.5, gain)) return null;
+    after = measure(ff, to, '');
+  }
+  return { name, loop, srcSec: durationOf(ff, from), outSec: durationOf(ff, to), trimmed: loop, ...(loop ? (() => { const e = edgeSilence(ff, from, durationOf(ff, from)); return { trimStart: e.start, trimEnd: e.end }; })() : { trimStart: 0, trimEnd: 0 }), before: before && { i: before.i, tp: before.tp }, after: after && { i: after.i, tp: after.tp } };
+}
+
 export function normalizeAudio(src = 'art/source/audio', out = 'public/assets/audio') {
   const list = { bgm: [] as string[], sfx: [] as string[], ext: {} as Record<string, string> };
-  const info = { reencoded: 0, copied: 0, ogg: 0 }, warnings: string[] = [];
+  const info = { reencoded: 0, copied: 0, ogg: 0 }, warnings: string[] = [], stats: BgmStat[] = [];
   let total = 0;
   const ff = findFfmpeg();
   const run = (args: string[]) => !!ff && spawnSync(ff, ['-y', '-loglevel', 'error', ...args]).status === 0;
@@ -56,7 +105,7 @@ export function normalizeAudio(src = 'art/source/audio', out = 'public/assets/au
       const name = f.slice(0, -ext.length - 1), from = join(dir, f);
       let to = join(out, kind, `${name}.${ext}`), done = false;
       if (kind === 'bgm') { const sec = durationOf(ff, from); if (sec > BGM_MAX_SECONDS) warnings.push(`${name}: ${Math.round(sec)}초 — 150초를 넘는다 (용량 예산을 많이 쓴다)`); }
-      if (kind === 'bgm') done = run(['-i', from, '-vn', '-c:a', 'libmp3lame', '-b:a', '96k', '-ac', '2', '-ar', '44100', to]); // 원본은 그대로, 결과는 public 에만
+      if (kind === 'bgm' && ff) { const st = encodeBgm(ff, from, to, name, (audioData.bgm.tracks as Record<string, { loop?: boolean }>)[name]?.loop !== false); if (st) { done = true; stats.push(st); } } // 원본은 그대로, 결과는 public 에만
       else if (wavSeconds(readFileSync(from)) >= OGG_MIN_SECONDS) {
         const ogg = join(out, kind, `${name}.ogg`);
         if (run(['-i', from, '-c:a', 'libvorbis', '-q:a', '4', ogg])) { to = ogg; done = true; list.ext[name] = 'ogg'; info.ogg++; }
@@ -69,7 +118,7 @@ export function normalizeAudio(src = 'art/source/audio', out = 'public/assets/au
   const credits = join(src, 'bgm', 'CREDITS.md');
   writeFileSync('src/data/bgm-credits.json', JSON.stringify(existsSync(credits) ? parseCredits(readFileSync(credits, 'utf8')) : []));
   writeFileSync('src/data/audio-list.json', JSON.stringify(list));
-  return { list, total, ffmpeg: ff, warnings, ...info };
+  return { list, total, ffmpeg: ff, warnings, stats, ...info };
 }
 
 interface AudioData { bgm: { tracks: Record<string, unknown>; fallback: Record<string, string>; scene: Record<string, string>; area: Record<string, string>; dialogue: Record<string, string>; puzzle: string; ending: Record<string, string> }; sfx: { sounds: Record<string, unknown>; events: Record<string, string>; nodeEvents: Record<string, string>; roomAreas: string[] } }

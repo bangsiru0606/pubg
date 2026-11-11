@@ -4,7 +4,7 @@ import audio from '../src/data/audio.json';
 import real from '../src/data/dialogue.json';
 import endings from '../src/data/endings.json';
 import { areas } from '../src/explore/interaction';
-import { canPlay, loopEnvelope, pickBgm, resolveTrack, sfxGain, sfxVariants, bgmGain } from '../src/audio/resolve';
+import { canPlay, loopEnvelope, loopFade, pickBgm, resolveTrack, sfxGain, sfxVariants, bgmGain } from '../src/audio/resolve';
 import { checkAudio, parseCredits } from '../tools/audio-assets';
 
 const TRACKS = ['bgm_title', 'bgm_office', 'bgm_hospital', 'bgm_interrogation', 'bgm_basement', 'bgm_confession', 'bgm_report', 'bgm_ending_light', 'bgm_ending_dark'];
@@ -62,8 +62,12 @@ describe('트랙 대체·변주·음량 (순수 계산)', () => {
     expect(loopEnvelope(0, 60, 1.5)).toBe(0); expect(loopEnvelope(30, 60, 1.5)).toBe(1); expect(loopEnvelope(60, 60, 1.5)).toBe(0);
     expect(loopEnvelope(0.75, 60, 1.5)).toBeCloseTo(0.5); expect(loopEnvelope(5, Number.NaN, 1.5)).toBe(1);
   });
+  it('반복 곡 이음새는 등파워 교차: 시작 전 out=1·in=0, 끝에서 out=0·in=1, 가운데 합 파워 1', () => {
+    expect(loopFade(2, 2)).toEqual([1, 0]); const [o, i] = loopFade(0, 2); expect(o).toBeCloseTo(0); expect(i).toBeCloseTo(1);
+    const [a, b] = loopFade(1, 2); expect(a * a + b * b).toBeCloseTo(1);
+  });
   it('CREDITS.md 는 화면용 줄로 바뀐다', () => {
-    expect(parseCredits('# BGM 출처\n\n| 곡 | 도구 |\n|---|---|\n| bgm_title | **Eleven Music** |\n- bgm_hospital: ACE-Step\n')).toEqual(['BGM 출처', '곡 · 도구', 'bgm_title · Eleven Music', 'bgm_hospital: ACE-Step']);
+    expect(parseCredits('# BGM 출처\n\n| 곡 | 도구 |\n|---|---|\n| bgm_title | **Eleven Music** |\n- bgm_hospital: ACE-Step\n')).toEqual(['곡 · 도구', 'bgm_title · Eleven Music', 'bgm_hospital: ACE-Step']);
   });
 });
 

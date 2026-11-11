@@ -274,3 +274,5 @@
 .title .tm.wide .opt { text-align: left; white-space: pre; }
 .title .anykey { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font-size: 9px; color: #e2c98a; animation: anykey 1.6s ease-in-out infinite; }
 @keyframes anykey { 50% { opacity: .55; } }
+
+.title .ctrl.info { max-height: 176px; overflow-y: auto; }

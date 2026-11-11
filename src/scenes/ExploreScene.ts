@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import assetList from '../../public/assets/assets.json';
+import spec from '../../art/asset-spec.json';
 import { areaTrack, bgmBase, sceneTrack, sfx, transitionSfx } from '../audio/audio';
 import { openNamePopup } from '../ui/namepopup';
 import {
@@ -22,6 +23,7 @@ import { openNotebook } from '../ui/notebook';
 import { openViewer } from '../ui/viewer';
 
 const A = 'assets/';
+const CAMERA_MARGIN = 80; // 갈 수 없는 곳(계단 너머)을 이만큼까지 검게 보여 준다
 const SKIP_HOLD_MS = 600; // 컷신 연출 구간은 Enter 를 이만큼 길게 누르면 건너뛴다
 
 export class ExploreScene extends Phaser.Scene {
@@ -29,8 +31,11 @@ export class ExploreScene extends Phaser.Scene {
   player!: Phaser.GameObjects.Sprite;
   areaId = START.area;
   busy = false; // 전환 중
-  private minX = 0;
+  private minX = 0;  // 플레이어가 갈 수 있는 범위 (walk 가 있으면 그것, 없으면 구역 범위)
   private maxX = 0;
+  private camMin = 0;   // 카메라가 비출 수 있는 범위 (갈 수 없는 곳은 검은색)
+  private camMax = 0;
+  private scripted = new Set<Phaser.GameObjects.Sprite>(); // 연출이 직접 걷게 하는 스프라이트: 잠금 중에도 걷기 그림을 유지한다
   started = false;                 // 타이틀에서 새 게임/이어하기를 고른 뒤에만 자동 저장한다
   private reportCheckpoint = '';  // 씬 7 시작 시점 저장본(엔딩 D 재도전용)
   private npcSprites = new Map<string, Phaser.GameObjects.Sprite>();
@@ -52,14 +57,17 @@ export class ExploreScene extends Phaser.Scene {
   create() {
     const anim = (key: string, prefix: string, frames: string[], frameRate: number) =>
       this.anims.create({ key, frameRate, repeat: -1, frames: frames.map((f) => ({ key: `${prefix}_${f}` })) });
-    anim('player_walk', 'player', ['walk_0', 'walk_1', 'walk_2', 'walk_3'], 8);
     anim('player_idle', 'player', ['idle_0', 'idle_1'], 2);
     anim('eunho_idle', 'eunho', ['idle_0', 'idle_1'], 2);
     for (const k of Object.keys(assetList)) { // 생성 캐릭터(idle_0/1): `<id>_idle` 애니메이션
       const m = k.match(/^(.+)_idle_1$/);
       if (m && !this.anims.exists(`${m[1]}_idle`)) anim(`${m[1]}_idle`, m[1], ['idle_0', 'idle_1'], 2);
     }
-    anim('eunho_walk', 'eunho', ['walk_0', 'walk_1', 'walk_2', 'walk_3', 'walk_4', 'walk_5'], 8);
+    // 걷기: asset-spec 의 walk(공통 순서·fps)와 sequences[].walkCycle(인물별 순서)로 만든다. 걷기 그림이 없는 인물은 만들지 않고 idle 로 이동한다.
+    for (const q of spec.sequences as { id: string; walkCycle?: string[]; walkFps?: number }[]) {
+      const cycle = (q.walkCycle ?? spec.walk.cycle).map((f) => `${q.id}_${f}`);
+      if (cycle.filter((k) => k.includes('_walk_') && this.textures.exists(k)).length >= 2 && cycle.every((k) => this.textures.exists(k))) this.anims.create({ key: `${q.id}_walk`, frameRate: q.walkFps ?? spec.walk.fps, repeat: -1, frames: cycle.map((key) => ({ key })) });
+    }
     // 조사 지점 반짝임: 5×5 놋쇠색 2프레임 (0.8초 주기). 그림 파일 없이 코드로 만든다.
     const g = this.make.graphics({ x: 0, y: 0 }, false);
     g.fillStyle(0x3a2a10); g.fillRect(1, 1, 1, 1); g.fillRect(3, 1, 1, 1); g.fillRect(1, 3, 1, 1); g.fillRect(3, 3, 1, 1); // 안쪽 모서리의 어두운 점: 밝은 옷·벽 위에서도 보이게
@@ -84,7 +92,8 @@ export class ExploreScene extends Phaser.Scene {
     if (!this.state.visitedAreaIds.includes(id)) this.state.visitedAreaIds.push(id);
     if (this.started) bgmBase(areaTrack(id)); // 타이틀·이름 입력 중에는 타이틀 음악을 유지한다 (새 게임·퀵 시작은 각자 지정)
     const a = areas[id], g = GROUND_Y, w = a.maxX - a.minX;
-    this.minX = a.minX; this.maxX = a.maxX;
+    const walk = a.walk ?? { min: a.minX, max: a.maxX }, cm = a.walk ? CAMERA_MARGIN : 0;
+    this.minX = walk.min; this.maxX = walk.max; this.camMin = a.minX - cm; this.camMax = a.maxX + cm;
 
     // 배경: 지도 데이터(bg)가 지정한 텍스처가 모두 있으면 그림, 없으면 테마 색 사각형 (이전계획 3.3)
     const has = (k?: string): k is string => !!k && this.textures.exists(k);
@@ -99,6 +108,12 @@ export class ExploreScene extends Phaser.Scene {
       this.add.rectangle(a.minX, g, w, 270 - g, Phaser.Display.Color.HexStringToColor(t.floor).color).setOrigin(0, 0).setDepth(1);
       this.add.rectangle(a.minX, g, w, 2, 0x000000, 0.35).setOrigin(0, 0).setDepth(2);
     }
+    if (a.walk) { // 갈 수 없는 곳은 검은색: 구역 가장자리 안쪽을 3단계로 어둡게 이어 붙인다 (픽셀 그라데이션)
+      for (const [i, al] of [0.3, 0.55, 0.8].entries()) {
+        this.add.rectangle(a.minX + i * 8, 0, 8, 270, 0x000000, al).setOrigin(0, 0).setDepth(2.5);
+        this.add.rectangle(a.maxX - (i + 1) * 8, 0, 8, 270, 0x000000, al).setOrigin(0, 0).setDepth(2.5);
+      }
+    }
     for (const o of a.objects ?? []) if (has(o.tex)) this.add.image(o.x, g - o.bottom, o.tex).setOrigin(0.5, 1).setDepth(o.tex === 'door' ? 4 : 3);
 
     for (const pr of a.props ?? []) {
@@ -111,7 +126,7 @@ export class ExploreScene extends Phaser.Scene {
     if (this.started) saveGame(this.state);
     this.player = this.add.sprite(spawnX, g, 'player_idle_0').setOrigin(0.5, 1).setFlipX(flip).setDepth(6).play('player_idle');
     const cam = this.cameras.main;
-    cam.setBounds(a.minX, 0, w, 270);
+    cam.setBounds(this.camMin, 0, this.camMax - this.camMin, 270);
     cam.startFollow(this.player, true);
     cam.centerOn(this.player.x, 135);
   }
@@ -127,8 +142,9 @@ export class ExploreScene extends Phaser.Scene {
   private drawInteractableArt(a: (typeof areas)[string], it: Interactable) {
     const g = GROUND_Y;
     if (it.type === 'transition') {
-      if (it.art && this.textures.exists(it.art)) { // 아트가 있는 문·계단은 그림으로, 없으면 아래 placeholder
-        if (!(a.objects ?? []).some((o) => o.tex === it.art)) this.add.image(it.x, g, it.art).setOrigin(0.5, 1).setDepth(it.kind === 'door' ? 4 : 3);
+      const art = !isAvailable(it, this.state) && it.artLocked && this.textures.exists(it.artLocked) ? it.artLocked : it.art; // 잠겨 있을 때는 닫힌 그림(artLocked), 열린 뒤에는 art
+      if (art && this.textures.exists(art)) { // 아트가 있는 문·계단은 그림으로, 없으면 아래 placeholder
+        if (!(a.objects ?? []).some((o) => o.tex === art)) this.add.image(it.x, g, art).setOrigin(0.5, 1).setDepth(it.kind === 'door' ? 4 : 3);
         return;
       }
       const stairs = it.kind === 'stairs';
@@ -152,13 +168,13 @@ export class ExploreScene extends Phaser.Scene {
   update(_t: number, dt: number) {
     this.lastDt = dt;
     if (this.camPan) { // 컷신용 느린 카메라 이동 (프레임 시간에 맞춘 지수 보간)
-      const cam = this.cameras.main, want = Phaser.Math.Clamp(this.camPan.obj.x - cam.width / 2, this.minX, this.maxX - cam.width);
+      const cam = this.cameras.main, want = Phaser.Math.Clamp(this.camPan.obj.x - cam.width / 2, this.camMin, this.camMax - cam.width);
       const k = 1 - Math.pow(1 - this.camPan.smooth, dt / 16.7);
       cam.scrollX += (want - cam.scrollX) * (this.skip ? 1 : k);
     }
     this.heldMs = this.locked && !isModalOpen() && isEnterHeld() ? this.heldMs + dt : 0; // 연출 건너뛰기: Enter 길게 누르기
     this.skip = this.heldMs >= SKIP_HOLD_MS;
-    if (this.locked) { if (!isModalOpen() && this.player.anims.currentAnim?.key !== 'player_idle') this.player.play('player_idle'); return; }
+    if (this.locked) { if (!isModalOpen() && !this.scripted.has(this.player) && this.player.anims.currentAnim?.key !== 'player_idle') this.player.play('player_idle'); return; } // 연출이 걷게 하는 동안(scripted)은 그림을 건드리지 않는다
     if (this.busy || isModalOpen()) { this.player.anims.currentAnim?.key !== 'player_idle' && this.player.play('player_idle'); return; }
     const dir = (isHeld('ArrowRight') || isHeld('d') ? 1 : 0) - (isHeld('ArrowLeft') || isHeld('a') ? 1 : 0);
     const speed = PLAYER_SPEED * (isHeld('Shift') ? RUN_MULTIPLIER : 1);
@@ -250,7 +266,7 @@ export class ExploreScene extends Phaser.Scene {
   private announceBasement() {
     if (!isBasementOpen(this.state) || hasFlag(this.state, 'basement_announced')) return;
     setFlag(this.state, 'basement_announced');
-    openDialogue(this.state, 'mono_basement_open');
+    openDialogue(this.state, 'mono_basement_open'); // 철창문이 열리는 순간의 gate_clank 는 audio.json nodeEvents(mono_basement_open:m)
   }
 
   private talk(npc: Npc) {
@@ -371,9 +387,9 @@ export class ExploreScene extends Phaser.Scene {
         case 'walk': {
           const sp = this.actorOf(s.actor!), key = this.keyOf(s.actor!), walkAnim = this.anims.exists(`${key}_walk`) ? `${key}_walk` : `${key}_idle`; // 걷는 그림이 없는 인물은 서 있는 그림 그대로 미끄러진다
           const toX = s.toX ?? this.player.x + (s.gap ?? 56);
-          sp.setFlipX(walkFlip(key, sp.x, toX)).play(walkAnim, true);
+          sp.setFlipX(walkFlip(key, sp.x, toX)).play(walkAnim, true); this.scripted.add(sp);
           while (Math.abs(sp.x - toX) > 0.5 && !this.skip) { sp.x += Math.sign(toX - sp.x) * Math.min(Math.abs(toX - sp.x), (s.speed ?? 135) * (this.lastDt / 1000)); await this.frame(); }
-          sp.x = toX; sp.play(`${key}_idle`, true);
+          sp.x = toX; this.scripted.delete(sp); sp.play(`${key}_idle`, true);
           if (s.actor === 'eunho' && s.toX === undefined) sp.setFlipX(flipFor(key, true)); // 도착하면 플레이어(왼쪽)를 본다
           break;
         }

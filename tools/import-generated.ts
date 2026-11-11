@@ -12,6 +12,7 @@ export interface Spec { ignoreGenerated?: string[]; pending?: string[]; sequence
 export const PROP_HEIGHT: Record<string, number> = {
   // 이전계획 2장·3.3.1 규격
   door: 117, door_hospital: 117, door_director: 117, door_staff: 117, stairs_up: 90, stairs_down: 90, stairs_basement: 90,
+  stairs_basement_closed: 90, // 잠긴 지하 철창문 (열린 stairs_basement 와 같은 크기)
   cleaning_cart: 54, bed_ward: 40, bed_empty: 40, director_desk: 59, lee_desk: 59, director_chair: 40, altar: 50,
   // 규격에 수치가 없는 소품의 초안 값 (배치 5 화면 검수로 조정한 값)
   papers_floor: 10, blood_mark: 8, order_emblem: 32, broadcast_board: 66, baek_pc: 46, nurse_counter: 70, ledger_shelf: 80, code_chart: 60, belongings_locker: 84, cold_crate: 40,
@@ -47,6 +48,19 @@ export function draftFromManifest(manifest: ManifestEntry[], spec: Pick<Spec, 's
   return draft;
 }
 
+/**
+ * 이미 있는 인물(sequence)에 걷기 그림(walk_N)이 새로 들어왔으면 frames 에 더한다 (idle_0 숨쉬기 생성은 그대로).
+ * 걷기 순서·속도는 asset-spec 의 walk 규칙(걷기 2장 → idle_0 → 걷기 2장, 공통 fps)이 자동으로 적용한다. 더한 텍스처 이름(`baek_walk_0` …)을 돌려준다.
+ */
+export function mergeWalkFrames(spec: Pick<Spec, 'sequences'>, manifest: ManifestEntry[]): string[] {
+  const added: string[] = [];
+  for (const q of spec.sequences) {
+    const walks = manifest.filter((e) => e.kind === 'sprite' && e.file.startsWith(`characters/${q.id}/`)).map((e) => basename(e.file, '.png')).filter((f) => /^walk_\d+$/.test(f)).sort();
+    for (const f of walks) if (!q.frames.includes(f)) { q.frames.push(f); added.push(`${q.id}_${f}`); }
+  }
+  return added;
+}
+
 /** 파일이 들어온 항목의 pending 을 지운다: 텍스처는 새로 만든 spec 항목 id, 초상은 3개 표정이 모두 manifest 에 있는 인물 */
 export function clearPending(spec: { pending?: string[] }, chars: { id: string; portrait: string | null; expressions?: string[]; pending?: boolean }[], manifest: ManifestEntry[], added: string[]) {
   if (spec.pending) spec.pending = spec.pending.filter((id) => !added.includes(id));
@@ -63,7 +77,8 @@ if (process.argv[1]?.endsWith('import-generated.ts')) {
   if (process.argv.includes('--apply')) {
     spec.sequences.push(...draft.sequences); spec.sprites.push(...draft.sprites); spec.illust.push(...draft.illust);
     const chars = JSON.parse(readFileSync('src/data/characters.json', 'utf8'));
-    clearPending(spec as { pending?: string[] }, chars.characters, JSON.parse(readFileSync(MANIFEST, 'utf8')), [...draft.sprites.map((s) => s.id), ...draft.sequences.map((q) => q.id)]);
+    const walkAdded = mergeWalkFrames(spec, JSON.parse(readFileSync(MANIFEST, 'utf8'))); // 백선우 walk_0~3 처럼 걷기 그림이 새로 들어온 인물
+    clearPending(spec as { pending?: string[] }, chars.characters, JSON.parse(readFileSync(MANIFEST, 'utf8')), [...draft.sprites.map((s) => s.id), ...draft.sequences.map((q) => q.id), ...walkAdded]);
     writeFileSync('src/data/characters.json', JSON.stringify(chars, null, 1) + '\n');
     writeFileSync('art/asset-spec.json', JSON.stringify(spec, null, 2) + '\n');
     console.log(`asset-spec.json 에 ${n}개 항목을 추가했다.`);

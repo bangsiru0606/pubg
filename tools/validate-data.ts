@@ -192,7 +192,7 @@ for (const [key, lines] of Object.entries(endingLines)) {
   for (const a of Object.values(areas)) {
     if (a.bg) [a.bg.wall, a.bg.floor, a.bg.topband].forEach((k) => k && want.add(k));
     (a.objects ?? []).forEach((o) => want.add(o.tex)); (a.props ?? []).forEach((p) => p.tex && want.add(p.tex));
-    for (const it of a.interactables) if ('art' in it && it.art) want.add(it.art);
+    for (const it of a.interactables) { if ('art' in it && it.art) want.add(it.art); if ('artLocked' in it && it.artLocked) want.add(it.artLocked); }
     Object.values(a.npcSprite ?? {}).forEach((s) => want.add(`${s}_idle_0`));
   }
   const specPending = new Set<string>(((JSON.parse(readFileSync('art/asset-spec.json', 'utf8')) as { pending?: string[] }).pending) ?? []);
@@ -217,17 +217,22 @@ for (const [key, lines] of Object.entries(endingLines)) {
   const sizes = JSON.parse(readFileSync('public/assets/assets.json', 'utf8')) as Record<string, { h: number }>;
   for (const [aid, a] of Object.entries(areas)) { const off = a.bg?.wallOffsetY ?? 0, wh = a.bg ? sizes[a.bg.wall]?.h : undefined; if (off && wh !== undefined && off > wh - GROUND_Y) err(`map/${aid}: wallOffsetY ${off} 이 크다 — 화면 위쪽에 빈틈이 생긴다 (최대 ${wh - GROUND_Y})`); if (off < 0) err(`map/${aid}: wallOffsetY 는 0 이상`); }
 }
-{ // 맵 끝: 구역은 카메라 폭(480) 이상이고, 가장 바깥 물체·도착 지점에서 100px 넘게 빈 바닥이 이어지지 않는다
+{ // 맵 끝: 구역은 카메라 폭(480) 이상이고, 걸을 수 있는 빈 바닥이 가장 바깥 물체·도착 지점에서 100px 넘게 이어지지 않는다.
+  // walk 가 있으면 그 범위가 걸을 수 있는 곳이고, 벽·바닥 범위(minX~maxX) 밖은 검은색이다. 물체의 가운데(계단·문 앞)까지 걸을 수 있어야 한다.
   const sizes = JSON.parse(readFileSync('public/assets/assets.json', 'utf8')) as Record<string, { w: number }>;
   const spawns: Record<string, number[]> = {};
   for (const a of Object.values(areas)) for (const it of a.interactables) if (it.type === 'transition') (spawns[it.to] ??= []).push(it.spawnX);
   for (const [aid, a] of Object.entries(areas)) {
     if (a.maxX - a.minX < 480) err(`map/${aid}: 폭 ${a.maxX - a.minX} 이 카메라 폭 480 보다 좁다`);
+    const lo = a.walk?.min ?? a.minX, hi = a.walk?.max ?? a.maxX;
+    if (a.walk && (a.walk.min < a.minX || a.walk.max > a.maxX || a.walk.min >= a.walk.max)) err(`map/${aid}: walk(${a.walk.min}~${a.walk.max}) 가 벽·바닥 범위(${a.minX}~${a.maxX}) 밖이다`);
     const w = (tex?: string, d = 24) => (tex ? sizes[tex]?.w ?? d : d);
     const ents = [...a.interactables.map((i) => [i.x, w('art' in i ? i.art : undefined)] as const), ...(a.objects ?? []).map((o) => [o.x, w(o.tex)] as const), ...(a.props ?? []).map((p) => [p.x, w(p.tex, p.w)] as const)];
-    const L = Math.min(...ents.map(([x, ww]) => x - ww / 2), ...(spawns[aid] ?? [])), R = Math.max(...ents.map(([x, ww]) => x + ww / 2), ...(spawns[aid] ?? []));
-    if (a.minX < L - 100) err(`map/${aid}: 왼쪽 끝(${a.minX})에서 가장 바깥 물체(${Math.round(L)})까지 빈 바닥이 100px 넘게 이어진다`);
-    if (a.maxX > R + 100) err(`map/${aid}: 오른쪽 끝(${a.maxX})에서 가장 바깥 물체(${Math.round(R)})까지 빈 바닥이 100px 넘게 이어진다`);
+    const sp = spawns[aid] ?? [];
+    const L = Math.min(...ents.map(([x, ww]) => (a.walk ? x : x - ww / 2)), ...sp), R = Math.max(...ents.map(([x, ww]) => (a.walk ? x : x + ww / 2)), ...sp);
+    if (lo < L - 100) err(`map/${aid}: 왼쪽 끝(${lo})에서 가장 바깥 물체(${Math.round(L)})까지 걸을 수 있는 빈 바닥이 100px 넘게 이어진다`);
+    if (hi > R + 100) err(`map/${aid}: 오른쪽 끝(${hi})에서 가장 바깥 물체(${Math.round(R)})까지 걸을 수 있는 빈 바닥이 100px 넘게 이어진다`);
+    if (a.walk) { for (const x of [...ents.map(([x0]) => x0), ...sp]) if (x < lo - 1 || x > hi + 1) err(`map/${aid}: 물체·도착 지점 ${x} 가 걸을 수 있는 범위(${lo}~${hi}) 밖이다`); }
   }
 }
 { // 퍼즐 근거 규칙(evidenceLinks): 슬롯·허용 근거가 실재하고, 맥락 단서는 근거가 아니다
@@ -240,6 +245,9 @@ for (const [key, lines] of Object.entries(endingLines)) {
       for (const id of ids) { const e = evidenceById.get(id); if (!e && !statementIds.has(id)) err(`${p.id}/${slot}: 없는 근거 ${id}`); if (e?.sourceType === 'context') err(`${p.id}/${slot}: 맥락 단서 ${id} 는 근거가 될 수 없다`); }
     }
   }
+}
+{ // 초상 방향: 초상이 있는 인물은 원래 보는 방향(portraitFacing)이 있어야 한다
+  for (const c of characters as unknown as { id: string; portrait: string | null; portraitFacing?: string }[]) if (c.portrait && !['left', 'right', 'front'].includes(c.portraitFacing ?? '')) err(`characters/${c.id}: portraitFacing(left|right|front) 이 없다`);
 }
 { // 구역 연출(stage) 단계와 대사 표시 방식(voice)
   for (const [aid, a] of Object.entries(areas)) for (const s of a.stage?.steps ?? []) {

@@ -4,9 +4,9 @@ import spec from '../../art/asset-spec.json';
 import { condMet, hasFlag, type GameState } from '../core';
 
 interface Gate { requires?: string; requiresEvidence?: string[]; hideWhen?: string; showWhen?: string }
-export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string; cutsceneDialogue?: string; art?: string; auto?: boolean; sfx?: string; lockedSfx?: string }
+export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string; cutsceneDialogue?: string; art?: string; artLocked?: string; auto?: boolean; sfx?: string; lockedSfx?: string }
 export interface Npc extends Gate { type: 'npc'; id: string; x: number; name: string; dialogueId: string; autoTrigger?: { x: number; width: number }; autoWhen?: string[]; silent?: boolean } // autoWhen: 모든 플래그가 서면 한 번 자동 시작, silent: 그림·프롬프트 없는 장면 사건
-export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[]; art?: string; artBottom?: number; sparkle?: boolean }
+export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[]; art?: string; artBottom?: number; sparkle?: boolean; doneFlag?: string }
 export type Interactable = Transition | Npc | Examine;
 export interface Prop { id: string; x: number; w: number; h: number; color: string; label: string; showWhen?: string; tex?: string }
 export interface OpeningStep { do: 'dialogue' | 'camera' | 'appear' | 'hide' | 'face' | 'wait' | 'walk' | 'refresh' | 'unlock' | 'hints'; id?: string; docs?: boolean; to?: string; smooth?: number; settle?: boolean; actor?: string; dir?: 'left' | 'right'; sec?: number; gap?: number; toX?: number; speed?: number; texts?: string[] }
@@ -14,6 +14,7 @@ export interface Opening { closeup: string; actors: Record<string, { sprite: str
 export interface AreaDef {
   name: string; theme: string; minX: number; maxX: number; bg?: { wall: string; floor: string; topband?: string; wallOffsetY?: number }; // wallOffsetY: 벽 그림을 아래로 내리는 px (난간을 허리 높이로). 원본·정규화 결과는 그대로, 내려간 아래쪽은 바닥이 덮는다
   objects?: { id: string; tex: string; x: number; bottom: number }[];
+  walk?: { min: number; max: number }; // 플레이어가 갈 수 있는 범위 (계단·문 앞). minX/maxX 는 벽·바닥을 그리는 범위, 그 밖은 검은색
   stage?: { flag: string; steps: OpeningStep[] }; // 처음 들어왔을 때의 연출 (flag 가 서 있으면 재생하지 않는다)
   interactables: Interactable[]; props?: Prop[]; npcSprite?: Record<string, string>; npcFacing?: Record<string, 'left' | 'right'>;
 }
@@ -34,6 +35,7 @@ export function isAvailable(it: Interactable, s: GameState): boolean {
 }
 /** 조사 지점을 이미 조사했는가: 단서는 모두 얻었고, 퍼즐이 딸려 있으면 한 번 열었거나 풀었다. 반짝임 표시는 조사 전에만 띄운다. */
 export function isExamined(it: Examine, s: GameState): boolean {
+  if (it.doneFlag) return hasFlag(s, it.doneFlag); // 단서 없이 독백·관찰만 있는 지점: 그 독백을 한 번 보면 조사를 마친 것
   const ids = [...(it.evidenceId ? [it.evidenceId] : []), ...(it.evidenceIds ?? [])];
   if (ids.some((id) => !s.evidenceIds.includes(id))) return false;
   if (it.puzzleId) return s.solvedPuzzleIds.includes(it.puzzleId) || hasFlag(s, `puzzle_opened:${it.puzzleId}`);
@@ -48,7 +50,7 @@ export const isHidden = (it: Interactable, s: GameState) => (!!it.hideWhen && ha
 export function promptOf(it: Interactable): { label: string; action: string } {
   if (it.type === 'npc') return { label: it.name, action: '대화하기' };
   if (it.type === 'examine') return { label: it.name, action: '조사하기' };
-  return { label: it.label, action: it.kind === 'stairs' ? '이동하기' : '들어가기' };
+  return { label: it.label, action: it.label.includes('나가기') ? '나가기' : it.kind === 'stairs' ? '이동하기' : '들어가기' };
 }
 
 /** 가장 가까운 대상 1개 (범위 안). 사용 불가(잠김)면 null — 프롬프트도 뜨지 않는다. */

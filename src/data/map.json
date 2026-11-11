@@ -68,7 +68,7 @@
      "type": "transition",
      "id": "door_out",
      "x": 540,
-     "label": "[나가기]",
+     "label": "[사무실] 나가기",
      "to": "floor1",
      "spawnX": 0,
      "kind": "door",
@@ -138,7 +138,8 @@
      "art": "stairs_basement",
      "lockedDialogue": "mono_basement_locked",
      "sfx": "onGate",
-     "lockedSfx": "onGate"
+     "lockedSfx": "onGate",
+     "artLocked": "stairs_basement_closed"
     },
     {
      "type": "transition",
@@ -231,6 +232,10 @@
       "do": "unlock"
      }
     ]
+   },
+   "walk": {
+    "min": 0,
+    "max": 1620
    }
   },
   "room_director": {
@@ -280,6 +285,15 @@
      ],
      "art": "floor_plan_board",
      "artBottom": 40
+    },
+    {
+     "type": "examine",
+     "id": "chair",
+     "x": 700,
+     "name": "책상 의자",
+     "dialogueId": "mono_chair",
+     "art": "director_chair",
+     "doneFlag": "chair_checked"
     }
    ],
    "bg": {
@@ -292,12 +306,6 @@
      "id": "blood",
      "tex": "blood_mark",
      "x": 125,
-     "bottom": 0
-    },
-    {
-     "id": "chair",
-     "tex": "director_chair",
-     "x": 700,
      "bottom": 0
     },
     {
@@ -383,6 +391,10 @@
     "wall": "ward_wall",
     "floor": "ward_floor",
     "wallOffsetY": 66
+   },
+   "walk": {
+    "min": 0,
+    "max": 1350
    }
   },
   "room_choi": {
@@ -577,6 +589,10 @@
     "wall": "staff_wall",
     "floor": "wood_floor",
     "wallOffsetY": 66
+   },
+   "walk": {
+    "min": 0,
+    "max": 945
    }
   },
   "room_baek": {
@@ -809,6 +825,10 @@
    "bg": {
     "wall": "basement_wall",
     "floor": "basement_floor"
+   },
+   "walk": {
+    "min": 0,
+    "max": 945
    }
   }
  },

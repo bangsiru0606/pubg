@@ -103,7 +103,8 @@
       "jeong_haneul_final:f1": "onHeartbeat",
       "jeong_haneul_final:f8": "onBroadcast",
       "eunho_message:m2": "onHeartbeat",
-      "eunho_message:a1": "onTransferDone"
+      "eunho_message:a1": "onTransferDone",
+      "mono_basement_open:m": "onGate"
     },
     "roomAreas": [
       "office",

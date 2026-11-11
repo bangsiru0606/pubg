@@ -7,7 +7,7 @@ import { PROP_HEIGHT } from '../tools/import-generated';
 // docs/에셋_생성_프롬프트.md 배치 4·5 파일명
 const WALLS = ['director_wall', 'ward_wall', 'patientroom_wall', 'staff_wall', 'nurse_wall', 'basement_wall', 'lobby_wall', 'wall'];
 const FLOORS = ['wood_floor', 'ward_floor', 'basement_floor', 'lobby_floor_v2', 'floor'];
-const PROPS = ['door_hospital', 'door_director', 'door_staff', 'stairs_up', 'stairs_down', 'stairs_basement', 'cleaning_cart', 'papers_floor', 'altar', 'blood_mark', 'director_desk', 'director_chair', 'order_emblem', 'bed_ward', 'bed_empty', 'broadcast_board', 'baek_pc', 'nurse_counter', 'lee_desk', 'ledger_shelf', 'code_chart', 'belongings_locker', 'cold_crate', 'floor_plan_board'];
+const PROPS = ['door_hospital', 'door_director', 'door_staff', 'stairs_up', 'stairs_down', 'stairs_basement', 'cleaning_cart', 'papers_floor', 'altar', 'blood_mark', 'director_desk', 'director_chair', 'order_emblem', 'bed_ward', 'bed_empty', 'broadcast_board', 'baek_pc', 'nurse_counter', 'lee_desk', 'ledger_shelf', 'code_chart', 'belongings_locker', 'cold_crate', 'floor_plan_board', 'stairs_basement_closed'];
 
 describe('배치 3~5 미리 연결', () => {
   it('구역 배경 키는 모두 프롬프트 문서의 파일명이다', () => {
@@ -21,7 +21,7 @@ describe('배치 3~5 미리 연결', () => {
     const keys = new Set<string>();
     for (const a of Object.values(areas)) {
       (a.objects ?? []).forEach((o) => keys.add(o.tex)); (a.props ?? []).forEach((p) => p.tex && keys.add(p.tex));
-      for (const it of a.interactables) if ('art' in it && it.art) keys.add(it.art);
+      for (const it of a.interactables) { if ('art' in it && it.art) keys.add(it.art); if ('artLocked' in it && it.artLocked) keys.add(it.artLocked); }
     }
     for (const k of keys) if (k !== 'door' && k !== 'window' && k !== 'desk_bg' && k !== 'evidence_board') { expect(PROPS, k).toContain(k); expect(PROP_HEIGHT[k], k).toBeGreaterThan(0); }
     // 배치 5 의 23개 중 쓰이지 않는 것이 없다

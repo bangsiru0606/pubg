@@ -2,6 +2,7 @@
 import { availableChoices, startNodeOf, characterName, enterNode, shownEvidence, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
 import { bgmPop, bgmPush, dialogueTrack, nodeSfx, sfx } from '../audio/audio';
 import { dialogues } from '../explore/content';
+import { characters } from '../core';
 import illustList from '../data/illust-list.json'; // 초상 파일이 아직 없으면 회색 실루엣 placeholder
 import { el, esc, root, showToast } from './hud';
 import { popModal, pushModal } from './input';
@@ -10,6 +11,9 @@ import { TYPE_LABEL } from './labels';
 const CHAR_MS = 22;
 type Item = { label: string; run: () => void; disabled?: boolean };
 
+/** 초상 파일 접두사(player·eunho·baek…) → 원래 보는 방향 (characters.json portraitFacing). 초상은 대화창 왼쪽에 있으므로 오른쪽(화면 안쪽)을 보게 한다. */
+const FACING = Object.fromEntries((characters as unknown as { portrait: string | null; portraitFacing?: string }[]).filter((c) => c.portrait).map((c) => [c.portrait, c.portraitFacing ?? 'front']));
+export const portraitFlipped = (key: string) => FACING[key.split('_')[0]] === 'left';
 export function hasDialogue(id: string) { return !!dialogues[id]; }
 
 /** 대화가 끝난 뒤 이어지는 장면(Dialogue.then)을 처리하는 쪽 (탐색 장면이 등록한다) */
@@ -76,7 +80,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   }
   function render() {
     // 초상이 아직 없는 인물은 회색 실루엣 placeholder (한지수·박은호 그림을 대신 쓰지 않는다)
-    const portrait = node.noPortrait ? '' : node.portrait && illustList.includes(node.portrait) ? `<img class="portrait" src="assets/illust/${node.portrait}.webp" alt="">`
+    const portrait = node.noPortrait ? '' : node.portrait && illustList.includes(node.portrait) ? `<img class="portrait${portraitFlipped(node.portrait) ? ' flip' : ''}" src="assets/illust/${node.portrait}.webp" alt="">`
       : node.speaker !== 'han_jisu' ? '<div class="portrait ph"><i></i><b></b></div>' : '';
     box.className = 'dlg' + (portrait ? ' has-portrait' : '') + (picker ? ' picking' : '');
     let opts = '';

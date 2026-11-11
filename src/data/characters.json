@@ -4,12 +4,14 @@
   {
    "id": "han_jisu",
    "name": "한지수",
-   "portrait": "player"
+   "portrait": "player",
+   "portraitFacing": "left"
   },
   {
    "id": "park_eunho",
    "name": "박은호",
-   "portrait": "eunho"
+   "portrait": "eunho",
+   "portraitFacing": "left"
   },
   {
    "id": "park_eunji",
@@ -29,7 +31,8 @@
     "neutral",
     "shaken",
     "confession"
-   ]
+   ],
+   "portraitFacing": "left"
   },
   {
    "id": "baek_sunwoo",
@@ -39,7 +42,8 @@
     "neutral",
     "cold",
     "tense"
-   ]
+   ],
+   "portraitFacing": "front"
   },
   {
    "id": "oh_miran",
@@ -49,7 +53,8 @@
     "neutral",
     "guilty",
     "tearful"
-   ]
+   ],
+   "portraitFacing": "front"
   },
   {
    "id": "lee_hyejeong",
@@ -59,7 +64,8 @@
     "neutral",
     "contempt",
     "tense"
-   ]
+   ],
+   "portraitFacing": "right"
   },
   {
    "id": "choi_okja",
@@ -69,7 +75,8 @@
     "neutral",
     "devout",
     "confused"
-   ]
+   ],
+   "portraitFacing": "front"
   },
   {
    "id": "han_yujin",
@@ -79,7 +86,8 @@
     "neutral",
     "fear",
     "earnest"
-   ]
+   ],
+   "portraitFacing": "right"
   },
   {
    "id": "chae_soyeon",
@@ -89,7 +97,8 @@
     "neutral",
     "worried",
     "earnest"
-   ]
+   ],
+   "portraitFacing": "front"
   },
   {
    "id": "broadcast",

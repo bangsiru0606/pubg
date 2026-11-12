@@ -139,7 +139,9 @@
      "lockedDialogue": "mono_basement_locked",
      "sfx": "onGate",
      "lockedSfx": "onGate",
-     "artLocked": "stairs_basement_closed"
+     "artLocked": "stairs_basement_closed",
+     "cutscene": "basement_intro",
+     "cutsceneDialogue": "mono_basement_intro"
     },
     {
      "type": "transition",
@@ -575,8 +577,8 @@
     {
      "type": "transition",
      "id": "door_lee",
-     "x": 945,
-     "label": "[이혜정실] 들어가기",
+     "x": 870,
+     "label": "[이사실] 들어가기",
      "to": "room_lee",
      "spawnX": 50,
      "kind": "door",
@@ -624,7 +626,12 @@
      "evidenceId": "E07_report_revision",
      "requires": "baek_refused",
      "puzzleId": "P03_revision_diff",
-     "art": "baek_pc"
+     "art": "desk_pc",
+     "artFallback": {
+      "art": "baek_pc",
+      "base": "director_desk",
+      "artBottom": 52
+     }
     }
    ],
    "npcSprite": {
@@ -686,7 +693,7 @@
    }
   },
   "room_lee": {
-   "name": "이혜정실",
+   "name": "이사실",
    "theme": "admin",
    "minX": -45,
    "maxX": 526,
@@ -697,7 +704,7 @@
      "x": 0,
      "label": "복도로 나가기",
      "to": "floor3",
-     "spawnX": 895,
+     "spawnX": 918,
      "kind": "door",
      "art": "door_staff"
     },
@@ -705,14 +712,14 @@
      "type": "npc",
      "id": "lee",
      "x": 180,
-     "name": "이혜정",
+     "name": "이혜정 이사",
      "dialogueId": "lee_hyejeong"
     },
     {
      "type": "examine",
      "id": "desk",
      "x": 340,
-     "name": "이혜정의 책상",
+     "name": "이혜정 이사의 책상",
      "evidenceIds": [
       "E10_consent_forms",
       "E11_transfer_order"
@@ -755,7 +762,8 @@
      "to": "floor1",
      "spawnX": 1390,
      "kind": "stairs",
-     "art": "stairs_up"
+     "art": "stairs_up",
+     "flipArt": true
     },
     {
      "type": "examine",
@@ -792,14 +800,15 @@
     {
      "type": "npc",
      "id": "haneul_b1",
-     "x": 150,
+     "x": 756,
      "name": "정하늘",
      "dialogueId": "jeong_haneul_final",
-     "showWhen": "diary_closed",
-     "hideWhen": "haneul_confessed",
+     "hideWhen": "haneul_cleared",
      "autoWhen": [
       "diary_closed"
-     ]
+     ],
+     "inertWhen": "haneul_confessed",
+     "introScene": "haneul_arrival"
     },
     {
      "type": "npc",
@@ -827,6 +836,61 @@
    "walk": {
     "min": 0,
     "max": 945
+   },
+   "scenes": {
+    "haneul_arrival": [
+     {
+      "do": "wait",
+      "sec": 0.5
+     },
+     {
+      "do": "walk",
+      "actor": "player",
+      "toX": 816
+     },
+     {
+      "do": "face",
+      "actor": "player",
+      "dir": "left"
+     },
+     {
+      "do": "sfx",
+      "id": "onFootstep",
+      "times": 5,
+      "every": 0.45
+     },
+     {
+      "do": "place",
+      "actor": "npc:haneul_b1",
+      "edge": "left",
+      "offset": -24
+     },
+     {
+      "do": "appear",
+      "actor": "npc:haneul_b1"
+     },
+     {
+      "do": "walk",
+      "actor": "npc:haneul_b1",
+      "toX": 756
+     },
+     {
+      "do": "face",
+      "actor": "npc:haneul_b1",
+      "dir": "right"
+     },
+     {
+      "do": "wait",
+      "sec": 0.3
+     },
+     {
+      "do": "dialogue",
+      "id": "jeong_haneul_final"
+     },
+     {
+      "do": "unlock"
+     }
+    ]
    }
   }
  },

@@ -512,7 +512,17 @@
     "characters/baek/idle_1.png",
     "backgrounds/lobby_floor.png"
   ],
-  "pending": [],
+  "pending": [
+    "desk_pc",
+    "basement_intro",
+    "newspaper_desk",
+    "ev_newspaper",
+    "haneul_walk_0",
+    "haneul_walk_1",
+    "haneul_walk_pass",
+    "haneul_walk_2",
+    "haneul_walk_3"
+  ],
   "illustExclude": [
     "ev_altar_blood.png"
   ]

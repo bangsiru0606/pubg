@@ -45,7 +45,7 @@ describe('걷기 5프레임·1/3 속도 (asset-spec 데이터)', () => {
     for (const f of Object.values({ ...p.frameSrc, ...e.frameSrc })) expect(existsSync(`art/source/${f}.png`), f).toBe(true);
   });
   it('백선우 걷기 5장이 들어왔다(pending 없음), 정규화는 발 하단 줄 정렬', () => {
-    expect(spec.pending).toEqual([]);
+    expect(spec.pending.filter((id: string) => id.startsWith('baek_'))).toEqual([]);
     const b = seqs.find((q) => q.id === 'baek') as Seq & { alignFeet?: boolean };
     expect(b.frames).toEqual(expect.arrayContaining(['idle_0', 'walk_0', 'walk_1', 'walk_2', 'walk_3', 'walk_pass'])); expect(b.alignFeet).toBe(true);
   });

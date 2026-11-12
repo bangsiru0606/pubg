@@ -4,17 +4,18 @@ import spec from '../../art/asset-spec.json';
 import { condMet, hasFlag, type GameState } from '../core';
 
 interface Gate { requires?: string; requiresEvidence?: string[]; hideWhen?: string; showWhen?: string }
-export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string; cutsceneDialogue?: string; art?: string; artLocked?: string; auto?: boolean; sfx?: string; lockedSfx?: string }
-export interface Npc extends Gate { type: 'npc'; id: string; x: number; name: string; dialogueId: string; autoTrigger?: { x: number; width: number }; autoWhen?: string[]; silent?: boolean } // autoWhen: 모든 플래그가 서면 한 번 자동 시작, silent: 그림·프롬프트 없는 장면 사건
-export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[]; art?: string; artBottom?: number; sparkle?: boolean; doneFlag?: string }
+export interface Transition extends Gate { type: 'transition'; id: string; x: number; label: string; to: string; spawnX: number; kind: 'door' | 'stairs'; lockedDialogue?: string; cutscene?: string; cutsceneDialogue?: string; art?: string; artLocked?: string; flipArt?: boolean; auto?: boolean; sfx?: string; lockedSfx?: string }
+export interface Npc extends Gate { type: 'npc'; id: string; x: number; name: string; dialogueId: string; autoTrigger?: { x: number; width: number }; autoWhen?: string[]; silent?: boolean; inertWhen?: string; introScene?: string } // autoWhen: 모든 플래그가 서면 한 번 자동 시작, silent: 그림·프롬프트 없는 장면 사건, introScene: 자동 시작 때 대화 대신 구역의 scenes.<이름> 연출을 재생(NPC 는 연출이 등장시킬 때까지 숨어 있다), inertWhen: 이 플래그가 서면 그림은 남지만 말을 걸 수 없다
+export interface Examine extends Gate { type: 'examine'; id: string; x: number; name: string; evidenceId?: string; closeup?: string; dialogueId?: string; puzzleId?: string; evidenceIds?: string[]; art?: string; artBottom?: number; artFallback?: { art: string; base?: string; artBottom?: number }; sparkle?: boolean; doneFlag?: string } // artFallback: art 그림이 아직 없을 때 대신 그리는 기존 그림(base 는 그 밑에 깔 소품)
 export type Interactable = Transition | Npc | Examine;
 export interface Prop { id: string; x: number; w: number; h: number; color: string; label: string; showWhen?: string; tex?: string }
-export interface OpeningStep { do: 'dialogue' | 'camera' | 'appear' | 'hide' | 'face' | 'wait' | 'walk' | 'refresh' | 'unlock' | 'hints'; id?: string; docs?: boolean; to?: string; smooth?: number; settle?: boolean; actor?: string; dir?: 'left' | 'right'; sec?: number; gap?: number; toX?: number; speed?: number; texts?: string[] }
+export interface OpeningStep { do: 'dialogue' | 'camera' | 'appear' | 'hide' | 'face' | 'wait' | 'walk' | 'refresh' | 'unlock' | 'hints' | 'sfx' | 'place'; x?: number; times?: number; every?: number; edge?: 'left' | 'right'; offset?: number; id?: string; docs?: boolean; to?: string; smooth?: number; settle?: boolean; actor?: string; dir?: 'left' | 'right'; sec?: number; gap?: number; toX?: number; speed?: number; texts?: string[] }
 export interface Opening { closeup: string; actors: Record<string, { sprite: string; x: number; facing: 'left' | 'right' }>; steps: OpeningStep[] }
 export interface AreaDef {
   name: string; theme: string; minX: number; maxX: number; bg?: { wall: string; floor: string; topband?: string; wallOffsetY?: number }; // wallOffsetY: 벽 그림을 아래로 내리는 px (난간을 허리 높이로). 원본·정규화 결과는 그대로, 내려간 아래쪽은 바닥이 덮는다
   objects?: { id: string; tex: string; x: number; bottom: number }[];
   walk?: { min: number; max: number }; // 플레이어가 갈 수 있는 범위 (계단·문 앞). minX/maxX 는 벽·바닥을 그리는 범위, 그 밖은 검은색
+  scenes?: Record<string, OpeningStep[]>; // 이름 붙은 연출 (NPC 의 introScene)
   stage?: { flag: string; steps: OpeningStep[] }; // 처음 들어왔을 때의 연출 (flag 가 서 있으면 재생하지 않는다)
   interactables: Interactable[]; props?: Prop[]; npcSprite?: Record<string, string>; npcFacing?: Record<string, 'left' | 'right'>;
 }
@@ -57,6 +58,7 @@ export function promptOf(it: Interactable): { label: string; action: string } {
 export function nearest(area: AreaDef, x: number, s: GameState, range = INTERACT_RANGE): Interactable | null {
   let best: Interactable | null = null, bd = Infinity;
   for (const it of area.interactables) {
+    if (it.type === 'npc' && it.inertWhen && hasFlag(s, it.inertWhen)) continue; // 장면 중 서 있기만 하는 NPC
     const d = Math.abs(it.x - x);
     if (d <= range && d < bd && !isHidden(it, s)) { best = it; bd = d; }
   }
@@ -68,7 +70,7 @@ export function nearest(area: AreaDef, x: number, s: GameState, range = INTERACT
 export const triggerKey = (areaId: string, npcId: string) => `trigger_fired:${areaId}:${npcId}`;
 export function autoTriggered(areaId: string, area: AreaDef, x: number, s: GameState): Npc | null {
   for (const it of area.interactables) {
-    if (it.type !== 'npc' || hasFlag(s, triggerKey(areaId, it.id))) continue;
+    if (it.type !== 'npc' || hasFlag(s, triggerKey(areaId, it.id)) || (it.inertWhen && hasFlag(s, it.inertWhen))) continue;
     if (it.autoWhen && it.autoWhen.every((f) => hasFlag(s, f)) && !(it.hideWhen && hasFlag(s, it.hideWhen))) return it;
     if (it.autoTrigger && !isHidden(it, s) && Math.abs(x - it.autoTrigger.x) <= it.autoTrigger.width / 2) return it;
   }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import characters from '../src/data/characters.json';
 import real from '../src/data/dialogue.json';
+import spec from '../art/asset-spec.json';
 import { areas } from '../src/explore/interaction';
 import { PROP_HEIGHT } from '../tools/import-generated';
 
@@ -23,9 +24,10 @@ describe('배치 3~5 미리 연결', () => {
       (a.objects ?? []).forEach((o) => keys.add(o.tex)); (a.props ?? []).forEach((p) => p.tex && keys.add(p.tex));
       for (const it of a.interactables) { if ('art' in it && it.art) keys.add(it.art); if ('artLocked' in it && it.artLocked) keys.add(it.artLocked); }
     }
-    for (const k of keys) if (k !== 'door' && k !== 'window' && k !== 'desk_bg' && k !== 'evidence_board') { expect(PROPS, k).toContain(k); expect(PROP_HEIGHT[k], k).toBeGreaterThan(0); }
+    const pend = new Set<string>(spec.pending as string[]); // 그림이 오기 전 대체 표시를 쓰는 항목(desk_pc)은 PROPS(배치 5 파일)에 아직 없다
+    for (const k of keys) if (!pend.has(k) && k !== 'door' && k !== 'window' && k !== 'desk_bg' && k !== 'evidence_board') { expect(PROPS, k).toContain(k); expect(PROP_HEIGHT[k], k).toBeGreaterThan(0); }
     // 배치 5 의 23개 중 쓰이지 않는 것이 없다
-    expect([...keys].filter((k) => PROPS.includes(k)).sort()).toEqual([...PROPS].sort());
+    expect([...keys].filter((k) => PROPS.includes(k)).sort()).toEqual([...PROPS].filter((k) => k !== 'baek_pc').sort()); // baek_pc 는 desk_pc 가 오기 전 대체 그림(artFallback)
   });
   it('초상: 생성 인물의 대사 표정은 characters.json 의 expressions 안에 있다', () => {
     const ch = new Map((characters.characters as { id: string; portrait: string | null; expressions?: string[] }[]).map((c) => [c.id, c]));

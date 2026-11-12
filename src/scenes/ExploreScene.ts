@@ -18,7 +18,8 @@ import { openCutscene } from '../ui/cutscene';
 import { openPuzzle } from '../ui/puzzle';
 import { hasDialogue, openDialogue, setThenHandler } from '../ui/dialogue';
 import { fadeThrough, queueHints, setPrompt, showToast } from '../ui/hud';
-import { clearInput, consumePress, isEnterHeld, isHeld, isModalOpen, setTabHandler } from '../ui/input';
+import { clearInput, consumePress, isEnterHeld, isHeld, isModalOpen, setLogHandler, setTabHandler } from '../ui/input';
+import { openBacklog, setBacklogArea } from '../ui/backlog';
 import { openNotebook } from '../ui/notebook';
 import { openViewer } from '../ui/viewer';
 
@@ -74,8 +75,14 @@ export class ExploreScene extends Phaser.Scene {
     g.fillStyle(0x3a2a10); g.fillRect(1, 1, 1, 1); g.fillRect(3, 1, 1, 1); g.fillRect(1, 3, 1, 1); g.fillRect(3, 3, 1, 1); // 안쪽 모서리의 어두운 점: 밝은 옷·벽 위에서도 보이게
     g.fillStyle(0xe2c98a); g.fillRect(2, 0, 1, 5); g.fillRect(0, 2, 5, 1); g.fillStyle(0xfff3c4); g.fillRect(2, 2, 1, 1); g.generateTexture('sparkle_0', 5, 5); g.clear();
     g.fillStyle(0xb08a3c); g.fillRect(1, 1, 3, 3); g.fillStyle(0xe2c98a); g.fillRect(2, 2, 1, 1); g.generateTexture('sparkle_1', 5, 5); g.destroy();
+    { // 맵 끝 그라데이션: 왼쪽 끝이 완전한 검정, 오른쪽(걸을 수 있는 쪽)이 투명. 오른쪽 끝은 뒤집어 쓴다.
+      const N = 96, cv = this.textures.createCanvas('edge_fade', N, 1)!, ctx = cv.getContext();
+      for (let i = 0; i < N; i++) { const u = i / (N - 1); ctx.fillStyle = `rgba(0,0,0,${Math.pow(1 - u, 1.7).toFixed(4)})`; ctx.fillRect(i, 0, 1, 1); }
+      cv.refresh();
+    }
     this.anims.create({ key: 'sparkle', frameRate: 2.5, repeat: -1, frames: [{ key: 'sparkle_0' }, { key: 'sparkle_1' }] });
     setTabHandler(() => { if (this.started && !this.locked && !this.busy && !isModalOpen()) openNotebook(this.state, () => {}); });
+    setLogHandler(() => { if (this.started && !this.busy && !isModalOpen()) openBacklog(); });
     setThenHandler((t) => { if (t === 'report') this.startReport(); });
     this.buildArea(START.area, START.x);
     if (!this.started) bgmBase(sceneTrack('title')); // 타이틀이 먼저 열려 있으면 타이틀 음악
@@ -86,34 +93,34 @@ export class ExploreScene extends Phaser.Scene {
     const flip = this.player?.flipX ?? flipFor('player', false); // 처음엔 오른쪽을 본다
     this.children.removeAll(true);
     this.camPan = null;
-    this.areaId = id;
+    this.areaId = id; setBacklogArea(id);
     this.npcSprites.clear();
     this.state.currentSceneId = id;
     this.state.playerX = spawnX;
     if (!this.state.visitedAreaIds.includes(id)) this.state.visitedAreaIds.push(id);
     if (this.started) bgmBase(areaTrack(id)); // 타이틀·이름 입력 중에는 타이틀 음악을 유지한다 (새 게임·퀵 시작은 각자 지정)
-    const a = areas[id], g = GROUND_Y, w = a.maxX - a.minX;
+    const a = areas[id], g = GROUND_Y;
     const walk = a.walk ?? { min: a.minX, max: a.maxX }, cm = a.walk ? CAMERA_MARGIN : 0;
     this.minX = walk.min; this.maxX = walk.max; this.camMin = a.minX - cm; this.camMax = a.maxX + cm;
 
     // 배경: 지도 데이터(bg)가 지정한 텍스처가 모두 있으면 그림, 없으면 테마 색 사각형 (이전계획 3.3)
     const has = (k?: string): k is string => !!k && this.textures.exists(k);
+    // 갈 수 없는 곳까지 벽·바닥을 이어 그린다(타일 위상은 구역 기준 그대로): 끝에서 검정 띠가 갑자기 시작되지 않고, 아래 가장자리 그라데이션이 부드럽게 어두워진다
+    const bgL = a.walk ? this.camMin : a.minX, bgW = (a.walk ? this.camMax : a.maxX) - bgL;
     if (a.bg && has(a.bg.wall) && has(a.bg.floor)) {
       const tex = (k: string) => this.textures.get(k).getSourceImage() as HTMLImageElement;
-      const tile = (k: string, y: number, depth: number) => this.add.tileSprite(a.minX, y, w, tex(k).height, k).setOrigin(0, 0).setDepth(depth);
+      const tile = (k: string, y: number, depth: number) => this.add.tileSprite(bgL, y, bgW, tex(k).height, k).setOrigin(0, 0).setTilePosition(bgL - a.minX, 0).setDepth(depth);
       tile(a.bg.wall, g - tex(a.bg.wall).height + (a.bg.wallOffsetY ?? 0), 0); tile(a.bg.floor, g, 1);
       if (has(a.bg.topband)) tile(a.bg.topband, g - tex(a.bg.topband).height, 2);
     } else {
       const t = themes[a.theme] ?? themes.admin;
-      this.add.rectangle(a.minX, g - 270, w, 270, Phaser.Display.Color.HexStringToColor(t.wall).color).setOrigin(0, 0).setDepth(0);
-      this.add.rectangle(a.minX, g, w, 270 - g, Phaser.Display.Color.HexStringToColor(t.floor).color).setOrigin(0, 0).setDepth(1);
-      this.add.rectangle(a.minX, g, w, 2, 0x000000, 0.35).setOrigin(0, 0).setDepth(2);
+      this.add.rectangle(bgL, g - 270, bgW, 270, Phaser.Display.Color.HexStringToColor(t.wall).color).setOrigin(0, 0).setDepth(0);
+      this.add.rectangle(bgL, g, bgW, 270 - g, Phaser.Display.Color.HexStringToColor(t.floor).color).setOrigin(0, 0).setDepth(1);
+      this.add.rectangle(bgL, g, bgW, 2, 0x000000, 0.35).setOrigin(0, 0).setDepth(2);
     }
-    if (a.walk) { // 갈 수 없는 곳은 검은색: 구역 가장자리 안쪽을 3단계로 어둡게 이어 붙인다 (픽셀 그라데이션)
-      for (const [i, al] of [0.3, 0.55, 0.8].entries()) {
-        this.add.rectangle(a.minX + i * 8, 0, 8, 270, 0x000000, al).setOrigin(0, 0).setDepth(2.5);
-        this.add.rectangle(a.maxX - (i + 1) * 8, 0, 8, 270, 0x000000, al).setOrigin(0, 0).setDepth(2.5);
-      }
+    if (a.walk) { // 걸을 수 있는 끝에서 바깥으로 갈수록 옅은 검정 → 완전한 검정 (카메라 끝에서 100% 검정 = 페이지 배경과 같은 #000, 경계선이 없다)
+      this.add.image(this.camMin, 0, 'edge_fade').setOrigin(0, 0).setDisplaySize(walk.min - this.camMin, 270).setDepth(2.5);
+      this.add.image(walk.max, 0, 'edge_fade').setOrigin(0, 0).setFlipX(true).setDisplaySize(this.camMax - walk.max, 270).setDepth(2.5);
     }
     for (const o of a.objects ?? []) if (has(o.tex)) this.add.image(o.x, g - o.bottom, o.tex).setOrigin(0.5, 1).setDepth(o.tex === 'door' ? 4 : 3);
 
@@ -135,9 +142,17 @@ export class ExploreScene extends Phaser.Scene {
   private drawInteractable(a: (typeof areas)[string], it: Interactable) {
     this.drawInteractableArt(a, it);
     if (showsSparkle(it, this.state)) { // 아직 조사하지 않은 지점 위에 반짝임 (캐릭터보다 위 레이어)
-      const g = GROUND_Y, art = it.type === 'examine' && it.art && this.textures.exists(it.art) ? (this.textures.get(it.art).getSourceImage() as HTMLImageElement).height + (it.artBottom ?? 0) : 22;
+      const g = GROUND_Y, ea = this.examineArt(it), art = ea ? (this.textures.get(ea.tex).getSourceImage() as HTMLImageElement).height + ea.bottom : 22;
       this.add.sprite(it.x, g - art - 5, 'sparkle_0').setOrigin(0.5, 1).setDepth(7).play('sparkle');
     }
+  }
+
+  /** 조사 지점에 실제로 그릴 그림: art, 없으면 artFallback(예: desk_pc 가 오기 전의 baek_pc 를 책상 위에) */
+  private examineArt(it: Interactable): { tex: string; bottom: number; base?: string } | null {
+    if (it.type !== 'examine' || !it.art) return null;
+    if (this.textures.exists(it.art)) return { tex: it.art, bottom: it.artBottom ?? 0 };
+    const fb = it.artFallback;
+    return fb && this.textures.exists(fb.art) ? { tex: fb.art, bottom: fb.artBottom ?? it.artBottom ?? 0, base: fb.base && this.textures.exists(fb.base) ? fb.base : undefined } : null;
   }
 
   private drawInteractableArt(a: (typeof areas)[string], it: Interactable) {
@@ -145,7 +160,7 @@ export class ExploreScene extends Phaser.Scene {
     if (it.type === 'transition') {
       const art = !isAvailable(it, this.state) && it.artLocked && this.textures.exists(it.artLocked) ? it.artLocked : it.art; // 잠겨 있을 때는 닫힌 그림(artLocked), 열린 뒤에는 art
       if (art && this.textures.exists(art)) { // 아트가 있는 문·계단은 그림으로, 없으면 아래 placeholder
-        if (!(a.objects ?? []).some((o) => o.tex === art)) this.add.image(it.x, g, art).setOrigin(0.5, 1).setDepth(it.kind === 'door' ? 4 : 3);
+        if (!(a.objects ?? []).some((o) => o.tex === art)) this.add.image(it.x, g, art).setOrigin(0.5, 1).setFlipX(!!it.flipArt).setDepth(it.kind === 'door' ? 4 : 3);
         return;
       }
       const stairs = it.kind === 'stairs';
@@ -153,13 +168,15 @@ export class ExploreScene extends Phaser.Scene {
       if (stairs) for (let i = 1; i < 5; i++) this.add.rectangle(it.x, g - i * 18, 56, 1, 0x000000, 0.35).setOrigin(0.5, 1).setDepth(4);
     } else if (it.type === 'npc') {
       const sprite = a.npcSprite?.[it.id];
-      if (sprite && this.textures.exists(`${sprite}_idle_0`)) this.npcSprites.set(it.id, this.add.sprite(it.x, g, `${sprite}_idle_0`).setOrigin(0.5, 1).setFlipX(flipFor(sprite, a.npcFacing?.[it.id] === 'left')).setDepth(5).play(`${sprite}_idle`));
+      if (sprite && this.textures.exists(`${sprite}_idle_0`)) this.npcSprites.set(it.id, this.add.sprite(it.x, g, `${sprite}_idle_0`).setOrigin(0.5, 1).setFlipX(flipFor(sprite, a.npcFacing?.[it.id] === 'left')).setDepth(5).setVisible(!(it.introScene && !hasFlag(this.state, triggerKey(this.areaId, it.id)))).play(`${sprite}_idle`));
       else { // 회색 실루엣 placeholder (몸 + 머리)
         this.add.rectangle(it.x, g, 30, 66, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
         this.add.rectangle(it.x, g - 66, 22, 24, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
       }
-    } else if (it.art && this.textures.exists(it.art)) { // 조사 지점 그림이 있으면 노란 마름모 대신 그림 (그림 자체가 조사 대상)
-      this.add.image(it.x, g - (it.artBottom ?? 0), it.art).setOrigin(0.5, 1).setDepth(3); // artBottom: 벽에 거는 그림은 바닥선 위로 띄운다
+    } else if (this.examineArt(it)) { // 조사 지점 그림이 있으면 노란 마름모 대신 그림 (그림 자체가 조사 대상)
+      const { tex, bottom, base } = this.examineArt(it)!;
+      if (base) this.add.image(it.x, g, base).setOrigin(0.5, 1).setDepth(3);
+      this.add.image(it.x, g - bottom, tex).setOrigin(0.5, 1).setDepth(base ? 3.1 : 3); // artBottom: 벽에 거는 그림은 바닥선 위로 띄운다
     } else if (!it.closeup && isAvailable(it, this.state)) {
       this.add.rectangle(it.x, g - 14, 12, 12, 0xe8d36a).setAngle(45).setDepth(5).setStrokeStyle(1, 0x000000, 0.6); // 조사 지점
     }
@@ -189,7 +206,7 @@ export class ExploreScene extends Phaser.Scene {
 
     const area = areas[this.areaId];
     const auto = autoTriggered(this.areaId, area, p.x, this.state);
-    if (auto) { setFlag(this.state, triggerKey(this.areaId, auto.id)); this.talk(auto); return; }
+    if (auto) { setFlag(this.state, triggerKey(this.areaId, auto.id)); if (auto.introScene) void this.playScene(auto.introScene); else this.talk(auto); return; }
 
     const it = nearest(area, p.x, this.state);
     setPrompt(it ? promptOf(it) : null);
@@ -303,9 +320,14 @@ export class ExploreScene extends Phaser.Scene {
   /** 씬 7: 시작 시점을 저장해 두고(엔딩 D 재도전용) 최종 보고서를 연다 */
   startReport() {
     setPrompt(null);
-    this.reportCheckpoint = JSON.stringify(this.state);
-    saveGame(this.state, undefined, 'report');
-    openReport(this.state, () => this.showEnding());
+    this.busy = true;
+    // 증거 보존 선택이 끝날 때까지 남아 있던 정하늘은 보고서로 넘어가는 페이드 속에서 정리한다
+    void fadeThrough(0.4, 0.4, () => {
+      setFlag(this.state, 'haneul_cleared'); this.buildArea(this.areaId, this.player.x);
+      this.reportCheckpoint = JSON.stringify(this.state);
+      saveGame(this.state, undefined, 'report');
+      openReport(this.state, () => this.showEnding());
+    }).then(() => { this.busy = false; });
   }
 
   private showEnding() {
@@ -368,6 +390,14 @@ export class ExploreScene extends Phaser.Scene {
     await this.runSteps(st.steps);
   }
 
+  /** 구역의 이름 붙은 연출 (map.json areas.<구역>.scenes.<이름>) */
+  private async playScene(name: string) {
+    const steps = areas[this.areaId].scenes?.[name];
+    if (!steps) return;
+    this.locked = true; clearInput(); setPrompt(null);
+    await this.runSteps(steps);
+  }
+
   /** 연출 단계 실행 (오프닝·구역 연출 공통). 단계 데이터는 map.json. */
   private async runSteps(steps: OpeningStep[]) {
     const cam = this.cameras.main;
@@ -399,6 +429,8 @@ export class ExploreScene extends Phaser.Scene {
         case 'refresh': this.buildArea(this.areaId, this.player.x); break; // NPC 퇴장·소품 등장을 반영해 구역을 다시 그린다
         case 'unlock': follow('player', 1); this.camPan = null; this.locked = false; this.started = true; clearInput(); saveGame(this.state); break;
         case 'hints': queueHints(s.texts ?? [], s.sec ?? 4); break;
+        case 'sfx': for (let i = 0; i < (s.times ?? 1) && !this.skip; i++) { sfx(s.id!); if (i + 1 < (s.times ?? 1)) await this.sleep(s.every ?? 0.4); } break; // 소리만 (예: 계단 쪽 발소리)
+        case 'place': { const sp = this.actorOf(s.actor!), cam = this.cameras.main; sp.x = s.x ?? (s.edge === 'right' ? cam.scrollX + cam.width : cam.scrollX) + (s.offset ?? 0); break; } // 화면 가장자리 바로 밖에 세운다
       }
     }
   }

@@ -14,11 +14,11 @@ const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 const cw = (fn: string) => page.evaluate(`(() => { const cw = window.__cw; return ${fn}; })()`);
 await page.goto(pathToFileURL(resolve('.tmp/e2e/index.html')).href); await page.waitForFunction(() => (window as any).__cw?.scene?.player); await page.waitForSelector('#title');
 await cw('cw.quick()'); await cw("cw.state.flags.push('trigger_fired:floor1:baek')"); await page.waitForTimeout(300);
-for (const id of ['floor1', 'floor2', 'floor3', 'b1']) {
+for (const id of Object.keys(areas)) { // 모든 구역(사무실·병실 포함)
   const a = areas[id];
   const lo = (a as { walk?: { min: number; max: number } }).walk?.min ?? a.minX, hi = (a as { walk?: { min: number; max: number } }).walk?.max ?? a.maxX;
   for (const [side, x] of [['L', lo], ['R', hi]] as const) {
-    await cw(`cw.scene.go('${id}', ${x})`); await page.waitForTimeout(900); await cw(`cw.scene.teleportX(${x})`); await page.waitForTimeout(400);
+    await cw(`cw.scene.go('${id}', ${x})`); await page.waitForTimeout(700); await cw(`cw.scene.teleportX(${x})`); await page.waitForTimeout(400);
     await page.screenshot({ path: `.tmp/ends_${label}_${id}_${side}.png` });
   }
 }

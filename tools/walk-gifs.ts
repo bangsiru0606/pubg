@@ -9,7 +9,7 @@ const spec = JSON.parse(readFileSync('art/asset-spec.json', 'utf8')) as { walk: 
 const ff = findFfmpeg();
 if (!ff) throw new Error('ffmpeg 가 없다');
 const RUN = (JSON.parse(readFileSync('src/data/map.json', 'utf8')) as { runMultiplier: number }).runMultiplier;
-for (const [id, mode] of [['player', 'walk'], ['player', 'run'], ['eunho', 'walk'], ['baek', 'walk']] as const) { // 달리기는 이동 속도와 같은 배수로 fps 를 올린다
+for (const [id, mode] of [['player', 'walk'], ['player', 'run'], ['eunho', 'walk'], ['baek', 'walk'], ['haneul', 'walk']] as const) { // 달리기는 이동 속도와 같은 배수로 fps 를 올린다
   const q = spec.sequences.find((x) => x.id === id)!, cycle = q.walkCycle ?? spec.walk.cycle, fps = (q.walkFps ?? spec.walk.fps) * (mode === 'run' ? RUN : 1);
   const dir = `.tmp/gif_${mode}_${id}`; rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
   const S = 4, W = 70 * S, H = 94 * S;
@@ -24,9 +24,10 @@ for (const [id, mode] of [['player', 'walk'], ['player', 'run'], ['eunho', 'walk
 }
 
 // 대기 → 걷기 → 대기 전환 (몸 크기·발 높이가 바뀌지 않는지 확인): 바닥선(분홍 줄)과 머리 높이 줄(청록)을 함께 그린다 → docs/screenshots/walk_transition_<인물>.gif
-for (const id of ['player', 'eunho', 'baek']) {
+for (const id of ['player', 'eunho', 'baek', 'haneul']) {
   const q = spec.sequences.find((x) => x.id === id)!, cycle = q.walkCycle ?? spec.walk.cycle, fps = spec.walk.fps;
-  const seq = ['idle_0', 'idle_0', 'idle_0', ...cycle, ...cycle, 'idle_0', 'idle_0', 'idle_0'];
+  const stop = id === 'haneul' ? 'idle_side' : 'idle_0'; // 정하늘은 걷다 멈추면 옆모습 정지 그림
+  const seq = [stop, stop, stop, ...cycle, ...cycle, stop, stop, stop];
   const dir = `.tmp/gif_transition_${id}`; rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
   const S = 4, W = 70 * S, H = 94 * S, groundY = H - 2 * S;
   for (const [i, f] of seq.entries()) {

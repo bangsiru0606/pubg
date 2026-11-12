@@ -67,7 +67,7 @@ describe('despill full (소품 전용)', () => {
     const { readFileSync } = await import('node:fs');
     const spec = JSON.parse(readFileSync('art/asset-spec.json', 'utf8'));
     const props = spec.sprites.filter((s: any) => s.despill === 'full');
-    expect(props.length).toBe(25); // 배치 6 에서 floor_plan_board·stairs_basement_closed 가 늘었다
+    expect(props.length).toBe(29); // 배치 6 에서 floor_plan_board·stairs_basement_closed, 배치 8 에서 desk_pc·doctrine_frame·prayer_corner·donor_plaque 가 늘었다
     for (const s of props) {
       const { data } = await sharp(`public/assets/${s.id}.png`).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
       let bad = 0; for (let i = 0; i < data.length; i += 4) if (data[i + 3] && data[i + 1] - Math.max(data[i], data[i + 2]) > 8) bad++;

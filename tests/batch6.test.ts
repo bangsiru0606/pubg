@@ -8,8 +8,8 @@ import map from '../src/data/map.json';
 import illustList from '../src/data/illust-list.json';
 
 describe('배치 6 적용', () => {
-  it('pending 은 배치 8 대기 목록뿐이다 (그림이 오면 지우고 이 목록도 줄인다)', () => {
-    expect(spec.pending).toEqual(['desk_pc', 'basement_intro', 'newspaper_desk', 'ev_newspaper', 'haneul_walk_0', 'haneul_walk_1', 'haneul_walk_pass', 'haneul_walk_2', 'haneul_walk_3']);
+  it('pending 은 비었다 (배치 8 적용)', () => {
+    expect(spec.pending).toEqual([]);
   });
   it('증거 근접 그림 5장이 해당 단서의 상세 보기에 연결된다', () => {
     const want: Record<string, string> = { E02_altar_blood: 'ev_altar_blood_v2', E04_wristband_fragment: 'ev_wristband', E06_torn_sleeve: 'ev_torn_sleeve', E09_sedative_gap: 'ev_syringe_bag', E14_belongings_diary: 'ev_belongings' };

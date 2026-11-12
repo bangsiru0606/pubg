@@ -20,7 +20,6 @@
       "facing": "left",
       "frames": [
         "idle_0",
-        "idle_1",
         "walk_0",
         "walk_1",
         "walk_2",
@@ -35,9 +34,11 @@
         "walk_1": "generated/characters/player/walk_1_v2",
         "walk_2": "generated/characters/player/walk_2_v2",
         "walk_3": "generated/characters/player/walk_3_v2",
-        "walk_pass": "generated/characters/player/walk_pass_v2"
+        "walk_pass": "generated/characters/player/walk_pass_v2",
+        "idle_0": "generated/characters/player/idle_0"
       },
-      "alignFeet": true
+      "alignFeet": true,
+      "breathe": true
     },
     {
       "id": "eunho",
@@ -45,7 +46,6 @@
       "facing": "left",
       "frames": [
         "idle_0",
-        "idle_1",
         "walk_0",
         "walk_1",
         "walk_2",
@@ -62,10 +62,12 @@
         "walk_1": "generated/characters/eunho/walk_1_v2",
         "walk_2": "generated/characters/eunho/walk_2_v2",
         "walk_3": "generated/characters/eunho/walk_3_v2",
-        "walk_pass": "generated/characters/eunho/walk_pass_v3"
+        "walk_pass": "generated/characters/eunho/walk_pass_v3",
+        "idle_0": "generated/characters/eunho/idle_0"
       },
       "alignFeet": true,
-      "walkScale": 1.034
+      "walkScale": 1.034,
+      "breathe": true
     },
     {
       "id": "baek",
@@ -85,7 +87,10 @@
       "breathe": true,
       "outline": true,
       "draft": true,
-      "alignFeet": true
+      "alignFeet": true,
+      "frameSrc": {
+        "idle_0": "generated/characters/baek/idle_0_v2"
+      }
     },
     {
       "id": "oh",
@@ -161,7 +166,13 @@
       "id": "haneul",
       "src": "generated/characters/haneul",
       "frames": [
-        "idle_0"
+        "idle_0",
+        "idle_side",
+        "walk_0",
+        "walk_1",
+        "walk_2",
+        "walk_3",
+        "walk_pass"
       ],
       "canvasHeight": 90,
       "colours": 64,
@@ -169,7 +180,8 @@
       "chromaKey": true,
       "breathe": true,
       "draft": true,
-      "outline": true
+      "outline": true,
+      "alignFeet": true
     }
   ],
   "sprites": [
@@ -317,7 +329,7 @@
     },
     {
       "id": "stairs_down",
-      "src": "generated/props/stairs_down.png",
+      "src": "generated/props/stairs_down_v2.png",
       "outline": true,
       "despill": "full",
       "height": 90,
@@ -486,6 +498,42 @@
       "height": 90,
       "chromaKey": true,
       "draft": true
+    },
+    {
+      "id": "desk_pc",
+      "src": "generated/props/desk_pc.png",
+      "outline": true,
+      "despill": "full",
+      "height": 90,
+      "chromaKey": true,
+      "draft": true
+    },
+    {
+      "id": "doctrine_frame",
+      "src": "generated/props/doctrine_frame.png",
+      "outline": true,
+      "despill": "full",
+      "height": 40,
+      "chromaKey": true,
+      "draft": true
+    },
+    {
+      "id": "prayer_corner",
+      "src": "generated/props/prayer_corner.png",
+      "outline": true,
+      "despill": "full",
+      "height": 50,
+      "chromaKey": true,
+      "draft": true
+    },
+    {
+      "id": "donor_plaque",
+      "src": "generated/props/donor_plaque.png",
+      "outline": true,
+      "despill": "full",
+      "height": 36,
+      "chromaKey": true,
+      "draft": true
     }
   ],
   "illust": [
@@ -502,7 +550,8 @@
   ],
   "masks": [
     "Resources/Art/Office/hat.png",
-    "Resources/Art/Office/calendar.png"
+    "Resources/Art/Office/calendar.png",
+    "keyed:generated/props/newspaper_desk.png"
   ],
   "unused": [
     "Resources/Art/Office/newspaper.png",
@@ -510,20 +559,16 @@
   ],
   "ignoreGenerated": [
     "characters/baek/idle_1.png",
-    "backgrounds/lobby_floor.png"
+    "backgrounds/lobby_floor.png",
+    "props/stairs_down_v2.png",
+    "props/newspaper_desk.png",
+    "props/stairs_down.png"
   ],
-  "pending": [
-    "desk_pc",
-    "basement_intro",
-    "newspaper_desk",
-    "ev_newspaper",
-    "haneul_walk_0",
-    "haneul_walk_1",
-    "haneul_walk_pass",
-    "haneul_walk_2",
-    "haneul_walk_3"
-  ],
+  "pending": [],
   "illustExclude": [
     "ev_altar_blood.png"
+  ],
+  "keyedIcons": [
+    "generated/props/newspaper_desk.png"
   ]
 }

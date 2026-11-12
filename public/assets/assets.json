@@ -75,10 +75,6 @@
   "w": 53,
   "h": 90
  },
- "player_idle_1": {
-  "w": 53,
-  "h": 90
- },
  "player_walk_0": {
   "w": 53,
   "h": 90
@@ -99,11 +95,11 @@
   "w": 53,
   "h": 90
  },
- "eunho_idle_0": {
+ "player_idle_1": {
   "w": 53,
   "h": 90
  },
- "eunho_idle_1": {
+ "eunho_idle_0": {
   "w": 53,
   "h": 90
  },
@@ -132,6 +128,10 @@
   "h": 90
  },
  "eunho_walk_pass": {
+  "w": 53,
+  "h": 90
+ },
+ "eunho_idle_1": {
   "w": 53,
   "h": 90
  },
@@ -207,6 +207,30 @@
   "w": 55,
   "h": 90
  },
+ "haneul_idle_side": {
+  "w": 55,
+  "h": 90
+ },
+ "haneul_walk_0": {
+  "w": 55,
+  "h": 90
+ },
+ "haneul_walk_1": {
+  "w": 55,
+  "h": 90
+ },
+ "haneul_walk_2": {
+  "w": 55,
+  "h": 90
+ },
+ "haneul_walk_3": {
+  "w": 55,
+  "h": 90
+ },
+ "haneul_walk_pass": {
+  "w": 55,
+  "h": 90
+ },
  "haneul_idle_1": {
   "w": 55,
   "h": 90
@@ -228,7 +252,7 @@
   "h": 90
  },
  "stairs_down": {
-  "w": 108,
+  "w": 74,
   "h": 90
  },
  "stairs_basement": {
@@ -310,5 +334,21 @@
  "stairs_basement_closed": {
   "w": 73,
   "h": 90
+ },
+ "desk_pc": {
+  "w": 114,
+  "h": 90
+ },
+ "doctrine_frame": {
+  "w": 45,
+  "h": 40
+ },
+ "prayer_corner": {
+  "w": 76,
+  "h": 50
+ },
+ "donor_plaque": {
+  "w": 40,
+  "h": 36
  }
 }

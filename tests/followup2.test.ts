@@ -29,18 +29,18 @@ describe('걷기 5프레임·1/3 속도 (asset-spec 데이터)', () => {
   });
   it('모든 걷는 인물이 공통 순서(걷기·걷기·walk_pass·걷기·걷기)를 쓰고 그림이 실제로 있다 (인물별 walkCycle 없음)', () => {
     const walkers = seqs.filter((x) => x.frames.some((f) => f.startsWith('walk_')));
-    expect(walkers.map((q) => q.id).sort()).toEqual(['baek', 'eunho', 'player']);
+    expect(walkers.map((q) => q.id).sort()).toEqual(['baek', 'eunho', 'haneul', 'player']);
     for (const q of walkers) {
       expect(q.walkCycle, q.id).toBeUndefined();
       for (const f of spec.walk.cycle) expect(q.frames, `${q.id}:${f}`).toContain(f);
       expect((q as Seq & { alignFeet?: boolean }).alignFeet, q.id).toBe(true);
     }
   });
-  it('한지수·박은호는 새 걷기(_v2, 박은호 walk_pass 는 _v3 최신판)를 쓰고 대기 그림은 craft_on 그대로다', () => {
+  it('한지수·박은호는 새 걷기(_v2, 박은호 walk_pass 는 _v3 최신판)와 새 대기 idle_0 를 쓴다 (craft_on 사본 Art/ 는 그대로, idle_1 은 breathe)', () => {
     type S2 = Seq & { src: string; frameSrc: Record<string, string> };
     const p = seqs.find((q) => q.id === 'player') as S2, e = seqs.find((q) => q.id === 'eunho') as S2;
     expect(p.src).toBe('Art/Player'); expect(e.src).toBe('Art/ParkEunho');
-    expect(p.frameSrc).toEqual({ walk_0: 'generated/characters/player/walk_0_v2', walk_1: 'generated/characters/player/walk_1_v2', walk_2: 'generated/characters/player/walk_2_v2', walk_3: 'generated/characters/player/walk_3_v2', walk_pass: 'generated/characters/player/walk_pass_v2' });
+    expect(p.frameSrc).toEqual({ idle_0: 'generated/characters/player/idle_0', walk_0: 'generated/characters/player/walk_0_v2', walk_1: 'generated/characters/player/walk_1_v2', walk_2: 'generated/characters/player/walk_2_v2', walk_3: 'generated/characters/player/walk_3_v2', walk_pass: 'generated/characters/player/walk_pass_v2' });
     expect(e.frameSrc.walk_pass).toBe('generated/characters/eunho/walk_pass_v3'); expect(e.frameSrc.walk_0).toBe('generated/characters/eunho/walk_0_v2');
     for (const f of Object.values({ ...p.frameSrc, ...e.frameSrc })) expect(existsSync(`art/source/${f}.png`), f).toBe(true);
   });

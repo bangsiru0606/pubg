@@ -107,7 +107,7 @@ const isPendingPortrait = (file: string) => pendingBases.some((b) => file.starts
  *  - 근접 조사 소품 아이콘(hat·calendar): 화면 표시 폭 약 260px × 1.5 → 400px
  *  - 그 밖(책상 배경·확대 그림·편지·컷신): 전체 화면 기준 최대 1920 폭 (확대하지 않는다)
  */
-const ICON_NAMES = ['hat.png', 'calendar.png'];
+const ICON_NAMES = ['hat.png', 'calendar.png', 'newspaper_desk.png'];
 async function emitIllust(file: string, name: string, portrait: boolean) {
   const img = sharp(file);
   const fit = portrait ? { height: 624 } : ICON_NAMES.includes(name) ? { width: 400 } : { width: 1920 };
@@ -120,9 +120,15 @@ for (const p of spec.illust as string[]) {
   } else await emitIllust(join(SRC, p), basename(p), false);
 }
 // 근접 조사 소품: 투명 여백을 뺀 실제 그림 영역(bbox)과 클릭 판정용 마스크(40열)를 src/data/illust-masks.json 에 쓴다 (file:// 에서는 캔버스로 읽을 수 없다)
+// 초록 배경(chromaKey)으로 만든 아이콘(keyedIcons): 배경을 지운 투명 그림을 400폭 WebP 로 저장하고, 마스크도 지운 그림으로 만든다 (masks 에는 `keyed:<경로>` 로 적는다)
+for (const p of (spec.keyedIcons ?? []) as string[]) {
+  const buf = await sharp(await load(join(SRC, p), true)).trim({ threshold: 1 }).png().toBuffer();
+  await sharp(buf).resize({ width: 400, withoutEnlargement: true, kernel: 'lanczos3' }).webp({ quality: 85, effort: 6 }).toFile(join(OUT, 'illust', basename(p).replace(/\.png$/, '.webp')));
+}
 const masks: Record<string, unknown> = {};
-for (const p of (spec.masks ?? []) as string[]) {
-  const { data, info } = await sharp(join(SRC, p)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+for (const p0 of (spec.masks ?? []) as string[]) {
+  const keyed = p0.startsWith('keyed:'), p = keyed ? p0.slice(6) : p0;
+  const { data, info } = await sharp(keyed ? await sharp(await load(join(SRC, p), true)).trim({ threshold: 1 }).png().toBuffer() : join(SRC, p)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   let x0 = info.width, y0 = info.height, x1 = 0, y1 = 0;
   for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) if (data[(y * info.width + x) * 4 + 3] > 20) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
   const bw = x1 - x0 + 1, bh = y1 - y0 + 1, cols = 40, rows = Math.max(1, Math.round((cols * bh) / bw));

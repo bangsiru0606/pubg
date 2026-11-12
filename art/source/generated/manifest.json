@@ -1083,5 +1083,188 @@
       "generated/backgrounds/basement_wall.png"
     ],
     "prompt": "Primary request: closed blue-gray refrigerated transport crate with attached clipboard of faint lines.\nUse case: stylized-concept\nAsset type: production-ready 2D pixel-art game prop with chroma key\nInput images: Images 1-4 are original game prop references and strictly define coarse pixel cluster size, limited shading steps, silhouette simplicity, orthographic viewpoint, and modest detail level. Image 5 is the approved area wall and defines muted local color temperature only; do not draw the wall.\nScene/backdrop: exact 1024x1024 canvas, perfectly uniform solid #00FF00 edge to edge, with no variation, texture, floor, shadow, glow, or scenery.\nStyle/medium: coarse low-detail pixel art matching the references; never add more detail, smaller pixel clusters, smoother shading, or more color steps.\nComposition/framing: one isolated prop centered, side/front-side orthographic game view, horizontal contact baseline where applicable, generous margin.\nOutline: thin restrained intrinsic contour only; no thick, bold, doubled, or sticker-like outline because the game adds an external 1px outline.\nColor constraints: no green, lime, yellow-green, neon green, or green-tinted pixels in the prop; use blue-gray instead.\nConstraints: no readable letters or numbers, logo, signature, watermark, or unrequested objects."
+  },
+  {
+    "file": "illust/ev_altar_blood.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/desk.png",
+      "Resources/Art/Office/hat_detail.png",
+      "Resources/Art/Office/item_letter.png"
+    ],
+    "prompt": "Hand-painted 2D evidence close-up: lower corner and broad base of an aged brass prayer lectern on a dark floor, with one small partially wiped dark brown-red stain beneath the base. Muted semi-realistic brushwork and ink-like contours matching the references; restrained, no gore, no text."
+  },
+  {
+    "file": "illust/ev_wristband.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/desk.png",
+      "Resources/Art/Office/hat_detail.png",
+      "Resources/Art/Office/item_letter.png"
+    ],
+    "prompt": "Hand-painted 2D evidence close-up: one torn fragment of a worn white hospital wristband, with a completely blank label panel. Muted semi-realistic brushwork and ink-like contours matching the references; no marks, letters, barcode, or numbers."
+  },
+  {
+    "file": "illust/ev_torn_sleeve.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/desk.png",
+      "Resources/Art/Office/hat_detail.png",
+      "Resources/Art/Office/item_letter.png"
+    ],
+    "prompt": "Hand-painted 2D evidence close-up: one torn faded blue-gray hospital-uniform sleeve with thin vertical stripes and simplified frayed fibers. Muted semi-realistic brushwork and dark contour lines; no blood or text."
+  },
+  {
+    "file": "illust/ev_syringe_bag.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/desk.png",
+      "Resources/Art/Office/hat_detail.png",
+      "Resources/Art/Office/item_letter.png"
+    ],
+    "prompt": "Hand-painted 2D evidence close-up: one sealed clear disposal bag inside the rim of a dark pending-disposal container, with one empty capped syringe visible. Clinical and restrained; no blood, label, text, or logo."
+  },
+  {
+    "file": "illust/ev_belongings.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Office/desk.png",
+      "Resources/Art/Office/hat_detail.png",
+      "Resources/Art/Office/item_letter.png"
+    ],
+    "prompt": "Hand-painted 2D evidence close-up: faded yellow thread bracelet, small plain necklace, and worn diary with the final page torn out, arranged side by side on a dark background. No readable writing or extra objects."
+  },
+  {
+    "file": "illust/ending_a.png",
+    "size": [
+      1536,
+      864
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Cutscenes/hospital_intro.png",
+      "Resources/Art/Office/desk.png"
+    ],
+    "prompt": "Cinematic hand-painted ending card at dawn: investigative vehicle lights outside the hospital gate, with a trench-coat detective and a younger man seen from behind facing the hospital. Muted blue-gray palette, calm brightening sky, no text or visible faces."
+  },
+  {
+    "file": "illust/ending_b.png",
+    "size": [
+      1536,
+      864
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Cutscenes/hospital_intro.png",
+      "Resources/Art/Office/desk.png"
+    ],
+    "prompt": "Cinematic hand-painted ending card at night: a small woman in a faded blue-gray patient uniform is led away down a long dim hospital corridor, seen from behind with distant escort silhouettes and a long shadow. Quiet, bleak, no violence, faces, or text."
+  },
+  {
+    "file": "illust/ending_c.png",
+    "size": [
+      1536,
+      864
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Cutscenes/hospital_intro.png",
+      "Resources/Art/Office/desk.png"
+    ],
+    "prompt": "Cinematic hand-painted daytime ending card: the hospital lobby is completely empty, main doors open to a vacant drive and bare trees, with a few document sheets scattered on the floor. The hospital building is not visible outside; no people or text."
+  },
+  {
+    "file": "illust/ending_d.png",
+    "size": [
+      1536,
+      864
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Cutscenes/hospital_intro.png",
+      "Resources/Art/Office/desk.png"
+    ],
+    "prompt": "Cinematic hand-painted ending card: modest funeral wreath and empty portrait stand with no face on quiet grass, hospital far in the background, cold daylight and restrained grief. No people or text."
+  },
+  {
+    "file": "illust/title_key.png",
+    "size": [
+      1536,
+      864
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Cutscenes/hospital_intro.png"
+    ],
+    "prompt": "Rainy-night title key art: the same isolated hillside hospital with exactly one lit window, and a small trench-coat, fedora-wearing detective seen from behind on the road below. Muted blue-gray hand-painted style, no title text, logo, or extra people."
+  },
+  {
+    "file": "props/floor_plan_board.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "generated/props/order_emblem.png",
+      "generated/backgrounds/director_wall.png"
+    ],
+    "prompt": "Coarse low-detail pixel prop on solid #00FF00: front-facing dark-walnut framed building floor plan made only of simple room rectangles, corridors, and door breaks. Match order_emblem pixel clusters and director_wall colors; no green in prop, text, numbers, symbols, shadow, or extra-thick outline."
+  },
+  {
+    "file": "props/stairs_basement_closed.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "generated/props/stairs_basement.png"
+    ],
+    "prompt": "Precise pixel-art state variant on solid #00FF00: preserve stairs_basement wooden frame, dark stair recess, bounds, hinge positions, pixel clusters, colors, and floor baseline; change only the iron gate to fully closed with a gray chain and small dull padlock. No green in prop, text, shadow, or thicker outline."
   }
 ]

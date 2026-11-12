@@ -1,7 +1,7 @@
 {
  "_comment": "craft_on StoryBuilder 좌표(1유닛=45px) 이전 + 보정판 8장 배치. 단위 px. x 는 하단 중앙. requires: 플래그 이름 또는 @basement_open.",
  "groundY": 158,
- "playerSpeed": 65,
+ "playerSpeed": 55,
  "runMultiplier": 2,
  "interactRange": 45,
  "startArea": "office",
@@ -182,7 +182,7 @@
     "steps": [
      {
       "do": "wait",
-      "sec": 0.5
+      "sec": 0.3
      },
      {
       "do": "walk",
@@ -206,7 +206,7 @@
      },
      {
       "do": "wait",
-      "sec": 0.6
+      "sec": 0.3
      },
      {
       "do": "walk",
@@ -857,12 +857,12 @@
    },
    {
     "do": "wait",
-    "sec": 0.4
+    "sec": 0.2
    },
    {
     "do": "walk",
     "actor": "eunho",
-    "gap": 56,
+    "gap": 72,
     "follow": true
    },
    {
@@ -872,7 +872,7 @@
    },
    {
     "do": "wait",
-    "sec": 0.5
+    "sec": 0.2
    },
    {
     "do": "camera",
@@ -888,7 +888,7 @@
    {
     "do": "walk",
     "actor": "eunho",
-    "toX": 540
+    "toX": 460
    },
    {
     "do": "hide",

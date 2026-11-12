@@ -15,14 +15,14 @@ type Seq = { id: string; frames: string[]; walkCycle?: string[] };
 const seqs = spec.sequences as unknown as Seq[];
 
 describe('걷기 5프레임·1/3 속도 (asset-spec 데이터)', () => {
-  it('공통 규칙: 걷기 2장 → 지나가는 프레임(walk_pass) → 걷기 2장, 5fps(한 주기 1.0초)', () => {
+  it('공통 규칙: 걷기 2장 → 지나가는 프레임(walk_pass) → 걷기 2장, 6fps(한 주기 0.83초)', () => {
     expect(spec.walk.cycle).toEqual(['walk_0', 'walk_1', 'walk_pass', 'walk_2', 'walk_3']);
-    expect(spec.walk.fps).toBe(5); expect(spec.walk.cycle.length / spec.walk.fps).toBe(1);
+    expect(spec.walk.fps).toBe(6); expect(spec.walk.cycle.length / spec.walk.fps).toBeCloseTo(5 / 6, 5);
   });
-  it('발이 미끄러지지 않는다: 한 주기에 가는 거리 = 이동 속도 × 주기 시간 = 실제 보폭(60~70px), 달리기는 속도·fps 가 같은 배수', () => {
+  it('발이 미끄러지지 않는다: 한 주기에 가는 거리 = 이동 속도 × 주기 시간 = 실제 보폭(40~50px), 달리기는 속도·fps 가 같은 배수', () => {
     const cycleSec = spec.walk.cycle.length / spec.walk.fps, perCycle = map.playerSpeed * cycleSec;
-    expect(perCycle).toBeGreaterThanOrEqual(60); expect(perCycle).toBeLessThanOrEqual(70); expect(map.playerSpeed).toBe(65);
-    expect(map.runMultiplier).toBe(2); expect(map.playerSpeed * map.runMultiplier * (cycleSec / map.runMultiplier)).toBe(perCycle); // 달릴 때 주기는 절반(fps ×2), 속도 ×2 → 한 주기 거리 그대로
+    expect(perCycle).toBeGreaterThanOrEqual(40); expect(perCycle).toBeLessThanOrEqual(50); expect(map.playerSpeed).toBe(55); // 새 그림의 접지 두 발 간격 약 20px → 주기 약 40~46px
+    expect(map.runMultiplier).toBe(2); expect(map.playerSpeed * map.runMultiplier * (cycleSec / map.runMultiplier)).toBeCloseTo(perCycle, 5); // 달릴 때 주기는 절반(fps ×2), 속도 ×2 → 한 주기 거리 그대로
   });
   it('연출 속 이동(오프닝 박은호·1층 첫 입장 플레이어·백선우)도 같은 속도 규칙: 단계에 speed 를 따로 쓰지 않는다', () => {
     for (const st of [...map.opening.steps, ...(map.areas.floor1.stage?.steps ?? [])]) if (st.do === 'walk') expect(st, JSON.stringify(st)).not.toHaveProperty('speed');

@@ -1,6 +1,6 @@
 {
   "walk": {
-    "fps": 5,
+    "fps": 6,
     "cycle": [
       "walk_0",
       "walk_1",

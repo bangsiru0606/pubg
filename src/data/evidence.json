@@ -27,7 +27,8 @@
   "sourceType": "physical",
   "acquiredSceneId": "room_director",
   "sourceCharacterId": "",
-  "timestamp": "사건 현장"
+  "timestamp": "사건 현장",
+  "illust": "ev_altar_blood"
  },
  {
   "id": "E03_preliminary_exam",
@@ -61,7 +62,8 @@
    "title": "정하늘 손목띠 조각",
    "description": "원장실에서 발견된 정하늘의 환자 손목띠 조각.",
    "sourceCharacterId": "jeong_haneul"
-  }
+  },
+  "illust": "ev_wristband"
  },
  {
   "id": "E05_access_log",
@@ -88,7 +90,8 @@
    "채소연의 진술",
    "22:34 정하늘이 병실을 나감. 채소연이 맡아 두던 청소용 마스터키도 그때 사라졌다.",
    "22:51 정하늘이 찢어진 소매 차림으로 병실에 돌아옴. 손목띠는 없었다."
-  ]
+  ],
+  "illust": "ev_torn_sleeve"
  },
  {
   "id": "E07_report_revision",
@@ -125,7 +128,8 @@
    "야간 응급 진정제 1회분 누락.",
    "투여 대상과 서명이 비어 있음.",
    "원장실에서 수거한 주사기 봉투가 폐기 대기함에 있음."
-  ]
+  ],
+  "illust": "ev_syringe_bag"
  },
  {
   "id": "E10_consent_forms",
@@ -204,7 +208,8 @@
    "",
    "“하늘 언니가 명단을 봤다. 언니는 나를 데리고 나가겠다고 했지만 문은 밤마다 잠긴다. 혹시 내가 먼저 불려가면, 언니 잘못이 아니라고 오빠에게 말해 주고 싶다.”"
   ],
-  "afterView": "diary_closed"
+  "afterView": "diary_closed",
+  "illust": "ev_belongings"
  },
  {
   "id": "E15_transport_manifest",

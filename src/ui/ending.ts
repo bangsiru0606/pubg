@@ -29,8 +29,10 @@ export function openEnding(s: GameState, h: { onRetry: () => void; onRestart: ()
       const [who, text] = talk[pi];
       box.innerHTML = `<div style="margin-top:80px;text-align:center"><div style="color:#e2c98a">${esc(characterName(who))}</div><div style="margin-top:6px;font-size:12px">“${esc(text)}”</div></div><div class="foot">Enter 계속</div>`;
     } else if (kind === 'card') {
-      box.innerHTML = `<div class="etitle">${esc(ending.title)}</div><div class="ecard">“${esc(ending.card)}”</div>
-        <div class="eres">${KEYS.map(([k, name]) => `<p><b>${name}</b> — ${esc(lines[k].text)}</p>`).join('')}</div><div class="foot">Enter 계속</div>`;
+      // 그림 전체 + 위 띠(제목·카드 문장) + 아래 좌우 두 칸(결과 세 줄). 가운데는 비워 그림의 인물이 가려지지 않게 한다.
+      const res = KEYS.map(([k, name]) => `<p><b>${name}</b> — ${esc(lines[k].text)}</p>`);
+      box.innerHTML = `<img class="ebg" src="assets/illust/${ending.id}.webp" alt=""><div class="etop"><div class="etitle">${esc(ending.title)}</div><div class="ecard">“${esc(ending.card)}”</div></div>
+        <div class="eres"><div class="el">${res.slice(0, 2).join('')}</div><div class="er">${res[2]}</div></div><div class="foot">Enter 계속</div>`;
     } else {
       const rows = grade.claims.map((c, i) => `<tr><td>질문 ${'ABCD'[i]}</td><td>${c.solved ? '해결' : '미해결'}</td><td>반박 근거 ${c.rebuttalHit ? '적중' : '빗나감'}</td><td>${c.score}/3점</td></tr>`).join('');
       box.innerHTML = `<div class="etitle" style="font-size:13px">추리 등급 ${grade.letter} (${grade.total}/${grade.max})</div>

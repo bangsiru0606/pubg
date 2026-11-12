@@ -274,5 +274,13 @@
  "cold_crate": {
   "w": 49,
   "h": 40
+ },
+ "floor_plan_board": {
+  "w": 45,
+  "h": 40
+ },
+ "stairs_basement_closed": {
+  "w": 73,
+  "h": 90
  }
 }

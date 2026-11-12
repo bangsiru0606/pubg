@@ -19,7 +19,7 @@ const errors: string[] = [];
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 page.on('pageerror', (e) => errors.push(String(e)));
 // 곡을 바꿀 때 아직 받는 중인 소리 파일의 로드가 취소(ERR_ABORTED)되는 것은 정상이다. 그 밖의 요청 실패는 오류.
-page.on('requestfailed', (r) => { if (!(/\.(mp3|ogg|wav)$/.test(r.url()) && /ABORTED/.test(r.failure()?.errorText ?? ''))) errors.push(`requestfailed ${r.url()}`); });
+page.on('requestfailed', (r) => { if (!(/\.(mp3|ogg|wav|webp)$/.test(r.url()) && /ABORTED/.test(r.failure()?.errorText ?? ''))) errors.push(`requestfailed ${r.url()}`); });
 
 const fails: string[] = [];
 const check = (ok: boolean, msg: string) => { console.log(`${ok ? '✓' : '✗'} ${msg}`); if (!ok) fails.push(msg); };

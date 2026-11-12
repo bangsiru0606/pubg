@@ -7,6 +7,7 @@ import { applyScene } from './explore/playthrough';
 import { ExploreScene } from './scenes/ExploreScene';
 import { openDialogue } from './ui/dialogue';
 import { openEnding } from './ui/ending';
+import { openViewer } from './ui/viewer';
 import { openNotebook } from './ui/notebook';
 import { openPuzzle } from './ui/puzzle';
 import { closeTitleNow } from './ui/title';
@@ -75,6 +76,7 @@ if (isTestBuild) {
     ui: {
       notebook: (tab: number) => openNotebook(scene.state, () => {}, tab),
       puzzle: (id: string) => openPuzzle(scene.state, id, () => {}),
+      viewer: (id: string) => openViewer(scene.state, id),
       ending: () => openEnding(scene.state, { onRetry: () => {}, onRestart: () => {}, onTitle: () => {} }),
       prepare: (n: number) => applyScene(scene.state, n, true, { puzzles: false }), // 씬 n 의 대사·조사까지 마친, 퍼즐이 열리기 직전 상태
       acquire: (ids: string[]) => ids.forEach((id) => acquireEvidence(scene.state, id)),

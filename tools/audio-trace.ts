@@ -11,7 +11,7 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors: string[] = [];
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 page.on('pageerror', (e) => errors.push(String(e)));
-page.on('requestfailed', (r) => { if (!(/\.(mp3|ogg|wav)$/.test(r.url()) && /ABORTED/.test(r.failure()?.errorText ?? ''))) errors.push(`requestfailed ${r.url()}`); });
+page.on('requestfailed', (r) => { if (!(/\.(mp3|ogg|wav|webp)$/.test(r.url()) && /ABORTED/.test(r.failure()?.errorText ?? ''))) errors.push(`requestfailed ${r.url()}`); });
 const cw = <T>(fn: string) => page.evaluate(`(() => { const cw = window.__cw; return ${fn}; })()`) as Promise<T>;
 const wait = (ms: number) => page.waitForTimeout(ms);
 const press = async (k: string, n = 1, gap = 60) => { for (let i = 0; i < n; i++) { await page.keyboard.press(k); await wait(gap); } };

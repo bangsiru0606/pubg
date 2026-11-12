@@ -36,6 +36,10 @@ async function normalizeSprite(s: any) {
   const trimmed = sharp(await load(join(SRC, s.src), s.chromaKey, s)).trim({ threshold: 1 });
   const buf = await trimmed.png().toBuffer();
   let img = sharp(buf).resize({ height: s.outline ? s.height - 1 : s.height, kernel: 'lanczos3' });
+  if (s.fitTo) { // 같은 자리에서 바뀌는 그림(열림/닫힘 문): 바깥 문틀 상자(= 트림한 그림 전체)를 기준 그림과 같은 가로·세로로 맞춘다 — 비율이 조금 달라도 문틀 가장자리가 겹친다
+    const ref = spec.sprites.find((x: any) => x.id === s.fitTo), rm = await sharp(await sharp(await load(join(SRC, ref.src), ref.chromaKey, ref)).trim({ threshold: 1 }).png().toBuffer()).metadata();
+    img = sharp(buf).resize({ width: Math.round((rm.width! * (s.height - 1)) / rm.height!), height: s.height - 1, fit: 'fill', kernel: 'lanczos3' });
+  }
   if (s.outline) { // 소품: 알파 정리 → 위·좌·우 여백 1px → 바깥 외곽선 (기준 색은 한지수 스프라이트라 시퀀스 처리 뒤에 한다). 높이 규격은 유지.
     let b: Buffer = await img.png().toBuffer();
     if (s.chromaKey) b = await binarizeAlpha(b);

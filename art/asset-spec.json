@@ -449,6 +449,25 @@
       "despill": "full",
       "height": 40,
       "chromaKey": true
+    },
+    {
+      "id": "floor_plan_board",
+      "src": "generated/props/floor_plan_board.png",
+      "outline": true,
+      "despill": "full",
+      "height": 40,
+      "chromaKey": true,
+      "draft": true
+    },
+    {
+      "id": "stairs_basement_closed",
+      "src": "generated/props/stairs_basement_closed.png",
+      "fitTo": "stairs_basement",
+      "outline": true,
+      "despill": "full",
+      "height": 90,
+      "chromaKey": true,
+      "draft": true
     }
   ],
   "illust": [
@@ -460,7 +479,8 @@
     "Resources/Art/Office/calendar.png",
     "Resources/Art/Office/calendar_detail.png",
     "Resources/Art/Office/item_letter.png",
-    "generated/portraits/*.png"
+    "generated/portraits/*.png",
+    "generated/illust/*.png"
   ],
   "masks": [
     "Resources/Art/Office/hat.png",
@@ -475,11 +495,9 @@
     "backgrounds/lobby_floor.png"
   ],
   "pending": [
-    "floor_plan_board",
     "baek_walk_0",
     "baek_walk_1",
     "baek_walk_2",
-    "baek_walk_3",
-    "stairs_basement_closed"
+    "baek_walk_3"
   ]
 }

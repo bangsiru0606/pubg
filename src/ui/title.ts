@@ -23,6 +23,8 @@ export function groupCredits(lines: string[]): string[] {
 const VOLS = [['master', '마스터 음량'], ['bgm', '배경음 음량'], ['sfx', '효과음 음량']] as const;
 const bar = (v: number) => `${'■'.repeat(Math.round(v * 10))}${'□'.repeat(10 - Math.round(v * 10))} ${Math.round(v * 100)}%`;
 
+const ART = '<img class="tbg" src="assets/illust/title_key.webp" alt=""><div class="tveil"></div>';
+
 export function openTitle(opts: { canContinue: boolean; onNew: () => void; onContinue: () => void }) {
   const box = el('div', 'modal title'); box.id = 'title';
   root().append(box);
@@ -38,21 +40,22 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
   closeCurrent = close;
   const bgmLines = (bgmCredits as string[]).length ? groupCredits(bgmCredits as string[]) : [credits.bgmPending];
   function render() {
+    box.classList.toggle('dim', page !== 'main'); // 설정·정보 화면은 그림을 어둡게 눌러 글자가 읽히게 한다
     const hint = isUnlocked() ? '' : '<div class="anykey">아무 키나 눌러 시작</div>';
     if (page === 'settings') {
       const v = getVolumes();
-      box.innerHTML = `<div class="tt" style="font-size:18px">설정</div>
+      box.innerHTML = `${ART}<div class="tt" style="font-size:18px">설정</div>
         <div class="tm wide">${VOLS.map(([k, name], i) => `<button class="opt${i === setSel ? ' sel' : ''}" data-v="${i}">${name}  ${bar(v[k])}</button>`).join('')}
         <button class="opt${setSel === 3 ? ' sel' : ''}" data-v="3">전체 음소거 (M)  ${v.muted ? '켬' : '끔'}</button>
         <button class="opt${setSel === 4 ? ' sel' : ''}" data-v="4">돌아가기</button></div>
         <div class="foot">↑↓ 이동 · ←→ 음량 · Enter 선택 · Esc 돌아가기</div>`;
     } else if (page === 'info') {
-      box.innerHTML = `<div class="tt" style="font-size:18px">정보</div><div class="ctrl info" style="text-align:left">
+      box.innerHTML = `${ART}<div class="tt" style="font-size:18px">정보</div><div class="ctrl info" style="text-align:left">
         <div>${esc(credits.title)}</div>${credits.lines.map((l) => `<div>${esc(l)}</div>`).join('')}
         <div style="margin-top:4px;color:#6b4a1a;font-weight:bold">배경음악 출처</div>${bgmLines.map((l) => `<div>${esc(l)}</div>`).join('')}</div>
         <div class="foot">Enter / Esc 돌아가기</div>`;
     } else {
-      box.innerHTML = `<div class="tt">병원의 고해</div><div class="ts">Confession Ward</div>
+      box.innerHTML = `${ART}<div class="tt">병원의 고해</div><div class="ts">Confession Ward</div>
         <div class="tm">${items.map((it, i) => `<button class="opt${i === sel ? ' sel' : ''}" data-i="${i}">${esc(it.label)}</button>`).join('')}</div>
         ${showControls ? `<div class="ctrl">${CONTROLS.map(([k, v]) => `<div><kbd>${esc(k)}</kbd> ${esc(v)}</div>`).join('')}</div>` : ''}
         ${hint}<div class="foot">↑↓ 이동 · Enter 선택</div>`;

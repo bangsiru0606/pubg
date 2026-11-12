@@ -16,7 +16,7 @@ export const PROP_HEIGHT: Record<string, number> = {
   cleaning_cart: 54, bed_ward: 40, bed_empty: 40, director_desk: 59, lee_desk: 59, director_chair: 40, altar: 50,
   // 규격에 수치가 없는 소품의 초안 값 (배치 5 화면 검수로 조정한 값)
   papers_floor: 10, blood_mark: 8, order_emblem: 32, broadcast_board: 66, baek_pc: 46, nurse_counter: 70, ledger_shelf: 80, code_chart: 60, belongings_locker: 84, cold_crate: 40,
-  floor_plan_board: 60, // 배치 6 (벽걸이: 바닥선 위 약 40px 에 건다)
+  floor_plan_board: 40, // 배치 6 (벽걸이: 바닥선 위 약 60px 에 건다 — order_emblem 32 와 같은 벽걸이 크기대)
 };
 export const WALL_HEIGHT = 270; // 6유닛
 export const FLOOR_HEIGHT = 112; // 바닥선 y=158 아래

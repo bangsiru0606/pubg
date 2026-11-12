@@ -95,7 +95,7 @@ describe('지하 철창문 열림/닫힘·맵 끝·나가기 표시', () => {
   it('stairs_b1 은 잠겨 있을 때 닫힌 그림(artLocked, pending), 열리면 stairs_basement, 열리는 순간 gate_clank', () => {
     const t = areas.floor1.interactables.find((i) => i.id === 'stairs_b1') as Transition;
     expect(t).toMatchObject({ art: 'stairs_basement', artLocked: 'stairs_basement_closed', sfx: 'onGate', lockedSfx: 'onGate' });
-    expect(spec.pending).toContain('stairs_basement_closed');
+    expect(spec.pending).not.toContain('stairs_basement_closed'); // 배치 6 에서 들어왔다
     expect((audio.sfx.nodeEvents as Record<string, string>)['mono_basement_open:m']).toBe('onGate');
   });
   it('계단이 있는 구역은 걸을 수 있는 범위(walk)가 계단 앞(가운데)까지이고, 그 밖 벽·바닥 범위 바깥은 카메라 여유만큼 검다', () => {

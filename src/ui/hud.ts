@@ -20,7 +20,7 @@ export function initHud(ui: HTMLElement) {
   prompt = el('div', 'prompt hidden'); prompt.id = 'prompt';
   toast = el('div', 'toast hidden'); toast.id = 'toast'; toast.setAttribute('role', 'status');
   fade = el('div', 'fade'); fade.id = 'fade';
-  const hint = el('div', 'hint', '←→ 이동 · Shift 달리기 · Enter 상호작용 · Tab 사건 수첩');
+  const hint = el('div', 'hint', '←→ 이동 · Shift 달리기 · Enter 상호작용 · Tab 사건 수첩 · L 대사 기록');
   ui.append(hint, prompt, toast, fade);
 }
 

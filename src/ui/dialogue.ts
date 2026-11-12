@@ -1,11 +1,12 @@
 // 대화 오버레이 (바닥선 아래 112px). 타이핑 연출(Enter/클릭으로 즉시 완성), 선택지, 단서 제시(9.2), 진술 3단계(9.3).
-import { availableChoices, startNodeOf, characterName, enterNode, shownEvidence, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
+import { availableChoices, openingNodeOf, markDialogueDone, nextOf, characterName, enterNode, shownEvidence, getNode, presentEvidence, type GameState, type Dialogue, type DialogueNode } from '../core';
 import { bgmPop, bgmPush, dialogueTrack, nodeSfx, sfx } from '../audio/audio';
 import { dialogues } from '../explore/content';
-import { characters } from '../core';
+import { characters, characterLabel, fmtName } from '../core';
 import illustList from '../data/illust-list.json'; // 초상 파일이 아직 없으면 회색 실루엣 placeholder
 import { el, esc, root, showToast } from './hud';
 import { popModal, pushModal } from './input';
+import { logLine, openBacklog } from './backlog';
 import { TYPE_LABEL } from './labels';
 
 const CHAR_MS = 22;
@@ -26,7 +27,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   root().append(box);
   bgmPush('dialogue', dialogueTrack(dialogueId)); // 심문·고백·보고 대화는 전용 음악 (없으면 구역 음악 그대로)
 
-  let nodeId = startNodeOf(s, d);
+  let nodeId = openingNodeOf(s, d, dialogueId);
   let node: DialogueNode;
   let shown = 0, timer = 0, typing = false;
   let items: Item[] = [], sel = 0;
@@ -34,13 +35,14 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   const got: string[] = [];
   let picker: { cursor: number; chosen: Set<string>; list: string[] } | null = null;
 
-  const close = () => { clearInterval(timer); bgmPop('dialogue'); popModal('dialogue'); box.remove(); onClose(got); if (d.then) thenHandler(d.then); };
+  const close = () => { markDialogueDone(s, d, dialogueId); clearInterval(timer); bgmPop('dialogue'); popModal('dialogue'); box.remove(); onClose(got); if (d.then) thenHandler(d.then); };
 
   function go(next: string) { nodeId = next; enter(); }
   function enter() {
     node = getNode(dialogues, dialogueId, nodeId);
     const { acquired } = enterNode(s, node);
     got.push(...acquired);
+    logLine(node.speaker, fmtName(node.text), node.voice);
     nodeSfx(dialogueId, nodeId);
     if (acquired.length) sfx('onEvidenceGet');
     if (node.onEnter?.contradict?.length) sfx('onStatementUpdate');
@@ -54,7 +56,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
     clearInterval(timer); typing = false; shown = node.text.length;
     const ch = availableChoices(s, node);
     if (ch.length) items = ch.map((c) => ({ label: c.text, run: () => { sfx('onUiConfirm'); go(c.next); } }));
-    else items = [node.next ? { label: '계속', run: () => go(node.next!) } : { label: '대화 끝', run: close }];
+    else { const nx = nextOf(s, node); items = [nx ? { label: '계속', run: () => go(nx) } : { label: '대화 끝', run: close }]; }
     if (node.present?.length) items.push({ label: '[단서 제시]', run: openPicker });
     render();
   }
@@ -71,6 +73,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
 
   function textHtml() {
     const t = node.text.slice(0, shown);
+    if (node.voice === 'message') return `<span class="voice voice-message">${esc(t)}</span>`; // 받은 메시지: 괄호 없이 띠 안에 그대로
     if (node.voice) return `<span class="voice voice-${node.voice}">(${esc(t)}${typing ? '' : ')'}</span>`; // 생각·행동 묘사는 ( ) 로 감싸 실제 말과 구분한다
     const st = node.statement ? s.statements[node.statement.id] : null;
     if (typing || !st) return esc(t);
@@ -80,9 +83,10 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   }
   function render() {
     // 초상이 아직 없는 인물은 회색 실루엣 placeholder (한지수·박은호 그림을 대신 쓰지 않는다)
-    const portrait = node.noPortrait ? '' : node.portrait && illustList.includes(node.portrait) ? `<img class="portrait${portraitFlipped(node.portrait) ? ' flip' : ''}" src="assets/illust/${node.portrait}.webp" alt="">`
+    const msgBand = node.voice === 'message';
+    const portrait = node.noPortrait || msgBand ? '' : node.portrait && illustList.includes(node.portrait) ? `<img class="portrait${portraitFlipped(node.portrait) ? ' flip' : ''}" src="assets/illust/${node.portrait}.webp" alt="">`
       : node.speaker !== 'han_jisu' ? '<div class="portrait ph"><i></i><b></b></div>' : '';
-    box.className = 'dlg' + (portrait ? ' has-portrait' : '') + (picker ? ' picking' : '');
+    box.className = 'dlg' + (portrait ? ' has-portrait' : '') + (picker ? ' picking' : '') + (msgBand ? ' message' : '');
     let opts = '';
     if (picker) {
       opts = [...picker.list.map((id, i) => {
@@ -96,13 +100,14 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
         items.map((it, i) => `<button class="opt${i === sel ? ' sel' : ''}${it.disabled ? ' dis' : ''}" data-i="${i}">${i + 1}. ${esc(it.label)}</button>`).join('');
     }
     const keep = (box.querySelector('.opts') as HTMLElement | null)?.scrollTop ?? 0; // 다시 그려도 스크롤 위치를 지킨다
-    box.innerHTML = `${portrait}<div class="name">${esc(characterName(node.speaker))}</div><div class="text">${textHtml()}</div><div class="msg">${esc(msg)}</div>${picker ? '<div class="slotlbl">제시할 자료 — ↑↓ 이동 · Enter/Space 선택 · [제시하기]에서 Enter · Esc 취소</div>' : ''}<div class="opts">${opts}</div>`;
+    box.innerHTML = `${portrait}<button class="logbtn" data-log type="button">[L] 기록</button><div class="name">${msgBand ? `✉ ${esc(characterName(node.speaker))}의 메시지` : esc(characterLabel(node.speaker))}</div><div class="text">${textHtml()}</div><div class="msg">${esc(msg)}</div>${picker ? '<div class="slotlbl">제시할 자료 — ↑↓ 이동 · Enter/Space 선택 · [제시하기]에서 Enter · Esc 취소</div>' : ''}<div class="opts">${opts}</div>`;
     const list = box.querySelector('.opts') as HTMLElement | null, cur = list?.querySelector('.opt.sel') as HTMLElement | null;
     if (list) { list.scrollTop = keep; if (cur) { const top = cur.offsetTop, bottom = top + cur.offsetHeight; if (top < list.scrollTop) list.scrollTop = top; else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight; } } // 선택한 항목이 항상 보이게
   }
 
   box.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
+    if (t.closest('[data-log]')) { openBacklog(); return; }
     const pi = t.closest('[data-pi]') as HTMLElement | null;
     if (picker && pi) { picker.cursor = +pi.dataset.pi!; toggle(); return; }
     const i = t.closest('[data-i]') as HTMLElement | null;
@@ -121,6 +126,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   pushModal({
     id: 'dialogue',
     onKey(e) {
+      if ((e.key === 'l' || e.key === 'L') && !e.repeat) { openBacklog(); return; }
       if (picker) {
         const n = picker.list.length + 1; // 마지막 행 = [제시하기]
         if (e.key === 'ArrowDown') picker.cursor = (picker.cursor + 1) % n;

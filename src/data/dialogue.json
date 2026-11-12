@@ -1,8 +1,29 @@
 {
  "dialogues": {
   "eunho_intro": {
-   "start": "n1",
+   "start": "n0a",
    "nodes": {
+    "n0a": {
+     "speaker": "park_eunho",
+     "text": "실례합니다. {player} 탐정님 사무실…맞죠?",
+     "source": "new",
+     "portrait": "eunho_neutral",
+     "next": "n0b"
+    },
+    "n0b": {
+     "speaker": "han_jisu",
+     "text": "네, 앉으세요.",
+     "source": "new",
+     "portrait": "player_neutral",
+     "next": "n0c"
+    },
+    "n0c": {
+     "speaker": "park_eunho",
+     "text": "박은호라고 합니다. 동생 일로 왔어요.",
+     "source": "new",
+     "portrait": "eunho_worried",
+     "next": "n1"
+    },
     "n1": {
      "speaker": "park_eunho",
      "text": "병원은 은지가 치료 중이라고만 합니다. 목소리를 들은 건 두 달 전이 마지막이에요.",
@@ -200,8 +221,15 @@
    }
   },
   "choi_okja": {
-   "start": "c1",
+   "start": "c0",
    "nodes": {
+    "c0": {
+     "speaker": "han_jisu",
+     "text": "어르신, 어젯밤 병동에서 들으신 게 있으신가요?",
+     "source": "new",
+     "portrait": "player_neutral",
+     "next": "c1"
+    },
     "c1": {
      "speaker": "choi_okja",
      "text": "원장님은 밤새 기도하셨어요. 스피커로 목소리가 들렸으니까.",
@@ -242,17 +270,18 @@
      },
      "portrait": "choi_confused"
     }
-   },
-   "restart": [
-    {
-     "when": "choi_done",
-     "node": "c2"
-    }
-   ]
+   }
   },
   "han_yujin": {
-   "start": "y1",
+   "start": "y0",
    "nodes": {
+    "y0": {
+     "speaker": "han_jisu",
+     "text": "한유진 씨, 박은지 씨 일로 몇 가지만 여쭙겠습니다.",
+     "source": "new",
+     "portrait": "player_neutral",
+     "next": "y1"
+    },
     "y1": {
      "speaker": "han_yujin",
      "text": "은지 씨는 퇴원한 게 아니에요. 자정쯤 지하로 내려가는 침대에 묶여 있었어요.",
@@ -284,17 +313,18 @@
      },
      "portrait": "han_earnest"
     }
-   },
-   "restart": [
-    {
-     "when": "han_done",
-     "node": "y3"
-    }
-   ]
+   }
   },
   "chae_soyeon": {
-   "start": "s1",
+   "start": "s0",
    "nodes": {
+    "s0": {
+     "speaker": "han_jisu",
+     "text": "소연 씨, 어젯밤 같은 병실이었다고 들었어요. 기억나는 대로 말해 줄래요?",
+     "source": "new",
+     "portrait": "player_question",
+     "next": "s1"
+    },
     "s1": {
      "speaker": "chae_soyeon",
      "text": "하늘 언니가 밤에 나갔다가 돌아왔어요. 소매가 찢어졌고 손목띠도 없었어요.",
@@ -340,13 +370,7 @@
      "source": "new",
      "portrait": "chae_worried"
     }
-   },
-   "restart": [
-    {
-     "when": "chae_done",
-     "node": "s3"
-    }
-   ]
+   }
   },
   "jeong_haneul": {
    "start": "h1",
@@ -439,8 +463,15 @@
    ]
   },
   "baek_office": {
-   "start": "k1",
+   "start": "k0",
    "nodes": {
+    "k0": {
+     "speaker": "han_jisu",
+     "text": "부원장님, 검안 기록 건으로 잠시 시간 내 주시겠습니까?",
+     "source": "new",
+     "portrait": "player_neutral",
+     "next": "k1"
+    },
     "k1": {
      "speaker": "baek_sunwoo",
      "text": "오늘 새벽 원장님께서 지병으로 돌아가셨습니다.",
@@ -511,10 +542,6 @@
    },
    "restart": [
     {
-     "when": "baek_done",
-     "node": "k7"
-    },
-    {
      "when": "evidence:E07_report_revision",
      "node": "k6"
     },
@@ -525,8 +552,15 @@
    ]
   },
   "oh_miran": {
-   "start": "o1",
+   "start": "o0",
    "nodes": {
+    "o0": {
+     "speaker": "han_jisu",
+     "text": "오 간호사님, 어젯밤 원장실 일로 확인하고 싶은 게 있습니다.",
+     "source": "new",
+     "portrait": "player_neutral",
+     "next": "o1"
+    },
     "o1": {
      "speaker": "oh_miran",
      "text": "제가 갔을 때 원장님은 의자에 앉은 채 숨을 쉬지 않았어요. 다른 사람은 없었습니다.",
@@ -619,18 +653,21 @@
    },
    "restart": [
     {
-     "when": "oh_done",
-     "node": "o8"
-    },
-    {
      "when": "oh_admitted",
      "node": "o3"
     }
    ]
   },
   "lee_hyejeong": {
-   "start": "l1",
+   "start": "l0",
    "nodes": {
+    "l0": {
+     "speaker": "han_jisu",
+     "text": "이사님, 환자 이송 건으로 확인할 것이 있습니다.",
+     "source": "new",
+     "portrait": "player_neutral",
+     "next": "l1"
+    },
     "l1": {
      "speaker": "lee_hyejeong",
      "text": "아버지가 돌아가신 날까지 환자들을 선동하실 겁니까?",
@@ -683,10 +720,6 @@
     }
    },
    "restart": [
-    {
-     "when": "lee_done",
-     "node": "l6"
-    },
     {
      "when": "evidence:E11_transfer_order",
      "node": "l4"
@@ -830,22 +863,13 @@
        "text": "쓰러진 뒤 왜 신고하지 않았습니까?",
        "next": "fc3",
        "hideIfFlag": "fc3"
-      },
-      {
-       "text": "계속",
-       "next": "f6",
-       "requiresFlags": [
-        "fc1",
-        "fc2",
-        "fc3"
-       ]
       }
      ],
      "portrait": "haneul_shaken"
     },
     "fc1": {
      "speaker": "jeong_haneul",
-     "text": "아니요. 사진을 찍고 은지와 나가려고 했어요. 원장은 문을 잠그고 저를 침대에 보내겠다고 했습니다.",
+     "text": "아니요. 사진을 찍고 은지와 나가려고 했어요. 원장은 문을 잠그고 저도 특별 치료로 보내겠다고 했습니다.",
      "source": "spec",
      "next": "f5",
      "onEnter": {
@@ -853,7 +877,17 @@
        "fc1"
       ]
      },
-     "portrait": "haneul_confession"
+     "portrait": "haneul_confession",
+     "nextIf": [
+      {
+       "flags": [
+        "fc1",
+        "fc2",
+        "fc3"
+       ],
+       "next": "f6"
+      }
+     ]
     },
     "fc2": {
      "speaker": "jeong_haneul",
@@ -865,7 +899,17 @@
        "fc2"
       ]
      },
-     "portrait": "haneul_confession"
+     "portrait": "haneul_confession",
+     "nextIf": [
+      {
+       "flags": [
+        "fc1",
+        "fc2",
+        "fc3"
+       ],
+       "next": "f6"
+      }
+     ]
     },
     "fc3": {
      "speaker": "jeong_haneul",
@@ -877,7 +921,17 @@
        "fc3"
       ]
      },
-     "portrait": "haneul_shaken"
+     "portrait": "haneul_shaken",
+     "nextIf": [
+      {
+       "flags": [
+        "fc1",
+        "fc2",
+        "fc3"
+       ],
+       "next": "f6"
+      }
+     ]
     },
     "f6": {
      "speaker": "han_jisu",
@@ -888,7 +942,7 @@
     },
     "f7": {
      "speaker": "jeong_haneul",
-     "text": "알아요. 그 사람이 은지를 죽였다고 해서 제 손이 없어지는 건 아니니까.",
+     "text": "알아요. 그 사람이 은지를 죽였다고 해서, 제가 한 일이 없던 일이 되는 건 아니라는 거.",
      "source": "spec",
      "next": "f8",
      "portrait": "haneul_confession"
@@ -914,7 +968,8 @@
      "text": "뭐든 찾았으면 먼저 보내 주세요. 병원 안에서 없어지게 두지 마세요.",
      "source": "spec",
      "portrait": "eunho_worried",
-     "next": "m2"
+     "next": "m2",
+     "voice": "message"
     },
     "m2": {
      "speaker": "han_jisu",
@@ -1103,6 +1158,44 @@
        "chair_checked"
       ]
      }
+    }
+   }
+  },
+  "mono_basement_intro": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "계단 아래에서 차가운 공기가 올라온다.",
+     "source": "new",
+     "voice": "inner",
+     "noPortrait": true,
+     "next": "m2"
+    },
+    "m2": {
+     "speaker": "han_jisu",
+     "text": "은지 씨가 마지막으로 내려간 곳도 여기였을까.",
+     "source": "new",
+     "voice": "inner",
+     "noPortrait": true,
+     "next": "m3"
+    },
+    "m3": {
+     "speaker": "han_jisu",
+     "text": "소리가 나지 않게 한 칸씩 내려간다.",
+     "source": "new",
+     "voice": "inner",
+     "noPortrait": true
+    }
+   }
+  },
+  "closeup_newspaper": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "source": "new",
+     "text": "은혜요양병원 이한신 원장 별세\n지역신문 온라인판 출력 · 8월 17일 오전 6시 40분 입력\n은혜요양병원은 17일 새벽 이한신 원장이 지병으로 별세했다고 밝혔다.\n병원 측에 따르면 이 원장은 집무실 의자에 앉은 채 발견됐다. 병원은 고인이 평소 지병을 앓아 왔다고 설명했다.\n장례는 가족장으로 치르며, 면회와 외부 문의는 다음 주 이후에 받는다고 병원 측은 덧붙였다."
     }
    }
   }

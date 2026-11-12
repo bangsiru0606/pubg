@@ -61,5 +61,16 @@ export function condMet(s: GameState, cond: string): boolean {
 /** 대화를 시작할 노드: restart 조건이 맞으면 그 노드, 아니면 처음 (반복 추궁해도 대화가 늘지 않게) */
 export const startNodeOf = (s: GameState, d: Dialogue) => d.restart?.find((r) => condMet(s, r.when))?.node ?? d.start;
 
+/** 다음 노드: nextIf 중 조건이 맞는 첫 항목, 없으면 next */
+export const nextOf = (s: GameState, node: DialogueNode) => node.nextIf?.find((r) => r.flags.every((f) => s.flags.includes(f)))?.next ?? node.next;
+
+/**
+ * 대화를 여는 노드. 상태가 바뀌어 restart 노드가 달라졌으면 거기서, 이미 같은 상태에서 끝까지 본 대화면(새로 바뀐 것이 없다) 처음부터 다시 재생한다.
+ * 대화를 닫을 때 markDialogueDone 이 '그때의 시작 노드'를 기록한다.
+ */
+export const doneKey = (dialogueId: string, nodeId: string) => `dlgdone:${dialogueId}:${nodeId}`;
+export const openingNodeOf = (s: GameState, d: Dialogue, dialogueId: string) => { const n = startNodeOf(s, d); return s.flags.includes(doneKey(dialogueId, n)) ? d.start : n; };
+export const markDialogueDone = (s: GameState, d: Dialogue, dialogueId: string) => setFlag(s, doneKey(dialogueId, startNodeOf(s, d)));
+
 export const availableChoices = (s: GameState, node: DialogueNode) =>
   (node.choices ?? []).filter((c) => (!c.requiresFlag || s.flags.includes(c.requiresFlag)) && (c.requiresFlags ?? []).every((f) => s.flags.includes(f)) && !(c.hideIfFlag && s.flags.includes(c.hideIfFlag)));

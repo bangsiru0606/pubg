@@ -17,7 +17,7 @@ export const evidenceById = new Map(evidenceList.map((e) => [e.id, e]));
 export const claimById = new Map(claims.map((c) => [c.claimId, c]));
 export const puzzleById = new Map(puzzles.map((p) => [p.id, p]));
 export const conflictPairs = conflictsJson.pairs as [string, string][];
-export const characters = charactersJson.characters as { id: string; name: string; portrait: string }[];
+export const characters = charactersJson.characters as { id: string; name: string; portrait: string; title?: string }[];
 /** 플레이어 이름: 기본값은 characters.json 의 han_jisu (한 곳에서만 정의). 새 게임에서 이름을 입력하면 바뀐다. */
 export const DEFAULT_PLAYER_NAME = characters.find((c) => c.id === 'han_jisu')!.name;
 let playerName = DEFAULT_PLAYER_NAME;
@@ -29,3 +29,5 @@ export const setPlayerName = (n: string) => { playerName = n; };
 /** 대사 속 {player} 토큰을 플레이어 이름으로 바꾼다 (화면에 그리는 단계에서 치환) */
 export const fmtName = (text: string) => text.split('{player}').join(playerName);
 export const characterName = (id: string) => (id === 'han_jisu' ? playerName : characters.find((c) => c.id === id)?.name ?? '');
+/** 화면에 쓰는 이름표: 직함이 있으면 이름 뒤에 붙인다 (이혜정 → "이혜정 이사") */
+export const characterLabel = (id: string) => { const t = characters.find((c) => c.id === id)?.title; return t ? `${characterName(id)} ${t}` : characterName(id); };

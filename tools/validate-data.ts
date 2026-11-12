@@ -17,7 +17,8 @@ const dup = (ids: string[], what: string) => ids.forEach((id, i) => ids.indexOf(
 
 // map / dialogue
 const dialogueIds = new Set([...Object.keys(real.dialogues), ...Object.keys(fixture.dialogues)]);
-const knownFlags = new Set<string>(['@basement_open', ...puzzles.map((p) => p.flagOnSolve)]);
+const knownFlags = new Set<string>(['@basement_open', 'haneul_cleared', ...puzzles.map((p) => p.flagOnSolve)]); // haneul_cleared: 코드(startReport)가 세운다
+const pendingIds = new Set<string>(((JSON.parse(readFileSync('art/asset-spec.json', 'utf8')) as { pending?: string[] }).pending) ?? []);
 for (const d of [...Object.values(real.dialogues), ...Object.values(fixture.dialogues)] as unknown as Dialogue[])
   for (const n of Object.values(d.nodes)) for (const f of n.onEnter?.setFlags ?? []) knownFlags.add(f);
 const needEvLater: [string, string][] = [];
@@ -32,7 +33,7 @@ for (const [aid, a] of Object.entries(areas)) {
       if (!t) { err(`${w}: 없는 구역 ${it.to}`); continue; }
       if (it.spawnX < t.minX || it.spawnX > t.maxX) err(`${w}: spawnX 가 ${it.to} 범위 밖`);
       for (const u of t.interactables) if (u.type === 'transition' && Math.abs(it.spawnX - u.x) <= INTERACT_RANGE) err(`${w}: 도착 위치 ${it.spawnX} 가 ${it.to}/${u.id} 의 상호작용 범위(${INTERACT_RANGE}px) 안`);
-      if (it.cutscene && !existsSync(`public/assets/illust/${it.cutscene}.webp`)) err(`${w}: 없는 컷신 ${it.cutscene}`);
+      if (it.cutscene && !existsSync(`public/assets/illust/${it.cutscene}.webp`) && !pendingIds.has(it.cutscene)) err(`${w}: 없는 컷신 ${it.cutscene}`);
       for (const ev of [it.sfx, it.lockedSfx]) if (ev && !(ev in audioData.sfx.events)) err(`${w}: audio.json 에 없는 효과음 이벤트 ${ev}`);
       if (it.cutsceneDialogue && !dialogueIds.has(it.cutsceneDialogue)) err(`${w}: 없는 컷신 독백 ${it.cutsceneDialogue}`);
       if ((it.requires || it.requiresEvidence?.length) && !it.lockedDialogue) err(`${w}: 잠금 조건(requires)이 있는 이동 지점은 lockedDialogue(잠김 독백)가 있어야 한다`);
@@ -79,7 +80,7 @@ for (const [did, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues 
         else if (!existsSync(`public/assets/illust/${n.portrait}.webp`)) pendingPortraits.add(n.portrait);
       } else if (!existsSync(`public/assets/illust/${n.portrait}.webp`)) err(`${w}: 없는 초상 ${n.portrait}`);
     }
-    const refs = [n.next, ...(n.choices ?? []).map((c) => c.next), ...(n.present ?? []).map((p) => p.next)].filter(Boolean) as string[];
+    const refs = [n.next, ...(n.nextIf ?? []).map((r) => r.next), ...(n.choices ?? []).map((c) => c.next), ...(n.present ?? []).map((p) => p.next)].filter(Boolean) as string[];
     for (const c of n.onEnter?.contradict ?? []) if (!Object.values(real.dialogues).some((dd) => Object.values((dd as unknown as Dialogue).nodes).some((x) => x.statement?.id === c))) err(`${w}: 없는 진술 ${c}`);
     for (const r of refs) if (!d.nodes[r]) err(`${w}: 없는 노드 ${r}`);
     for (const id of [...(n.onEnter?.acquire ?? []), ...(n.present ?? []).flatMap((p) => p.evidenceIds)]) needEvLater.push([id, w]);
@@ -199,7 +200,8 @@ for (const [key, lines] of Object.entries(endingLines)) {
   const missingTex = [...want].filter((k) => !have.has(k)).sort();
   const hardMissing = missingTex.filter((k) => !specPending.has(k)), pendingTex = missingTex.filter((k) => specPending.has(k));
   for (const k of hardMissing) err(`텍스처 ${k}: 지도에 지정됐고 pending 도 아닌데 파일이 없다 (asset-spec 의 pending 에 넣거나 에셋을 추가할 것)`);
-  for (const k of specPending) if (have.has(k)) err(`텍스처 ${k}: 파일이 있는데 asset-spec pending 에 남아 있다 (import-generated --apply 가 지운다)`);
+  const illustHave = new Set<string>(JSON.parse(readFileSync('src/data/illust-list.json', 'utf8')));
+  for (const k of specPending) if (have.has(k) || illustHave.has(k)) err(`텍스처 ${k}: 파일이 있는데 asset-spec pending 에 남아 있다 (import-generated --apply 가 지운다)`);
   const pendingChars = (characters as unknown as { id: string; pending?: boolean }[]).filter((c) => c.pending);
   for (const c of pendingChars) if (!(exprOf.get(c.id)?.portrait)) err(`characters/${c.id}: pending 인데 portrait 가 없다`);
   const BG_KEYS = new Set(['director_wall', 'wood_floor', 'ward_wall', 'ward_floor', 'patientroom_wall', 'staff_wall', 'nurse_wall', 'basement_wall', 'basement_floor']);
@@ -250,7 +252,7 @@ for (const [key, lines] of Object.entries(endingLines)) {
   for (const c of characters as unknown as { id: string; portrait: string | null; portraitFacing?: string }[]) if (c.portrait && !['left', 'right', 'front'].includes(c.portraitFacing ?? '')) err(`characters/${c.id}: portraitFacing(left|right|front) 이 없다`);
 }
 { // 구역 연출(stage) 단계와 대사 표시 방식(voice)
-  for (const [aid, a] of Object.entries(areas)) for (const s of a.stage?.steps ?? []) {
+  for (const [aid, a] of Object.entries(areas)) for (const s of [...(a.stage?.steps ?? []), ...Object.values(a.scenes ?? {}).flat()]) {
     const w = `map/${aid}/stage`;
     if (s.do === 'dialogue' && !(s.id && dialogueIds.has(s.id))) err(`${w}: 없는 대사 ${s.id}`);
     for (const who of [s.actor, s.to]) if (who?.startsWith('npc:') && !a.interactables.some((i) => i.type === 'npc' && i.id === who.slice(4))) err(`${w}: 이 구역에 없는 NPC ${who}`);
@@ -258,7 +260,7 @@ for (const [key, lines] of Object.entries(endingLines)) {
   }
   for (const [id, d] of Object.entries({ ...real.dialogues, ...fixture.dialogues }) as [string, Dialogue][]) for (const [nid, n] of Object.entries(d.nodes)) {
     if (n.voice === undefined) continue;
-    if (n.voice !== 'inner' && n.voice !== 'action') err(`dialogue/${id}:${nid}: 알 수 없는 voice ${n.voice}`);
+    if (n.voice !== 'inner' && n.voice !== 'action' && n.voice !== 'message') err(`dialogue/${id}:${nid}: 알 수 없는 voice ${n.voice}`);
     if (/^\(|\)$/.test(n.text.trim())) err(`dialogue/${id}:${nid}: voice 노드의 텍스트에 괄호를 직접 쓰지 않는다 (화면이 감싼다)`);
   }
 }

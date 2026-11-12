@@ -164,7 +164,7 @@ describe('5단계 보완', () => {
     expect(p.correctSlots).toEqual({ doc_selection: ['lee_hyejeong'], doc_approval: ['lee_hanshin'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['lee_hyejeong'] });
     const transfer = p.tasks!.find((t) => t.slot === 'doc_transfer')!;
     expect(transfer.detail).toBeUndefined(); // 카드에는 답의 근거 요약을 쓰지 않는다 (원문 E10·E11 에서 읽는다)
-    expect(shownEvidence(createGameState(), 'E11_transfer_order')!.body).toContain('서명: 이혜정 / 권한: 이송 지시');
+    expect(shownEvidence(createGameState(), 'E11_transfer_order')!.body).toContain('서명: 이사 이혜정 / 권한: 이송 지시');
     expect(JSON.stringify(p.tasks)).not.toContain('BSW_ADMIN');
     const s = createGameState();
     expect(submitPuzzle(s, p.id, { ...p.correctSlots, doc_transfer: ['baek_sunwoo'] }).status).toBe('wrong');

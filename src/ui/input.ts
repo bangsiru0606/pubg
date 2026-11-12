@@ -25,6 +25,9 @@ export function popModal(id: string) {
 /** 탐색 중에 Tab 을 눌렀을 때 호출 (수첩 열기) */
 let onTab: () => void = () => {};
 export const setTabHandler = (f: () => void) => { onTab = f; };
+/** 탐색 중에 L 을 눌렀을 때 호출 (대사 기록 열기) */
+let onLog: () => void = () => {};
+export const setLogHandler = (f: () => void) => { onLog = f; };
 
 window.addEventListener('keydown', (e) => {
   const top = modals[modals.length - 1];
@@ -36,6 +39,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (e.key === 'Tab') { e.preventDefault(); if (!e.repeat) onTab(); return; }
+  if ((e.key === 'l' || e.key === 'L') && !e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) { onLog(); return; }
   if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
   held.add(norm(e.key));
   if (e.key === 'Enter' && !e.repeat) { e.preventDefault(); queue.push('Enter'); }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import real from '../src/data/dialogue.json';
 import {
-  acquireEvidence, availableChoices, claimById, createGameState, enterNode, evidenceList, gradeOf, hasFlag, loadGame, puzzles, relatedEvidenceIds,
+  acquireEvidence, availableChoices, claimById, createGameState, enterNode, evidenceList, nextOf, gradeOf, hasFlag, loadGame, puzzles, relatedEvidenceIds,
   resolveEnding, saveConclusion, saveGame, setReportTarget, shownEvidence, startNodeOf, type Dialogues, type GameState, type KeyValueStore,
 } from '../src/core';
 import { submitPuzzle } from './helpers';
@@ -103,7 +103,10 @@ describe('씬 5·P05', () => {
     const s = createGameState(); const f5 = D.jeong_haneul_final.nodes.f5;
     expect(availableChoices(s, f5).map((c) => c.next)).toEqual(['fc1', 'fc2', 'fc3']);
     for (const id of ['fc1', 'fc2', 'fc3']) enterNode(s, D.jeong_haneul_final.nodes[id]);
-    expect(availableChoices(s, f5).map((c) => c.next)).toEqual(['f6']);
+    expect(availableChoices(s, f5)).toEqual([]); // [계속] 선택지 없이
+    for (const id of ['fc1', 'fc2', 'fc3']) expect(nextOf(s, D.jeong_haneul_final.nodes[id]), id).toBe('f6'); // 셋을 모두 물은 뒤에는 자연스럽게 다음 대사로 이어진다
+    const s2 = createGameState(); enterNode(s2, D.jeong_haneul_final.nodes.fc1);
+    expect(nextOf(s2, D.jeong_haneul_final.nodes.fc1)).toBe('f5'); // 아직 묻지 않은 질문이 남았으면 질문 목록으로
     expect(Object.values(D.jeong_haneul_final.nodes).map((n) => n.text).join('\n')).not.toMatch(/정당방위|죄가 없/);
     expect(D.jeong_haneul_final.nodes.f8.text).toBe('특별 치료 대상자 이송까지 15분 남았습니다. 관계자는 지정 위치로 이동하십시오.');
   });

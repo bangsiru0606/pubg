@@ -52,10 +52,11 @@ export interface StatementRecord { text: string; speaker: string; stage: Stateme
 
 export interface DialogueNode {
   speaker: string; portrait?: string; text: string;
-  voice?: 'inner' | 'action'; // 소리 내어 하는 말이 아니다: inner = 생각·독백, action = 행동·소리 묘사. 화면에 ( ) 로 감싸 보여 준다 (괄호는 데이터에 쓰지 않는다)
+  voice?: 'inner' | 'action' | 'message'; // 소리 내어 하는 말이 아니다: inner = 생각·독백, action = 행동·소리 묘사, message = 받은 메시지(회상 띠로 보여 준다, 괄호 없음). 화면에 ( ) 로 감싸 보여 준다 (괄호는 데이터에 쓰지 않는다)
   noPortrait?: boolean;       // 초상·실루엣을 아예 그리지 않는다 (노크 구간)
   source?: 'spec' | 'new' | 'craft_on'; // 기획서 문장이면 spec, 새로 쓴 문장이면 new
   next?: string;
+  nextIf?: { flags: string[]; next: string }[]; // 이 노드의 효과(플래그)까지 적용한 뒤 flags 가 모두 서 있으면 next 대신 그 노드로 간다 (선택지를 모두 물은 뒤 자연스럽게 이어지게)
   choices?: { text: string; next: string; requiresFlag?: string; requiresFlags?: string[]; hideIfFlag?: string }[];
   statement?: { id: string };   // 이 문장은 검증 대상 진술 (9.3)
   revises?: { id: string };     // 이 노드는 해당 진술의 정정 (text 가 새 문장)

@@ -11,7 +11,7 @@ const nodes = Object.entries(D).flatMap(([id, d]) => Object.entries(d.nodes).map
 
 describe('대사 표시 방식 (voice)', () => {
   it('독백(mono_*)·근접 조사 설명(closeup_*)·병원 도착 독백은 모두 inner', () => {
-    for (const { key, id, x } of nodes) if (/^(mono_|closeup_)/.test(id)) expect(x.voice, key).toBe('inner');
+    for (const { key, id, x } of nodes) if (/^(mono_|closeup_)/.test(id) && id !== 'closeup_newspaper') expect(x.voice, key).toBe('inner'); // 신문 기사(closeup_newspaper)는 문서 본문이라 독백이 아니다
     expect(Object.keys(D).filter((i) => i.startsWith('mono_')).length).toBeGreaterThanOrEqual(15);
   });
   it('주인공 생각 노드와 노크 소리 묘사의 분류', () => {
@@ -19,8 +19,8 @@ describe('대사 표시 방식 (voice)', () => {
     expect(inner).toEqual(['baek_lobby:b6', 'eunho_message:a1', 'eunho_message:b4', 'eunho_message:bc', 'eunho_message:m2']);
     expect(D.intro_knock.nodes.k1.voice).toBe('action');
   });
-  it('voice 가 inner·action 말고는 없고, 텍스트에 괄호를 직접 쓰지 않는다 (화면이 감싼다)', () => {
-    for (const { key, x } of nodes) if (x.voice) { expect(['inner', 'action'], key).toContain(x.voice); expect(x.text.trim(), key).not.toMatch(/^\(|\)$/); }
+  it('voice 가 inner·action·message 말고는 없고, 텍스트에 괄호를 직접 쓰지 않는다 (화면이 감싼다)', () => {
+    for (const { key, x } of nodes) if (x.voice) { expect(['inner', 'action', 'message'], key).toContain(x.voice); expect(x.text.trim(), key).not.toMatch(/^\(|\)$/); }
   });
   it('주인공이 소리 내어 말하는 대사(질문·요구)는 voice 가 없다', () => {
     for (const k of ['baek_lobby:b2', 'baek_lobby:b4', 'eunho_intro:n2', 'jeong_haneul:h3', 'oh_miran:o7', 'chae_soyeon:s2']) expect(nodes.find((q) => q.key === k)!.x.voice, k).toBeUndefined();

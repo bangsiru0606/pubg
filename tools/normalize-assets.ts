@@ -55,15 +55,26 @@ const outlined = spec.sprites.filter((s: any) => s.outline);
 let outlineRgb: [number, number, number] | null = null;
 const outlineColor = async () => (outlineRgb ??= await measureOutlineColor(readFile(join(OUT, 'player_idle_0.png'))));
 
+/** 그림에서 맨 아래 불투명 줄(발바닥)을 찾아 그 줄이 캔버스 맨 아래가 되도록 세로로만 옮긴다. 크기는 바꾸지 않는다 (머리가 내려가는 프레임도 같은 키). */
+async function alignFeet(buf: Buffer, w: number, h: number): Promise<Buffer> {
+  const { data } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  let bottom = -1;
+  for (let y = h - 1; y >= 0 && bottom < 0; y--) for (let x = 0; x < w; x++) if (data[(y * w + x) * 4 + 3] > 0) { bottom = y; break; }
+  const dy = bottom < 0 ? 0 : h - 1 - bottom;
+  if (dy === 0) return buf;
+  return sharp({ create: { width: w, height: h, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: await sharp(buf).extract({ left: 0, top: 0, width: w, height: h - dy }).png().toBuffer(), left: 0, top: dy }]).png().toBuffer();
+}
+
 // 시퀀스: 같은 캐릭터의 모든 프레임을 가로로 이어 붙여 한 번에 양자화 → 프레임별로 다시 자름 (프레임 간 팔레트 동일)
 for (const q of spec.sequences) {
   const frames = await Promise.all(q.frames.map(async (f: string) => {
-    const src = await load(join(SRC, q.src, `${f}.png`), q.chromaKey);
+    const src = await load(join(SRC, `${q.frameSrc?.[f] ?? `${q.src}/${f}`}.png`), q.chromaKey); // frameSrc: 같은 이름 그림의 최신판(_v2 …) 경로
     const meta = await sharp(src).metadata();
     const w = Math.round((meta.width! * q.canvasHeight) / meta.height!);
     const h = q.outline ? q.canvasHeight - 1 : q.canvasHeight; // 외곽선용 위 여백 1px 을 빼고 만든다 (캔버스 높이 90 유지)
     const resized = await sharp(src).resize(w, h, { kernel: 'lanczos3' }).png().toBuffer();
-    const keyed = q.chromaKey ? await binarizeAlpha(resized) : resized;
+    let keyed = q.chromaKey ? await binarizeAlpha(resized) : resized;
+    if (q.alignFeet) keyed = await alignFeet(keyed, w, h); // 걷기 프레임: 같은 배율 그대로, 발 하단 줄을 캔버스 바닥선에 맞춘다
     if (!q.outline) return { f, w, buf: keyed };
     return { f, w: w + 2, buf: await applyOutline(await padForOutline(keyed), await outlineColor()) }; // 좌우 여백 1px 씩 // 외곽선 보정은 숨쉬기 프레임을 만들기 전에 적용한다
   }));
@@ -102,7 +113,7 @@ async function emitIllust(file: string, name: string, portrait: boolean) {
 for (const p of spec.illust as string[]) {
   if (p.endsWith('/*.png')) {
     const dir = p.slice(0, -6);
-    for (const f of readdirSync(join(SRC, dir))) if (!isPendingPortrait(f)) await emitIllust(join(SRC, dir, f), f, /portraits/i.test(dir)); // 승인 전(pending) 인물의 초상은 넣지 않는다
+    for (const f of readdirSync(join(SRC, dir))) if (!isPendingPortrait(f) && !(spec.illustExclude ?? []).includes(f)) await emitIllust(join(SRC, dir, f), f, /portraits/i.test(dir)); // 승인 전(pending) 인물의 초상은 넣지 않는다
   } else await emitIllust(join(SRC, p), basename(p), false);
 }
 // 근접 조사 소품: 투명 여백을 뺀 실제 그림 영역(bbox)과 클릭 판정용 마스크(40열)를 src/data/illust-masks.json 에 쓴다 (file:// 에서는 캔버스로 읽을 수 없다)

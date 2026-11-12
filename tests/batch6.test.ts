@@ -8,11 +8,11 @@ import map from '../src/data/map.json';
 import illustList from '../src/data/illust-list.json';
 
 describe('배치 6 적용', () => {
-  it('pending 은 백선우 걷기(배치 7 대기)만 남는다', () => {
-    expect(spec.pending).toEqual(['baek_walk_0', 'baek_walk_1', 'baek_walk_2', 'baek_walk_3']);
+  it('pending 은 비었다', () => {
+    expect(spec.pending).toEqual([]); // 배치 7 일부(백선우 걷기)가 들어와 비었다
   });
   it('증거 근접 그림 5장이 해당 단서의 상세 보기에 연결된다', () => {
-    const want: Record<string, string> = { E02_altar_blood: 'ev_altar_blood', E04_wristband_fragment: 'ev_wristband', E06_torn_sleeve: 'ev_torn_sleeve', E09_sedative_gap: 'ev_syringe_bag', E14_belongings_diary: 'ev_belongings' };
+    const want: Record<string, string> = { E02_altar_blood: 'ev_altar_blood_v2', E04_wristband_fragment: 'ev_wristband', E06_torn_sleeve: 'ev_torn_sleeve', E09_sedative_gap: 'ev_syringe_bag', E14_belongings_diary: 'ev_belongings' };
     for (const [id, img] of Object.entries(want)) {
       expect((evidence as { id: string; illust?: string }[]).find((e) => e.id === id)!.illust).toBe(img);
       expect(illustList).toContain(img);

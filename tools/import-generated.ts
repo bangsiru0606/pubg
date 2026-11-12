@@ -48,15 +48,36 @@ export function draftFromManifest(manifest: ManifestEntry[], spec: Pick<Spec, 's
   return draft;
 }
 
+/** 걷기 그림 파일 이름: walk_0~3, walk_pass, 다시 만든 판은 `_v2` 같은 꼬리표가 붙는다 (walk_0_v2). 같은 이름(walk_0)의 최신판이 쓰인다. */
+const WALK_FILE = /^(walk_(?:\d+|pass))(?:_v(\d+))?$/;
+const WALK_NEEDED = ['walk_0', 'walk_1', 'walk_2', 'walk_3', 'walk_pass'];
+
 /**
- * 이미 있는 인물(sequence)에 걷기 그림(walk_N)이 새로 들어왔으면 frames 에 더한다 (idle_0 숨쉬기 생성은 그대로).
- * 걷기 순서·속도는 asset-spec 의 walk 규칙(걷기 2장 → idle_0 → 걷기 2장, 공통 fps)이 자동으로 적용한다. 더한 텍스처 이름(`baek_walk_0` …)을 돌려준다.
+ * 이미 있는 인물(sequence)에 걷기 그림이 들어왔으면 frames 에 더하고, 걷기 그림이 같은 이름의 최신판(_v2 …)이면 frameSrc 로 그 파일을 가리킨다.
+ *  - 생성 그림 폴더(generated/…)를 쓰는 인물(백선우)은 `walk_N.png` 도 그대로 쓴다.
+ *  - craft_on 그림을 쓰는 인물(한지수·박은호)은 `_v2` 이상 파일만 바꿔 넣는다 (v1 파일이 폴더에 있어도 지금 그림을 유지한다).
+ *  - 새로 들어온 걷기 그림이 있으면 발 하단 줄 정렬(alignFeet)을 켠다. 걷기 5장(walk_0~3, walk_pass)이 모두 최신판이면 인물별 walkCycle 은 지운다(공통 순서 사용).
+ * 같은 규칙을 걷기 순서·속도는 asset-spec 의 walk 가 자동으로 적용한다. 더한 텍스처 이름(`baek_walk_0` …)을 돌려준다.
  */
 export function mergeWalkFrames(spec: Pick<Spec, 'sequences'>, manifest: ManifestEntry[]): string[] {
   const added: string[] = [];
   for (const q of spec.sequences) {
-    const walks = manifest.filter((e) => e.kind === 'sprite' && e.file.startsWith(`characters/${q.id}/`)).map((e) => basename(e.file, '.png')).filter((f) => /^walk_\d+$/.test(f)).sort();
-    for (const f of walks) if (!q.frames.includes(f)) { q.frames.push(f); added.push(`${q.id}_${f}`); }
+    const generatedSrc = String(q.src ?? '').startsWith('generated/');
+    const best = new Map<string, { version: number; file: string }>(); // 걷기 이름 → 최신판 파일
+    for (const e of manifest.filter((x) => x.kind === 'sprite' && x.file.startsWith(`characters/${q.id}/`))) {
+      const m = WALK_FILE.exec(basename(e.file, '.png'));
+      if (!m) continue;
+      const version = m[2] ? Number(m[2]) : 1;
+      if (!generatedSrc && version < 2) continue;
+      if (!best.has(m[1]) || best.get(m[1])!.version < version) best.set(m[1], { version, file: e.file.replace(/\.png$/, '') });
+    }
+    for (const f of [...best.keys()].sort()) {
+      const b = best.get(f)!;
+      if (!q.frames.includes(f)) { q.frames.push(f); added.push(`${q.id}_${f}`); }
+      if (b.version >= 2) q.frameSrc = { ...(q.frameSrc ?? {}), [f]: `generated/${b.file}` };
+      q.alignFeet = true;
+    }
+    if (WALK_NEEDED.every((f) => q.frameSrc?.[f] || (generatedSrc && q.frames.includes(f)))) delete q.walkCycle;
   }
   return added;
 }

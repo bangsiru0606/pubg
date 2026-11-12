@@ -14,8 +14,8 @@ type Seq = { id: string; frames: string[]; walkCycle?: string[] };
 const seqs = spec.sequences as unknown as Seq[];
 
 describe('걷기 5프레임·1/3 속도 (asset-spec 데이터)', () => {
-  it('공통 규칙: 걷기 2장 → 서 있는 프레임 → 걷기 2장, 5fps(한 주기 1.0초)', () => {
-    expect(spec.walk.cycle).toEqual(['walk_0', 'walk_1', 'idle_0', 'walk_2', 'walk_3']);
+  it('공통 규칙: 걷기 2장 → 지나가는 프레임(walk_pass) → 걷기 2장, 5fps(한 주기 1.0초)', () => {
+    expect(spec.walk.cycle).toEqual(['walk_0', 'walk_1', 'walk_pass', 'walk_2', 'walk_3']);
     expect(spec.walk.fps).toBe(5); expect(spec.walk.cycle.length / spec.walk.fps).toBe(1);
   });
   it('발이 미끄러지지 않는다: 한 주기에 가는 거리 = 이동 속도 × 주기 시간 = 실제 보폭(60~70px), 달리기는 속도·fps 가 같은 배수', () => {
@@ -26,27 +26,42 @@ describe('걷기 5프레임·1/3 속도 (asset-spec 데이터)', () => {
   it('연출 속 이동(오프닝 박은호·1층 첫 입장 플레이어·백선우)도 같은 속도 규칙: 단계에 speed 를 따로 쓰지 않는다', () => {
     for (const st of [...map.opening.steps, ...(map.areas.floor1.stage?.steps ?? [])]) if (st.do === 'walk') expect(st, JSON.stringify(st)).not.toHaveProperty('speed');
   });
-  it('모든 걷는 인물의 순서는 걷기·걷기·idle_0·걷기·걷기이고 그림이 실제로 있다 (박은호는 보폭이 큰 4장)', () => {
+  it('모든 걷는 인물의 순서는 걷기·걷기·가운데·걷기·걷기이고 그림이 실제로 있다 (가운데: 백선우 walk_pass, 한지수·박은호는 _v2 가 올 때까지 idle_0)', () => {
     for (const q of seqs.filter((x) => x.frames.some((f) => f.startsWith('walk_')))) {
       const cycle = q.walkCycle ?? spec.walk.cycle;
-      expect(cycle, q.id).toHaveLength(5); expect(cycle[2], q.id).toBe('idle_0');
+      expect(cycle, q.id).toHaveLength(5); expect(['idle_0', 'walk_pass'], q.id).toContain(cycle[2]);
       for (const [i, f] of cycle.entries()) { expect(q.frames, `${q.id}:${f}`).toContain(f); if (i !== 2) expect(f).toMatch(/^walk_\d$/); }
-      expect(new Set(cycle.filter((f) => f !== 'idle_0')).size, q.id).toBe(4);
+      expect(new Set(cycle.filter((_, i) => i !== 2)).size, q.id).toBe(4);
     }
     expect(seqs.find((q) => q.id === 'eunho')!.walkCycle).toEqual(['walk_0', 'walk_1', 'idle_0', 'walk_3', 'walk_4']);
-    expect(seqs.find((q) => q.id === 'player')!.walkCycle).toBeUndefined(); // 한지수: walk_0, walk_1, idle_0, walk_2, walk_3
+    expect(seqs.find((q) => q.id === 'player')!.walkCycle).toEqual(['walk_0', 'walk_1', 'idle_0', 'walk_2', 'walk_3']);
+    expect(seqs.find((q) => q.id === 'baek')!.walkCycle).toBeUndefined(); // 공통 순서: walk_0, walk_1, walk_pass, walk_2, walk_3
   });
-  it('백선우 걷기 그림은 pending 이고, 들어오면 같은 규칙이 자동 적용된다', () => {
-    for (const n of [0, 1, 2, 3]) expect(spec.pending).toContain(`baek_walk_${n}`);
-    const sp = { sequences: [{ id: 'baek', frames: ['idle_0'], breathe: true }] } as unknown as Parameters<typeof mergeWalkFrames>[0];
-    const manifest: ManifestEntry[] = [0, 1, 2, 3].map((n) => ({ file: `characters/baek/walk_${n}.png`, kind: 'sprite', facing: 'right', chromaKey: true }));
+  it('백선우 걷기 5장이 들어왔다(pending 없음), 정규화는 발 하단 줄 정렬', () => {
+    expect(spec.pending).toEqual([]);
+    const b = seqs.find((q) => q.id === 'baek') as Seq & { alignFeet?: boolean };
+    expect(b.frames).toEqual(expect.arrayContaining(['idle_0', 'walk_0', 'walk_1', 'walk_2', 'walk_3', 'walk_pass'])); expect(b.alignFeet).toBe(true);
+  });
+  it('걷기 그림이 들어오면 frames 에 더하고 같은 규칙이 자동 적용된다 (walk_pass 포함, 두 번 해도 그대로)', () => {
+    const sp = { sequences: [{ id: 'baek', src: 'generated/characters/baek', frames: ['idle_0'], breathe: true }] } as unknown as Parameters<typeof mergeWalkFrames>[0];
+    const manifest: ManifestEntry[] = ['walk_0', 'walk_1', 'walk_pass', 'walk_2', 'walk_3'].map((n) => ({ file: `characters/baek/${n}.png`, kind: 'sprite', facing: 'right', chromaKey: true }));
     const added = mergeWalkFrames(sp, manifest);
-    expect(added).toEqual(['baek_walk_0', 'baek_walk_1', 'baek_walk_2', 'baek_walk_3']);
-    expect((sp.sequences[0] as unknown as Seq).frames).toEqual(['idle_0', 'walk_0', 'walk_1', 'walk_2', 'walk_3']);
-    const pend = { pending: ['floor_plan_board', ...added] };
+    expect(added).toEqual(['baek_walk_0', 'baek_walk_1', 'baek_walk_2', 'baek_walk_3', 'baek_walk_pass']);
+    expect(mergeWalkFrames(sp, manifest)).toEqual([]);
+    const pend = { pending: ['x', ...added] };
     clearPending(pend, [], manifest, added);
-    expect(pend.pending).toEqual(['floor_plan_board']);
-    expect(mergeWalkFrames(sp, manifest)).toEqual([]); // 두 번 적용해도 그대로
+    expect(pend.pending).toEqual(['x']);
+  });
+  it('_v2 파일은 같은 이름(walk_0)의 최신판으로 인식한다: craft_on 인물은 _v2 만 바꿔 넣고(v1 파일은 무시), 5장이 모두 최신판이면 walkCycle 을 지운다', () => {
+    const sp = { sequences: [{ id: 'player', src: 'Art/Player', frames: ['idle_0', 'idle_1', 'walk_0', 'walk_1', 'walk_2', 'walk_3'], walkCycle: ['walk_0', 'walk_1', 'idle_0', 'walk_2', 'walk_3'] }] } as unknown as Parameters<typeof mergeWalkFrames>[0];
+    const v1: ManifestEntry[] = ['walk_0', 'walk_1', 'walk_2', 'walk_3', 'walk_pass'].map((n) => ({ file: `characters/player/${n}.png`, kind: 'sprite' }));
+    expect(mergeWalkFrames(sp, v1)).toEqual([]); // v2 가 오기 전에는 지금 그림 유지
+    expect(sp.sequences[0]).not.toHaveProperty('frameSrc'); expect(sp.sequences[0]).toHaveProperty('walkCycle');
+    const v2: ManifestEntry[] = ['walk_0', 'walk_1', 'walk_2', 'walk_3', 'walk_pass'].map((n) => ({ file: `characters/player/${n}_v2.png`, kind: 'sprite' }));
+    expect(mergeWalkFrames(sp, [...v1, ...v2])).toEqual(['player_walk_pass']);
+    const q = sp.sequences[0] as unknown as Seq & { frameSrc: Record<string, string>; alignFeet: boolean };
+    expect(q.frameSrc.walk_0).toBe('generated/characters/player/walk_0_v2'); expect(q.frameSrc.walk_pass).toBe('generated/characters/player/walk_pass_v2');
+    expect(q).not.toHaveProperty('walkCycle'); expect(q.alignFeet).toBe(true);
   });
 });
 

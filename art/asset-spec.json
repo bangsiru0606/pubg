@@ -4,7 +4,7 @@
     "cycle": [
       "walk_0",
       "walk_1",
-      "idle_0",
+      "walk_pass",
       "walk_2",
       "walk_3"
     ],
@@ -28,7 +28,14 @@
       ],
       "canvasHeight": 90,
       "colours": 64,
-      "note": "캐릭터 2유닛 = 90px. 프레임 캔버스 전체를 같은 배율로 축소(잘라내지 않음, 하단 중앙 피벗)"
+      "note": "캐릭터 2유닛 = 90px. 프레임 캔버스 전체를 같은 배율로 축소(잘라내지 않음, 하단 중앙 피벗)",
+      "walkCycle": [
+        "walk_0",
+        "walk_1",
+        "idle_0",
+        "walk_2",
+        "walk_3"
+      ]
     },
     {
       "id": "eunho",
@@ -59,15 +66,21 @@
       "id": "baek",
       "src": "generated/characters/baek",
       "frames": [
-        "idle_0"
+        "idle_0",
+        "walk_0",
+        "walk_1",
+        "walk_2",
+        "walk_3",
+        "walk_pass"
       ],
       "canvasHeight": 90,
       "colours": 64,
       "facing": "right",
       "chromaKey": true,
       "breathe": true,
+      "outline": true,
       "draft": true,
-      "outline": true
+      "alignFeet": true
     },
     {
       "id": "oh",
@@ -494,10 +507,8 @@
     "characters/baek/idle_1.png",
     "backgrounds/lobby_floor.png"
   ],
-  "pending": [
-    "baek_walk_0",
-    "baek_walk_1",
-    "baek_walk_2",
-    "baek_walk_3"
+  "pending": [],
+  "illustExclude": [
+    "ev_altar_blood.png"
   ]
 }

@@ -6,7 +6,7 @@ import { isCorrectAnswer, linkCandidates, linksCorrect, puzzles, type GameState,
 import { applyScene, buildProgress } from '../src/explore/playthrough';
 import { rng } from './sfx/generate-sfx';
 
-export const PUZZLE_SCENE: Record<string, number> = { P01_scene_rebuild: 2, P02_night_timeline: 3, P03_revision_diff: 4, P04_approval_chain: 4, P05_patient_code: 5 };
+export const PUZZLE_SCENE: Record<string, number> = { P01_scene_rebuild: 2, P02_night_timeline: 4, P03_revision_diff: 4, P04_approval_chain: 4, P05_patient_code: 5 };
 /** 퍼즐이 열리기 직전 상태 (그 씬의 대사·조사까지 마치고 퍼즐은 풀기 전) */
 export function stateBeforePuzzle(id: string): GameState {
   const n = PUZZLE_SCENE[id], s = buildProgress(n).state;

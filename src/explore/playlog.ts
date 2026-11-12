@@ -10,12 +10,11 @@ export const SCENE_COUNT = 7;
 
 /** 상태로 지금 몇 번째 씬인지 (1~7). 씬 경계는 각 씬이 끝나는 조건으로 정한다 (explore/playthrough.ts 의 SCENE_STEPS 와 같다). */
 export function sceneOf(s: GameState): number {
-  const solved = (id: string) => s.solvedPuzzleIds.includes(id);
   if (hasFlag(s, 'flag_evidence_secured') || hasFlag(s, 'flag_confronted_immediately')) return 7; // 증거 보존 선택 뒤 = 최종 보고서
   if (hasFlag(s, 'haneul_confessed')) return 6;
-  if (solved('P03_revision_diff') && solved('P04_approval_chain')) return 5;
-  if (solved('P02_night_timeline')) return 4;
-  if (solved('P01_scene_rebuild')) return 3;
+  if (hasFlag(s, 'basement_key')) return 5; // 오미란이 지하 열쇠를 건넸다 (퍼즐은 층 이동을 막지 않아 이야기 사건으로 나눈다)
+  if (hasFlag(s, 'haneul_met') && hasFlag(s, 'floor3_reason')) return 4; // 3층으로 올라갈 이유가 생겼다
+  if (s.evidenceIds.includes('E04_wristband_fragment')) return 3; // 손목띠 → 2층
   if (hasFlag(s, 'cutscene_done:hospital_intro')) return 2;
   return 1;
 }

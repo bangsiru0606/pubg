@@ -13,11 +13,13 @@ const walk = (s: GameState, id: string, from: string) => { let n = from; for (le
 const P = (id: string) => puzzles.find((p) => p.id === id)!;
 
 describe('씬 3 병동', () => {
-  it('2층 → 3층 계단은 P02 해결 전 잠겨 있고 이유 독백이 있다', () => {
+  it('2층 → 3층 계단은 이야기 사건 전까지 잠겨 있고 이유 독백이 있다 (P02 와 무관)', () => {
     const s = createGameState(), st = find('floor2', 'stairs_up');
     expect(isAvailable(st, s)).toBe(false);
     expect(nearest(areas.floor2, st.x, s)?.id).toBe('stairs_up');
     submitPuzzle(s, 'P02_night_timeline', P('P02_night_timeline').correctSlots);
+    expect(isAvailable(st, s)).toBe(false); // 퍼즐을 풀어도 열리지 않는다
+    s.flags.push('haneul_met', 'floor3_reason');
     expect(isAvailable(st, s)).toBe(true);
   });
   it('최옥자: 진술 등록(단서 아님), 선택지 2개, 방송표를 보면 모순 단계로', () => {
@@ -42,10 +44,10 @@ describe('씬 3 병동', () => {
     expect(s.evidenceIds).toEqual(['E06_torn_sleeve']);
     expect(s.verifiedEvidenceIds).toEqual([]);
   });
-  it('P02 열림 조건: 최옥자·채소연 대화 + 방송표 (E05 와 무관)', () => {
+  it('P02 열림 조건: 최옥자·한유진·채소연 대화 + 방송표 + 3층 간호사실의 E05', () => {
     const w = P('P02_night_timeline').openWhen!;
     expect(w.flags).toEqual(['choi_done', 'han_done', 'chae_done', 'broadcast_seen']); // 한유진 대화는 지하 이전 필수 (12.3.3)
-    expect(w.evidence ?? []).toEqual([]);
+    expect(w.evidence).toEqual(['E05_access_log']); // 기획서대로 E05 는 3층 간호사실 (이전계획 11.1 을 되돌림)
   });
   it('E05 는 3층에서 얻고, P02 를 이미 풀었으면 얻는 즉시 검증', () => {
     const s = createGameState();
@@ -107,8 +109,8 @@ describe('씬 4 관계자 구역', () => {
     expect(s.evidenceIds).toContain('E08_miran_revised');
   });
   it('재고표 한 곳에서 E09·E05, 이혜정 책상 한 곳에서 E10·E11', () => {
-    expect((find('room_oh', 'stock') as { evidenceIds: string[] }).evidenceIds).toEqual(['E09_sedative_gap']); // E05 는 2층 복도 방송표에서 얻는다 (P02 의 22:41 근거라서 P02 보다 먼저 있어야 한다)
-    expect((find('floor2', 'broadcast') as { evidenceIds: string[] }).evidenceIds).toEqual(['E05_access_log']);
+    expect((find('room_oh', 'stock') as { evidenceIds: string[] }).evidenceIds).toEqual(['E09_sedative_gap', 'E05_access_log']); // 기획서대로 E05 는 3층 간호사실
+    expect((find('floor2', 'broadcast') as { evidenceIds?: string[] }).evidenceIds).toBeUndefined(); // 2층 방송표는 독백만 (출력지 문장 삭제)
     expect((find('room_lee', 'desk') as { evidenceIds: string[] }).evidenceIds).toEqual(['E10_consent_forms', 'E11_transfer_order']);
   });
   it('P04: 문서 4종·인물 3, LHJ/LHS 혼동 시 권한 충돌, 해결하면 E10·E11 검증', () => {
@@ -122,13 +124,30 @@ describe('씬 4 관계자 구역', () => {
     expect(submitPuzzle(s, 'P04_approval_chain', p.correctSlots).status).toBe('solved');
     expect(s.verifiedEvidenceIds).toEqual(expect.arrayContaining(['E10_consent_forms', 'E11_transfer_order']));
   });
-  it('지하 계단은 P03 과 P04 가 모두 풀려야 열린다', () => {
+  it('지하 계단은 오미란에게 이송 지시서(E11)를 보여 주고 열쇠를 받아야 열린다 (퍼즐과 무관)', () => {
     const s = createGameState();
     submitPuzzle(s, 'P03_revision_diff', P('P03_revision_diff').correctSlots);
-    expect(isBasementOpen(s)).toBe(false);
     submitPuzzle(s, 'P04_approval_chain', P('P04_approval_chain').correctSlots);
-    expect(isBasementOpen(s)).toBe(true);
-    expect(condMet(s, '@basement_open')).toBe(true);
+    expect(isBasementOpen(s)).toBe(false); // 퍼즐을 풀어도 열리지 않는다
+    const o8 = D.oh_miran.nodes.o8;
+    expect(o8.present).toEqual([{ evidenceIds: ['E11_transfer_order'], next: 'o9' }]);
+    acquireEvidence(s, 'E11_transfer_order');
+    expect(presentEvidence(s, D.oh_miran, 'oh_miran', 'o8', ['E11_transfer_order']).kind).toBe('ok');
+    expect(isBasementOpen(s)).toBe(false);
+    enterNode(s, D.oh_miran.nodes.o9); enterNode(s, D.oh_miran.nodes.o10); enterNode(s, D.oh_miran.nodes.o11); // 열쇠를 건넨다
+    expect(isBasementOpen(s)).toBe(true); expect(condMet(s, '@basement_open')).toBe(true);
+    const door = (areas.floor1.interactables.find((i) => i.id === 'stairs_b1') as { requires: string }).requires;
+    expect(condMet(s, door)).toBe(true); expect(condMet(createGameState(), door)).toBe(false);
+  });
+  it('층 이동은 이야기 사건: 1→2층은 E04, 2→3층은 정하늘 대면+채소연의 3층 이야기, 퍼즐을 막지 않는다', () => {
+    const s = createGameState();
+    const up1 = (areas.floor1.interactables.find((i) => i.id === 'stairs_up') as { requires: string }).requires;
+    const up2 = (areas.floor2.interactables.find((i) => i.id === 'stairs_up') as { requires: string }).requires;
+    expect(condMet(s, up1)).toBe(false); acquireEvidence(s, 'E04_wristband_fragment'); expect(condMet(s, up1)).toBe(true);
+    expect(condMet(s, up2)).toBe(false);
+    enterNode(s, D.jeong_haneul.nodes.h1); expect(condMet(s, up2)).toBe(false); // 정하늘만으로는 열리지 않는다
+    walk(s, 'chae_soyeon', 's1'); expect(condMet(s, up2)).toBe(true); // 채소연이 3층 당직·잠기지 않은 계단 문을 말한다
+    expect(D.chae_soyeon.nodes.s7.text).toContain('3층');
   });
 });
 

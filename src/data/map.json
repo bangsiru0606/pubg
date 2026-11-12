@@ -134,7 +134,7 @@
      "to": "b1",
      "spawnX": 50,
      "kind": "stairs",
-     "requires": "@basement_open",
+     "requires": "basement_key",
      "art": "stairs_basement",
      "lockedDialogue": "mono_basement_locked",
      "sfx": "onGate",
@@ -151,9 +151,19 @@
      "to": "floor2",
      "spawnX": 50,
      "kind": "stairs",
-     "requires": "flag_scene_rebuilt",
+     "requires": "evidence:E04_wristband_fragment",
      "lockedDialogue": "mono_stairs_locked",
      "art": "stairs_up"
+    },
+    {
+     "type": "examine",
+     "id": "doctrine",
+     "x": 980,
+     "name": "교리 액자",
+     "docId": "doctrine_lobby",
+     "art": "doctrine_frame",
+     "doneFlag": "doc_seen:doctrine_lobby",
+     "artBottom": 62
     }
    ],
    "props": [
@@ -370,7 +380,7 @@
      "to": "floor3",
      "spawnX": 50,
      "kind": "stairs",
-     "requires": "flag_night_timeline",
+     "requires": "haneul_met&floor3_reason",
      "lockedDialogue": "mono_floor3_locked",
      "art": "stairs_up"
     },
@@ -382,9 +392,17 @@
      "dialogueId": "mono_broadcast",
      "puzzleId": "P02_night_timeline",
      "art": "broadcast_board",
-     "evidenceIds": [
-      "E05_access_log"
-     ]
+     "doneFlag": "broadcast_seen"
+    },
+    {
+     "type": "examine",
+     "id": "doctrine",
+     "x": 675,
+     "name": "교리 액자",
+     "docId": "doctrine_ward",
+     "art": "doctrine_frame",
+     "doneFlag": "doc_seen:doctrine_ward",
+     "artBottom": 62
     }
    ],
    "bg": {
@@ -419,6 +437,15 @@
      "x": 180,
      "name": "최옥자",
      "dialogueId": "choi_okja"
+    },
+    {
+     "type": "examine",
+     "id": "prayer",
+     "x": 300,
+     "name": "기도 자리",
+     "docId": "prayer_schedule_choi",
+     "art": "prayer_corner",
+     "doneFlag": "doc_seen:prayer_schedule_choi"
     }
    ],
    "npcSprite": {
@@ -463,6 +490,15 @@
      "x": 180,
      "name": "한유진",
      "dialogueId": "han_yujin"
+    },
+    {
+     "type": "examine",
+     "id": "prayer",
+     "x": 300,
+     "name": "기도 자리",
+     "docId": "prayer_schedule_han",
+     "art": "prayer_corner",
+     "doneFlag": "doc_seen:prayer_schedule_han"
     }
    ],
    "npcSprite": {
@@ -626,12 +662,7 @@
      "evidenceId": "E07_report_revision",
      "requires": "baek_refused",
      "puzzleId": "P03_revision_diff",
-     "art": "desk_pc",
-     "artFallback": {
-      "art": "baek_pc",
-      "base": "director_desk",
-      "artBottom": 52
-     }
+     "art": "desk_pc"
     }
    ],
    "npcSprite": {
@@ -675,7 +706,8 @@
      "x": 360,
      "name": "재고표",
      "evidenceIds": [
-      "E09_sedative_gap"
+      "E09_sedative_gap",
+      "E05_access_log"
      ],
      "art": "nurse_counter"
     }
@@ -726,6 +758,16 @@
      ],
      "puzzleId": "P04_approval_chain",
      "art": "lee_desk"
+    },
+    {
+     "type": "examine",
+     "id": "plaque",
+     "x": 420,
+     "name": "감사패",
+     "docId": "donor_plaque",
+     "art": "donor_plaque",
+     "doneFlag": "doc_seen:donor_plaque",
+     "artBottom": 70
     }
    ],
    "npcSprite": {
@@ -821,13 +863,22 @@
       "haneul_confessed",
       "flag_claim_d_open"
      ]
+    },
+    {
+     "type": "examine",
+     "id": "sermon",
+     "x": 600,
+     "name": "기도실",
+     "docId": "sermon_draft",
+     "art": "prayer_corner",
+     "doneFlag": "doc_seen:sermon_draft"
     }
    ],
    "npcSprite": {
     "haneul_b1": "haneul"
    },
    "npcFacing": {
-    "haneul_b1": "left"
+    "haneul_b1": "right"
    },
    "bg": {
     "wall": "basement_wall",

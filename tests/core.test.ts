@@ -161,7 +161,8 @@ describe('12.4 퍼즐', () => {
     expect(s.solvedPuzzleIds).toHaveLength(5);
     expect(s.flags).toEqual(expect.arrayContaining(['flag_scene_rebuilt', 'flag_night_timeline', 'flag_claim_d_open']));
     expect(s.verifiedEvidenceIds).toHaveLength(15); // E01 포함 E16 제외 전부 (E01 은 퍼즐 없음 → 즉시 검증)
-    expect(isBasementOpen(s)).toBe(true);
+    expect(isBasementOpen(s)).toBe(false); // 퍼즐을 다 풀어도 열쇠(오미란이 건네는 basement_key)가 있어야 지하가 열린다
+    s.flags.push('basement_key'); expect(isBasementOpen(s)).toBe(true);
     expect(isBasementOpen(createGameState())).toBe(false);
   });
   it('1. P01 최초/위조 후 위치를 뒤바꾸면 해결되지 않는다', () => {

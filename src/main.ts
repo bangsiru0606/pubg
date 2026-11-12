@@ -54,7 +54,7 @@ if (isTestBuild) {
   const ff = (scene5Done = false) => {
     const s = scene.state;
     for (let n = 1; n <= (scene5Done ? 5 : 4); n++) applyScene(s, n); // 씬별 대사·조사·퍼즐 (퍼즐은 근거 카드까지 붙여 푼다)
-    for (const f of ['intro_done', 'baek_left', 'office_access_granted', 'choi_done', 'han_done', 'chae_done', 'broadcast_seen', 'haneul_met', 'basement_announced', 'cutscene_done:hospital_intro']) setFlag(s, f);
+    for (const f of ['intro_done', 'baek_left', 'office_access_granted', 'choi_done', 'han_done', 'chae_done', 'broadcast_seen', 'haneul_met', 'basement_announced', 'floor3_reason', 'basement_key', 'cutscene_done:hospital_intro', 'cutscene_done:basement_intro']) setFlag(s, f);
     for (const a of ['office', 'floor1', 'room_director', 'floor2', 'floor3', 'room_baek', 'room_oh', 'room_lee']) if (!s.visitedAreaIds.includes(a)) s.visitedAreaIds.push(a);
     if (scene5Done) { // 씬 5 까지 끝낸 상태: 지하 단서·P05 해결·정하늘 고백 → 씬 6 이 바로 시작된다
       for (const f of ['diary_closed', 'haneul_confessed']) setFlag(s, f);
@@ -64,7 +64,7 @@ if (isTestBuild) {
   };
   (window as unknown as Record<string, unknown>).__cw = {
     get state() { return scene.state; }, scene, audioState, audioTrace, seekToEnd: debugSeekToEnd, sfx: playSfx, ff, quick: () => { closeTitleNow(); scene.newGame(true); }, saveConclusion, claims,
-    openDialogue: (id: string) => openDialogue(scene.state, id),
+    openDialogue: (id: string, at?: string) => openDialogue(scene.state, id, () => {}, at),
     // 화면 디자인 확인용 (tools/ui-shots.ts): 각 오버레이를 현재 상태로 바로 연다
     ui: {
       notebook: (tab: number) => openNotebook(scene.state, () => {}, tab),

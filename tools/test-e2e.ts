@@ -102,18 +102,20 @@ check(await cw<boolean>("cw.state.statements.baek_s1?.stage === 'revised'"), '�
 await press('Enter'); // 대화 끝
 await page.waitForFunction(() => !document.querySelector('#dialogue'));
 
+await cw("cw.state.evidenceIds.push('E04_wristband_fragment')"); // 1층 → 2층 조건: 손목띠(E04)
 await enterArea(36 * 45, 'floor2'); check(true, '1층 → 2층');
+await cw("cw.state.flags.push('haneul_met', 'floor3_reason')"); // 2층 → 3층 조건: 정하늘 대면 + 채소연의 3층 이야기
 await enterArea(30 * 45, 'floor3'); check(true, '2층 → 3층');
 await enterArea(0, 'floor2'); check(true, '3층 → 2층');
 await enterArea(0, 'floor1'); check(true, '2층 → 1층');
 await teleport(32 * 45); await wait(60);
 check((await promptText()).includes('지하로 내려가기'), '지하 철창문은 잠겨 있어도 반응한다 (프롬프트)');
 await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
-check((await page.locator('#dialogue .text').innerText()) === '(철창문이 잠겨 있다. 지하로 내려가려면 이 병원의 관리 권한이 필요해 보인다.)' && (await area()) === 'floor1', '지하 철창문 잠김 독백 (괄호 표시, 이동하지 않는다)');
+check((await page.locator('#dialogue .text').innerText()) === '(철창문이 잠겨 있다. 열쇠가 필요하다. 이런 열쇠는 보통 간호를 총괄하는 사람이 맡는다.)' && (await area()) === 'floor1', '지하 철창문 잠김 독백 (괄호 표시, 이동하지 않는다)');
 await press('Enter'); await page.waitForFunction(() => !document.querySelector('#dialogue'));
-await cw("cw.state.solvedPuzzleIds.push('P03_revision_diff', 'P04_approval_chain')");
+await cw("cw.state.flags.push('basement_key')"); // 오미란의 열쇠
 await wait(60);
-check((await promptText()).includes('지하로 내려가기'), 'P03·P04 해결 후 지하 계단 프롬프트');
+check((await promptText()).includes('지하로 내려가기'), '열쇠를 받은 뒤 지하 계단 프롬프트');
 await press('Enter');
 // 지하 첫 입장: 컷신(그림은 배치 8 전까지 대체 배경) + 독백 3줄 → 지하 (한 번만)
 await page.waitForSelector('#cutscene'); await page.waitForFunction(() => document.querySelector('#dialogue .text')?.textContent?.includes('차가운 공기가 올라온다.'));
@@ -327,9 +329,9 @@ check((await promptText()).includes('올라가기'), '[진행] 잠긴 계단에�
 await press('Enter');
 await page.waitForSelector('#dialogue');
 await wait(60); await press('Enter');
-check((await page.locator('#dialogue .text').innerText()).includes('원장실부터 정리해야 한다'), '[진행] 잠긴 이유를 한 줄 독백으로 알려 준다');
+check((await page.locator('#dialogue .text').innerText()).includes('올라갈 이유를 아직 찾지 못했다'), '[진행] 잠긴 이유를 한 줄 독백으로 알려 준다');
 await mash();
-check((await area()) === 'floor1', '[진행] P01 해결 전에는 2층으로 갈 수 없다');
+check((await area()) === 'floor1', '[진행] 손목띠(E04)를 얻기 전에는 2층으로 갈 수 없다');
 
 await teleport(690); await wait(60);
 check((await promptText()).includes('바닥의 서류'), '[씬 2] 오미란이 떨어뜨린 서류');
@@ -434,7 +436,7 @@ check((await area()) === 'floor1' && (await promptText()).includes('올라가기
 await press('Enter');
 await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor2' && !(window as any).__cw.scene.busy);
 check((await promptText()) === '', '[진행] 2층 도착 위치는 계단·문의 상호작용 범위 밖');
-check(true, '[진행] P01 해결 후 1층 → 2층 계단이 열린다');
+check(true, '[진행] 손목띠(E04)를 얻으면 1층 → 2층 계단이 열린다 (P01 과 무관)');
 
 await press('Tab'); await page.waitForSelector('#notebook');
 await noIds('[수첩] 단서 목록');
@@ -476,9 +478,9 @@ await teleport(1350); await wait(60);
 check((await promptText()).includes('올라가기'), '[진행] 3층 계단에도 잠김 프롬프트');
 await press('Enter');
 await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
-check((await page.locator('#dialogue .text').innerText()).includes('병동의 밤 동선부터 정리해야 한다'), '[진행] P02 해결 전 3층 계단: 한 줄 독백');
+check((await page.locator('#dialogue .text').innerText()).includes('아직 올라갈 이유가 없다'), '[진행] 이야기 사건 전 3층 계단: 한 줄 독백');
 await mash();
-check((await area()) === 'floor2', '[진행] P02 해결 전에는 3층에 갈 수 없다');
+check((await area()) === 'floor2', '[진행] 정하늘·채소연 대화 전에는 3층에 갈 수 없다');
 
 await enterRoom(270, 'room_choi');
 await talkTo(150);
@@ -497,8 +499,8 @@ await exitRoom('floor2');
 
 await enterRoom(810, 'room_jeong');
 await talkTo(190); await mash();
-await page.waitForSelector('#viewer'); // E06 원문: 22:34 마스터키 분실, 22:51 복귀
-check((await docText()).includes('22:34') && (await docText()).includes('22:51') && (await docText()).includes('청소용 마스터키'), '[씬 3] 채소연 증언(E06) 원문에 22:34 마스터키 분실·22:51 복귀가 있다');
+await page.waitForSelector('#viewer'); // E06 원문: 몸싸움 흔적인 소매 조각 (시각·마스터키는 진술 카드)
+check((await docText()).includes('찢어진 환자복 소매 조각') && !(await docText()).includes('22:34'), '[씬 3] 채소연 소매 조각(E06) 원문: 물증만 (시각·마스터키는 진술 카드로 분리)');
 await closeViewer();
 check(await cw<boolean>("cw.state.evidenceIds.includes('E06_torn_sleeve')"), '[씬 3] 채소연: E06 증언 획득');
 check((await page.locator('#puzzle').count()) === 0, '[씬 3] 방송표를 보기 전에는 P02 가 열리지 않는다');
@@ -533,48 +535,13 @@ await press('Enter');
 await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('예약 재생'), '[씬 3] 방송표: 예약 재생');
 await mash();
-await page.waitForSelector('#viewer'); // 방송표 아래 단말 출력지: 원장실 출입 기록(E05)을 P02 보다 먼저 읽는다
-check((await docText()).includes('22:41 / 청소용 마스터키 사용'), '[씬 3] 방송표 아래 출입 기록(E05) 원문: 22:41 마스터키 사용');
-await closeViewer();
-await page.waitForSelector('#puzzle', { timeout: 3000 });
 check(await cw<boolean>("cw.state.statements.choi_s_prayer.stage === 'contradiction'"), '[씬 3] 최옥자 진술이 예약 방송 반증과 연결(모순)');
-check(true, '[P02] 최옥자·채소연 대화 + 방송표 → 자동 개방');
-await noIds('[P02] 초기 화면');
-
-// P02 오답: 방송 카드를 사람 동선(22:46)에 넣는다
-const put = async (card: string, slot: string) => { await click(`#puzzle [data-token="${card}"]`); await click(`#puzzle [data-zone="${slot}"]`); };
-await put('key_lost', 't2234'); await put('door_open', 't2241'); await put('sermon', 't2246');
-const rc = await page.locator('#puzzle [data-token="return_room"]').first().boundingBox();
-const z51 = await page.locator('#puzzle [data-zone="t2251"]').first().boundingBox();
-await page.mouse.move(rc!.x + rc!.width / 2, rc!.y + rc!.height / 2); await page.mouse.down();
-await page.mouse.move(z51!.x + z51!.width / 2, z51!.y + z51!.height / 2, { steps: 8 }); await page.mouse.up();
-await wait(100);
-await click('#puzzle [data-submit]'); await wait(60);
-check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) === 4, '[P02] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
-check(await cw<boolean>('!cw.state.wrongCountByPuzzle.P02_night_timeline'), '[P02] 오답 횟수는 그대로');
-await attachLink(page, 't2234', 'E06_torn_sleeve'); await attachLink(page, 't2241', 'E05_access_log'); await attachLink(page, 't2246', 'choi_s_thud'); await attachLink(page, 't2251', 'E06_torn_sleeve');
-await click('#puzzle [data-submit]'); await wait(60);
-check((await warnLines()).length === 1 && (await warnLines())[0].includes('방송표와 맞지 않는다'), '[P02] 방송을 사람 동선에 넣으면 충돌 문장 하나 (복도 방송표와 맞지 않는다)');
-check(await cw<boolean>('cw.state.wrongCountByPuzzle.P02_night_timeline === 1'), '[P02] 오답 1회 기록');
-await noIds('[P02] 오답 화면');
-await shot('stage5_p02');
-// P02 정답: 키보드 (충돌음 카드를 22:46 칸에 → 방송 카드는 바깥으로 밀려난다)
-await page.mouse.move(5, 5);
-for (let i = 0; i < 12 && (await page.locator('#puzzle .tk.foc[data-token="thud"]').count()) === 0; i++) await press('ArrowLeft');
-await press('Enter'); await press('ArrowRight', 3); await press('Enter');
-check((await page.locator('#puzzle .zone.outside [data-token="sermon"]').count()) === 1, '[P02] 방송 카드는 “타임라인 바깥”으로 돌아간다');
-await click('#puzzle [data-submit]'); await wait(100);
-check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P02_night_timeline')"), '[P02] 정답 배열 + 근거 → 해결');
-await press('Enter');
-await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
-const p2 = await page.locator('#dialogue .text').innerText();
-check(p2.includes('정하늘이 원장실에 있었다') && !/계획|살인|의도/.test(p2), '[P02] 결과 문구는 “정하늘이 원장실에 있었다”까지만');
-await mash();
+check((await page.locator('#puzzle').count()) === 0, '[씬 3] 방송표만으로는 P02 가 열리지 않는다 (간호사실의 출입 기록 E05 가 필요하다)');
 
 // ---- 씬 4: 3층 ----
 await teleport(1350); await wait(60); await press('Enter');
 await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor3' && !(window as any).__cw.scene.busy);
-check(true, '[진행] P02 해결 후 2층 → 3층');
+check(true, '[진행] 정하늘·채소연 대화 후 2층 → 3층 (P02 와 무관)');
 
 // 4-1 백선우
 await enterRoom(315, 'room_baek');
@@ -648,7 +615,44 @@ await noIds('[수첩] 진술 탭');
 await shot('stage5_miran_revised');
 await press('Tab');
 await teleport(360); await wait(60); await press('Enter');
-await page.waitForSelector('#viewer'); await closeViewer(); // 재고표 원문 (E05 는 2층 방송표에서 이미 얻었다)
+await page.waitForSelector('#viewer'); await press('Enter'); await wait(150); // 재고표 원문 (E09) — 이어서 다음 원문이 바로 열린다
+await page.waitForSelector('#viewer'); // 이어서 원장실 출입 기록 (E05, 기획서대로 3층 간호사실)
+check((await docText()).includes('22:41 / 청소용 마스터키 사용'), '[씬 4] 간호사실 출입 기록(E05) 원문: 22:41 마스터키 사용');
+await closeViewer();
+await page.waitForSelector('#puzzle', { timeout: 3000 });
+check(true, '[P02] 간호사실 E05 를 얻으면 (최옥자·한유진·채소연 대화 + 방송표 + E05) 자동 개방');
+await noIds('[P02] 초기 화면');
+
+// P02 오답: 방송 카드를 사람 동선(22:46)에 넣는다
+const put = async (card: string, slot: string) => { await click(`#puzzle [data-token="${card}"]`); await click(`#puzzle [data-zone="${slot}"]`); };
+await put('key_lost', 't2234'); await put('door_open', 't2241'); await put('sermon', 't2246');
+const rc = await page.locator('#puzzle [data-token="return_room"]').first().boundingBox();
+const z51 = await page.locator('#puzzle [data-zone="t2251"]').first().boundingBox();
+await page.mouse.move(rc!.x + rc!.width / 2, rc!.y + rc!.height / 2); await page.mouse.down();
+await page.mouse.move(z51!.x + z51!.width / 2, z51!.y + z51!.height / 2, { steps: 8 }); await page.mouse.up();
+await wait(100);
+await click('#puzzle [data-submit]'); await wait(60);
+check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) === 4, '[P02] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
+check(await cw<boolean>('!cw.state.wrongCountByPuzzle.P02_night_timeline'), '[P02] 오답 횟수는 그대로');
+await attachLink(page, 't2234', 'chae_s_out'); await attachLink(page, 't2241', 'E05_access_log'); await attachLink(page, 't2246', 'choi_s_thud'); await attachLink(page, 't2251', 'chae_s_time');
+await click('#puzzle [data-submit]'); await wait(60);
+check((await warnLines()).length === 1 && (await warnLines())[0].includes('방송표와 맞지 않는다'), '[P02] 방송을 사람 동선에 넣으면 충돌 문장 하나 (복도 방송표와 맞지 않는다)');
+check(await cw<boolean>('cw.state.wrongCountByPuzzle.P02_night_timeline === 1'), '[P02] 오답 1회 기록');
+await noIds('[P02] 오답 화면');
+await shot('stage5_p02');
+// P02 정답: 키보드 (충돌음 카드를 22:46 칸에 → 방송 카드는 바깥으로 밀려난다)
+await page.mouse.move(5, 5);
+for (let i = 0; i < 12 && (await page.locator('#puzzle .tk.foc[data-token="thud"]').count()) === 0; i++) await press('ArrowLeft');
+await press('Enter'); await press('ArrowRight', 3); await press('Enter');
+check((await page.locator('#puzzle .zone.outside [data-token="sermon"]').count()) === 1, '[P02] 방송 카드는 “타임라인 바깥”으로 돌아간다');
+await click('#puzzle [data-submit]'); await wait(100);
+check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P02_night_timeline')"), '[P02] 정답 배열 + 근거 → 해결');
+await press('Enter');
+await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
+const p2 = await page.locator('#dialogue .text').innerText();
+check(p2.includes('정하늘이 원장실에 있었다') && !/계획|살인|의도/.test(p2), '[P02] 결과 문구는 “정하늘이 원장실에 있었다”까지만');
+await mash();
+
 check(await cw<boolean>("cw.state.evidenceIds.includes('E09_sedative_gap') && cw.state.verifiedEvidenceIds.includes('E05_access_log') && cw.state.verifiedEvidenceIds.includes('E06_torn_sleeve')"), '[씬 4] 재고표: E09·E05 (P02 를 이미 풀었으므로 E05 즉시 검증, E06 도 검증)');
 await exitRoom('floor3');
 
@@ -686,8 +690,23 @@ await click('#puzzle [data-submit]'); await wait(100);
 check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P04_approval_chain') && cw.state.verifiedEvidenceIds.includes('E10_consent_forms')"), '[P04] 정답(키보드) → E10·E11 검증');
 await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('선정은 이혜정, 승인은 이한신, 실행은 백선우'), '[P04] 중간 결론: 선정·승인·실행');
-await press('Enter'); await wait(200); await press('Enter');
-check((await page.locator('#dialogue .text').innerText()).includes('지하 계단으로 내려갈 수 있다'), '[진행] P03·P04 완료 → 지하 계단 개방 안내');
+await mash();
+check(await cw<boolean>("!cw.state.flags.includes('basement_key')"), '[진행] P03·P04 를 풀어도 지하 열쇠는 생기지 않는다 (퍼즐은 층 이동과 무관)');
+
+// 오미란에게 이송 지시서(E11)를 보여 주면 지하 열쇠
+await exitRoom('floor3');
+await enterRoom(630, 'room_oh');
+await talkTo(150);
+check(await until('부원장님께 먼저 알리는 게 규칙이었어요'), '[진행] 이미 끝난 대화라도 E11 이 있으면 마지막 노드에서 시작한다 (단서 제시로 이어진다)');
+await wait(300);
+await pickEvidence(await cw<number>("cw.state.evidenceIds.indexOf('E11_transfer_order')")); await confirmPick();
+check(await until('은지 씨 침대가 비던 날'), '[진행] E11 제시 → 오미란이 망설이다 지하 열쇠를 건넨다 (봉헌 교리, 죄책감)');
+check(await cw<boolean>("cw.state.flags.includes('basement_key')"), '[진행] 지하 열쇠(basement_key)');
+await press('Enter'); await wait(150);
+check(await until('지하로 내려갈 수 있다'), '[진행] 열쇠를 받으면 지하 계단 개방 안내');
+await mash();
+await talkTo(150);
+check(await until('열쇠는 드렸습니다'), '[진행] 열쇠를 준 뒤 다시 말을 걸면 그 상태의 짧은 대사');
 await mash();
 
 // 1층 지하 계단
@@ -804,7 +823,7 @@ const moveTo = async (sel: string, text: string, key = 'ArrowDown') => { for (le
 const claimsToFill: [string, string, string[], string][] = [
   ['claim_a', '기도대 충돌', ['기도대 아래 혈흔', '예비 검안 메모'], '검안 기록 수정 이력'],
   ['claim_b', '은지와 자신을 구하려', ['정하늘 손목띠 조각', '오미란의 수정 진술'], '원장실 출입 기록'],
-  ['claim_c', '백선우와 이혜정이', ['검안 기록 수정 이력', '오미란의 수정 진술'], '찢어진 환자복 소매'],
+  ['claim_c', '이혜정 이사가 기록과 현장', ['검안 기록 수정 이력', '오미란의 수정 진술'], '찢어진 환자복 소매'],
   ['claim_d', 'P-271로 분류', ['특별 치료 장부', '박은지의 유품과 일기'], '생체 보존물 운송표'],
 ];
 for (let i = 0; i < claimsToFill.length; i++) {
@@ -987,6 +1006,28 @@ const fit = await page.evaluate(`(() => {
 check(fit.n >= 9 && fit.scrolls && fit.optsInsideDialog, `[선택지] 긴 증거 제시 목록(${fit.n}줄)은 대화창 안에서 스크롤된다`);
 check(fit.selVisible, '[선택지] 선택한 줄이 항상 보이는 영역 안에 있다 (자동 스크롤)');
 await press('Escape'); await press('Escape');
+
+// ---- 퍼즐을 하나도 풀지 않고 층 이동 (P05 제외): 이야기 사건만으로 계단이 열린다 ----
+await page.goto(url);
+await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
+await startQuick();
+for (const n of [2, 3, 4]) await cw(`cw.ui.prepare(${n})`); // 대사·조사까지 마치고 퍼즐은 풀지 않는다
+check(await cw<boolean>('cw.state.solvedPuzzleIds.length === 0 && cw.state.flags.includes("basement_key")'), '[퍼즐 없이] 퍼즐을 하나도 풀지 않았고, 오미란의 열쇠까지 이야기로 얻었다');
+await cw("cw.state.flags.push('cutscene_done:basement_intro')");
+await cw("cw.scene.go('floor1', 1500)"); await wait(900);
+await enterArea(36 * 45, 'floor2'); check(true, '[퍼즐 없이] 1층 → 2층');
+await enterArea(30 * 45, 'floor3'); check(true, '[퍼즐 없이] 2층 → 3층');
+await enterArea(0, 'floor2'); await enterArea(0, 'floor1');
+await enterArea(32 * 45, 'b1'); check(true, '[퍼즐 없이] 1층 → 지하 (철창문)');
+await press('Tab'); await page.waitForSelector('#notebook'); await press('ArrowLeft'); // 맨 뒤 탭: 미결 사건
+const pt = await page.locator('#notebook').innerText();
+check(pt.includes('미결 사건') && pt.includes('사건 열기'), '[미결 사건] 재료가 모인 퍼즐이 수첩 "미결 사건" 탭에 남는다');
+await press('Enter'); await page.waitForSelector('#puzzle', { timeout: 3000 });
+check(true, '[미결 사건] Enter 로 사건(퍼즐)을 다시 연다');
+await press('Escape'); await page.waitForSelector('#dialogue'); // 처음 한 번 독백
+await wait(2200); // 타이핑이 끝난 뒤
+check((await page.locator('#dialogue .text').innerText()).includes('미결 사건'), '[미결 사건] 풀지 않고 닫으면 처음 한 번 독백으로 알려 준다');
+await mash();
 
 await browser.close();
 check(errors.length === 0, `콘솔 오류 0 ${errors.join(' | ')}`);

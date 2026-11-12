@@ -168,7 +168,15 @@
        "E04_wristband_fragment"
       ]
      },
-     "voice": "inner"
+     "voice": "inner",
+     "next": "m2"
+    },
+    "m2": {
+     "speaker": "han_jisu",
+     "text": "손목띠 안쪽에 병동 표시가 남아 있다. 2병동. 입원 환자의 것이다. 2층으로 올라가 확인해야 한다.",
+     "source": "new",
+     "voice": "inner",
+     "noPortrait": true
     }
    }
   },
@@ -189,7 +197,7 @@
    "nodes": {
     "m": {
      "speaker": "han_jisu",
-     "text": "위층에 가기 전에 원장실부터 정리해야 한다.",
+     "text": "위층에 올라갈 이유를 아직 찾지 못했다. 원장실에서 더 살펴봐야 한다.",
      "source": "new",
      "portrait": "player_neutral",
      "voice": "inner"
@@ -268,7 +276,14 @@
      "statement": {
       "id": "choi_s_thud"
      },
-     "portrait": "choi_confused"
+     "portrait": "choi_confused",
+     "next": "c4"
+    },
+    "c4": {
+     "speaker": "choi_okja",
+     "text": "원장님이 늘 말씀하셨죠. 몸은 잠시 빌린 그릇이고, 영혼은 빛으로 다시 태어난다고. 그 말만 생각하면 하나도 무섭지 않아요.",
+     "source": "new",
+     "portrait": "choi_devout"
     }
    }
   },
@@ -311,7 +326,14 @@
        "han_done"
       ]
      },
-     "portrait": "han_earnest"
+     "portrait": "han_earnest",
+     "next": "y4"
+    },
+    "y4": {
+     "speaker": "han_yujin",
+     "text": "…매일 밤 스피커에서 ‘다시 태어난다’는 말이 나오면 저는 이불로 귀를 막아요. 그 말을 믿는 사람들 곁에서 믿는 척하는 게 제일 힘들어요.",
+     "source": "new",
+     "portrait": "han_fear"
     }
    }
   },
@@ -346,16 +368,11 @@
      "speaker": "chae_soyeon",
      "text": "10시 51분이었어요. 병실 벽시계를 봤거든요. 언니는 계속 ‘은지가 이미 늦었대’라고 했어요.",
      "source": "new",
-     "onEnter": {
-      "acquire": [
-       "E06_torn_sleeve"
-      ],
-      "setFlags": [
-       "chae_done"
-      ]
-     },
      "portrait": "chae_earnest",
-     "next": "s4"
+     "next": "s3b",
+     "statement": {
+      "id": "chae_s_time"
+     }
     },
     "s4": {
      "speaker": "han_jisu",
@@ -368,7 +385,53 @@
      "speaker": "chae_soyeon",
      "text": "10시 34분이에요. 소등 방송이 끝나고 바로 시계를 봤거든요. 그때 제가 맡아 두던 청소용 마스터키도 같이 없어졌어요.",
      "source": "new",
-     "portrait": "chae_worried"
+     "portrait": "chae_worried",
+     "statement": {
+      "id": "chae_s_out"
+     },
+     "onEnter": {
+      "setFlags": [
+       "chae_done"
+      ]
+     },
+     "next": "s6"
+    },
+    "s3b": {
+     "speaker": "chae_soyeon",
+     "text": "언니는 찢어진 소매를 바로 벗어서 제 침대 밑에 밀어 넣었어요. 이거예요. 가져가서 확인해 보세요.",
+     "source": "new",
+     "portrait": "chae_worried",
+     "next": "s4",
+     "onEnter": {
+      "acquire": [
+       "E06_torn_sleeve"
+      ]
+     }
+    },
+    "s6": {
+     "speaker": "han_jisu",
+     "text": "그날 밤 병동은 누가 지키고 있었습니까?",
+     "source": "new",
+     "portrait": "player_question",
+     "next": "s7"
+    },
+    "s7": {
+     "speaker": "chae_soyeon",
+     "text": "당직은 3층의 오미란 수간호사님이었어요. 그런데 그날은 3층으로 가는 계단 문이 밤새 열려 있었어요. 마스터키 없이는 안 열리는 문인데요.",
+     "source": "new",
+     "portrait": "chae_worried",
+     "next": "s8",
+     "onEnter": {
+      "setFlags": [
+       "floor3_reason"
+      ]
+     }
+    },
+    "s8": {
+     "speaker": "chae_soyeon",
+     "text": "그리고 방송에서 ‘봉헌은 선택받은 은혜’라고 매일 말하는데, 언니는 그 말이 나올 때마다 이불을 뒤집어썼어요. 저도 따라 하게 됐고요.",
+     "source": "new",
+     "portrait": "chae_earnest"
     }
    }
   },
@@ -648,10 +711,59 @@
        "oh_done"
       ]
      },
-     "portrait": "oh_tearful"
+     "portrait": "oh_tearful",
+     "present": [
+      {
+       "evidenceIds": [
+        "E11_transfer_order"
+       ],
+       "next": "o9"
+      }
+     ]
+    },
+    "o9": {
+     "speaker": "han_jisu",
+     "text": "이 이송 지시서를 보십시오. 오늘 오후 환자 여섯 명이 지하 자료와 함께 나갑니다. 아래로 내려간 사람이 돌아온 적이 있습니까?",
+     "source": "new",
+     "portrait": "player_neutral",
+     "next": "o10"
+    },
+    "o10": {
+     "speaker": "oh_miran",
+     "text": "…봉헌이라고 불렀어요. 몸을 바치면 빛으로 다시 태어난다고, 선택받은 은혜라고 아이들에게 제 입으로 가르쳤습니다. 내려간 아이가 돌아온 적은… 한 번도 없었어요.",
+     "source": "new",
+     "portrait": "oh_tearful",
+     "next": "o11"
+    },
+    "o11": {
+     "speaker": "oh_miran",
+     "text": "은지 씨 침대가 비던 날, 더는 믿을 수 없었어요. 지하 철창문 열쇠입니다. 제가 드렸다는 말은 하지 마세요. 저는 너무 오래 눈을 감고 있었어요.",
+     "source": "new",
+     "portrait": "oh_guilty",
+     "onEnter": {
+      "setFlags": [
+       "basement_key"
+      ]
+     }
+    },
+    "ok1": {
+     "speaker": "oh_miran",
+     "text": "열쇠는 드렸습니다. 저는 아무것도 못 본 겁니다. …부디 은지 씨를 제대로 찾아 주세요.",
+     "source": "new",
+     "portrait": "oh_guilty"
     }
    },
    "restart": [
+    {
+     "when": "basement_key",
+     "node": "ok1",
+     "keep": true
+    },
+    {
+     "when": "oh_done&evidence:E11_transfer_order",
+     "node": "o8",
+     "keep": true
+    },
     {
      "when": "oh_admitted",
      "node": "o3"
@@ -670,7 +782,7 @@
     },
     "l1": {
      "speaker": "lee_hyejeong",
-     "text": "아버지가 돌아가신 날까지 환자들을 선동하실 겁니까?",
+     "text": "원장님이 돌아가신 날까지 환자들을 선동하실 겁니까?",
      "source": "spec",
      "next": "l2",
      "portrait": "lee_contempt"
@@ -702,7 +814,7 @@
     },
     "l5": {
      "speaker": "lee_hyejeong",
-     "text": "아버지 없는 병원은 안전하지 않으니까요.",
+     "text": "원장님 없는 병원은 안전하지 않으니까요.",
      "source": "spec",
      "next": "l6",
      "portrait": "lee_tense"
@@ -735,7 +847,7 @@
    "nodes": {
     "m": {
      "speaker": "han_jisu",
-     "text": "복도 방송표다. ‘기도 설교’ 칸에는 ‘예약 재생’이라고만 적혀 있다. 재생하는 사람은 없다. 방송표 아래 단말기에는 야간 출입 기록 출력지가 꽂혀 있다.",
+     "text": "복도 방송표다. ‘기도 설교’ 칸에는 ‘예약 재생’이라고만 적혀 있다. 재생하는 사람은 없다.",
      "source": "new",
      "portrait": "player_neutral",
      "onEnter": {
@@ -744,12 +856,17 @@
       ],
       "contradict": [
        "choi_s_prayer"
-      ],
-      "acquire": [
-       "E05_access_log"
       ]
      },
-     "voice": "inner"
+     "voice": "inner",
+     "next": "m2"
+    },
+    "m2": {
+     "speaker": "han_jisu",
+     "text": "오늘 밤 예약 목록 맨 위에는 ‘봉헌의 밤 — 몸은 빌린 그릇, 영혼은 빛으로’라고 적혀 있다. 이 문장이 매일 밤 같은 시간에 병동으로 흘러나오는 모양이다.",
+     "source": "new",
+     "voice": "inner",
+     "noPortrait": true
     }
    }
   },
@@ -758,7 +875,7 @@
    "nodes": {
     "m": {
      "speaker": "han_jisu",
-     "text": "위층에 가기 전에 병동의 밤 동선부터 정리해야 한다.",
+     "text": "3층 계단 앞이다. 아직 올라갈 이유가 없다. 병동 사람들의 이야기를 먼저 들어 보자.",
      "source": "new",
      "portrait": "player_neutral",
      "voice": "inner"
@@ -806,7 +923,7 @@
    "nodes": {
     "m": {
      "speaker": "han_jisu",
-     "text": "청소용 마스터키의 지하 권한과 이송 지시가 맞물렸다. 1층 지하 계단으로 내려갈 수 있다.",
+     "text": "수간호사가 건넨 열쇠다. 지하 철창문 자물쇠에 맞을 것이다. 이제 지하로 내려갈 수 있다.",
      "source": "new",
      "portrait": "player_neutral",
      "voice": "inner"
@@ -944,7 +1061,7 @@
      "speaker": "jeong_haneul",
      "text": "알아요. 그 사람이 은지를 죽였다고 해서, 제가 한 일이 없던 일이 되는 건 아니라는 거.",
      "source": "spec",
-     "next": "f8",
+     "next": "f7a",
      "portrait": "haneul_confession"
     },
     "f8": {
@@ -956,6 +1073,34 @@
        "haneul_confessed"
       ]
      }
+    },
+    "f7a": {
+     "speaker": "han_jisu",
+     "text": "이혜정은 이 일에 어디까지 관여했습니까?",
+     "source": "new",
+     "portrait": "player_question",
+     "next": "f7b"
+    },
+    "f7b": {
+     "speaker": "jeong_haneul",
+     "text": "이혜정은 원장의 딸이에요. 교주의 딸이자 이사죠. 특별 치료 대상자 명단은 그 사람 손에서 나와요.",
+     "source": "new",
+     "portrait": "haneul_confession",
+     "next": "f7c"
+    },
+    "f7c": {
+     "speaker": "han_jisu",
+     "text": "은지 씨는 왜 끝까지 따라갔습니까?",
+     "source": "new",
+     "portrait": "player_question",
+     "next": "f7d"
+    },
+    "f7d": {
+     "speaker": "jeong_haneul",
+     "text": "봉헌이 구원이라고, 몸은 빌린 그릇이고 빛으로 다시 태어난다고… 이혜정이 상담 시간마다 은지에게 가르쳤어요. 은지는 그 말을 믿으려 했어요. 편지에 쓴 ‘다시 태어난다’가 그 말이에요. 저는 그걸 막지 못했습니다.",
+     "source": "new",
+     "portrait": "haneul_shaken",
+     "next": "f8"
     }
    }
   },
@@ -1134,7 +1279,7 @@
    "nodes": {
     "m": {
      "speaker": "han_jisu",
-     "text": "철창문이 잠겨 있다. 지하로 내려가려면 이 병원의 관리 권한이 필요해 보인다.",
+     "text": "철창문이 잠겨 있다. 열쇠가 필요하다. 이런 열쇠는 보통 간호를 총괄하는 사람이 맡는다.",
      "source": "new",
      "voice": "inner",
      "portrait": "player_neutral"
@@ -1196,6 +1341,18 @@
      "speaker": "han_jisu",
      "source": "new",
      "text": "은혜요양병원 이한신 원장 별세\n지역신문 온라인판 출력 · 8월 17일 오전 6시 40분 입력\n은혜요양병원은 17일 새벽 이한신 원장이 지병으로 별세했다고 밝혔다.\n병원 측에 따르면 이 원장은 집무실 의자에 앉은 채 발견됐다. 병원은 고인이 평소 지병을 앓아 왔다고 설명했다.\n장례는 가족장으로 치르며, 면회와 외부 문의는 다음 주 이후에 받는다고 병원 측은 덧붙였다."
+    }
+   }
+  },
+  "mono_pending_hint": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "아직 맞춰지지 않는다. 풀지 못한 사건은 수첩의 ‘미결 사건’에 남아 있으니, 자료가 더 모이면 다시 열어 보자.",
+     "source": "new",
+     "voice": "inner",
+     "noPortrait": true
     }
    }
   }

@@ -161,7 +161,7 @@ describe('씬 점프 상태 (디버그 메뉴 = 정상 플레이와 같은 상�
   const solved = (n: number) => buildProgress(n).state.solvedPuzzleIds.map((id) => id.slice(0, 3));
   it('씬 N 시작 시점에는 앞선 씬의 퍼즐만 풀려 있다', () => {
     expect(solved(1)).toEqual([]); expect(solved(2)).toEqual([]); expect(solved(3)).toEqual(['P01']);
-    expect(solved(4)).toEqual(['P01', 'P02']); expect(solved(5)).toEqual(['P01', 'P02', 'P03', 'P04']);
+    expect(solved(4)).toEqual(['P01']); expect(solved(5)).toEqual(['P01', 'P02', 'P03', 'P04']); // P02 는 간호사실 E05 뒤(씬 4)
     expect(solved(6)).toEqual(['P01', 'P02', 'P03', 'P04', 'P05']);
   });
   it('씬 6 시작에는 정하늘 고백·P05 가 끝나 있어 씬 6 사건이 바로 시작된다, 씬 7 시작에는 증거 보존 선택이 끝나 있다', () => {

@@ -12,8 +12,8 @@ interface SceneSteps { dialogues?: string[]; examines?: [string, string][]; puzz
 export const SCENE_STEPS: SceneSteps[] = [
   { dialogues: ['eunho_intro'], flags: ['cutscene_done:hospital_intro'] },
   { dialogues: ['baek_lobby'], examines: [['floor1', 'exam_note'], ['room_director', 'altar'], ['room_director', 'under_desk'], ['room_director', 'chair']], puzzles: ['P01_scene_rebuild'] },
-  { dialogues: ['choi_okja', 'han_yujin', 'chae_soyeon', 'jeong_haneul'], examines: [['floor2', 'broadcast']], puzzles: ['P02_night_timeline'] },
-  { dialogues: ['baek_office', 'oh_miran', 'lee_hyejeong'], examines: [['room_baek', 'revision'], ['room_oh', 'stock'], ['room_lee', 'desk']], puzzles: ['P03_revision_diff', 'P04_approval_chain'], flags: ['basement_announced'] },
+  { dialogues: ['choi_okja', 'han_yujin', 'chae_soyeon', 'jeong_haneul'], examines: [['floor2', 'broadcast']] }, // P02 는 간호사실에서 E05 를 얻은 뒤(씬 4)에 열린다
+  { dialogues: ['baek_office', 'oh_miran', 'lee_hyejeong'], examines: [['room_baek', 'revision'], ['room_oh', 'stock'], ['room_lee', 'desk']], puzzles: ['P02_night_timeline', 'P03_revision_diff', 'P04_approval_chain'], flags: ['basement_announced'] },
   { dialogues: ['jeong_haneul_final'], examines: [['b1', 'ledger'], ['b1', 'idmap'], ['b1', 'manifest'], ['b1', 'belongings']], puzzles: ['P05_patient_code'], flags: ['diary_closed'] },
 ];
 
@@ -49,10 +49,10 @@ export function applyScene(s: GameState, scene: number, secure = true, opts: { p
 }
 
 /** 씬 `scene`(1~7)을 시작하는 시점의 상태. 앞선 씬을 모두 거친 것으로 만든다. */
-export function buildProgress(scene: number, opts: { secure?: boolean; name?: string } = {}): { state: GameState; area: string; x: number } {
+export function buildProgress(scene: number, opts: { secure?: boolean; name?: string; puzzles?: boolean } = {}): { state: GameState; area: string; x: number } {
   const state = createGameState();
   if (opts.name) state.playerName = opts.name;
-  for (let k = 1; k < scene; k++) applyScene(state, k, opts.secure ?? true);
+  for (let k = 1; k < scene; k++) applyScene(state, k, opts.secure ?? true, { puzzles: opts.puzzles }); // puzzles:false = 퍼즐을 하나도 풀지 않은 플레이
   const at = SCENE_START[scene - 1];
   state.currentSceneId = at.area; state.playerX = at.x;
   if (scene > 1) for (const a of ['office', 'floor1']) if (!state.visitedAreaIds.includes(a)) state.visitedAreaIds.push(a);

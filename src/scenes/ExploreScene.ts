@@ -4,7 +4,7 @@ import spec from '../../art/asset-spec.json';
 import { areaTrack, bgmBase, sceneTrack, sfx, transitionSfx } from '../audio/audio';
 import { openNamePopup } from '../ui/namepopup';
 import {
-  acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, puzzles, setFlag, type GameState,
+  acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, puzzles, puzzleReady, setFlag, type GameState,
 } from '../core';
 import {
   GROUND_Y, OPENING, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, showsSparkle, walkFlip, promptOf, themes,
@@ -21,7 +21,7 @@ import { fadeThrough, queueHints, setPrompt, showToast } from '../ui/hud';
 import { clearInput, consumePress, isEnterHeld, isHeld, isModalOpen, setLogHandler, setTabHandler } from '../ui/input';
 import { openBacklog, setBacklogArea } from '../ui/backlog';
 import { openNotebook } from '../ui/notebook';
-import { openViewer } from '../ui/viewer';
+import { openDocument, openViewer } from '../ui/viewer';
 
 const A = 'assets/';
 const CAMERA_MARGIN = 80; // 갈 수 없는 곳(계단 너머)을 이만큼까지 검게 보여 준다
@@ -65,6 +65,10 @@ export class ExploreScene extends Phaser.Scene {
       const m = k.match(/^(.+)_idle_1$/);
       if (m && !this.anims.exists(`${m[1]}_idle`)) anim(`${m[1]}_idle`, m[1], ['idle_0', 'idle_1'], 2);
     }
+    for (const k of Object.keys(assetList)) { // 옆모습 정지 그림(idle_side): 걸어 들어와 멈춘 뒤 쓴다 (`<id>_idle_side`)
+      const m = k.match(/^(.+)_idle_side$/);
+      if (m) this.anims.create({ key: `${m[1]}_idle_side`, frameRate: 1, repeat: -1, frames: [{ key: k }] });
+    }
     // 걷기: asset-spec 의 walk(공통 순서·fps)와 sequences[].walkCycle(인물별 순서)로 만든다. 걷기 그림이 없는 인물은 만들지 않고 idle 로 이동한다.
     for (const q of spec.sequences as { id: string; walkCycle?: string[]; walkFps?: number }[]) {
       const cycle = (q.walkCycle ?? spec.walk.cycle).map((f) => `${q.id}_${f}`);
@@ -81,7 +85,7 @@ export class ExploreScene extends Phaser.Scene {
       cv.refresh();
     }
     this.anims.create({ key: 'sparkle', frameRate: 2.5, repeat: -1, frames: [{ key: 'sparkle_0' }, { key: 'sparkle_1' }] });
-    setTabHandler(() => { if (this.started && !this.locked && !this.busy && !isModalOpen()) openNotebook(this.state, () => {}); });
+    setTabHandler(() => { if (this.started && !this.locked && !this.busy && !isModalOpen()) openNotebook(this.state, () => {}, 0, (id) => this.puzzle(id)); });
     setLogHandler(() => { if (this.started && !this.busy && !isModalOpen()) openBacklog(); });
     setThenHandler((t) => { if (t === 'report') this.startReport(); });
     this.buildArea(START.area, START.x);
@@ -168,7 +172,7 @@ export class ExploreScene extends Phaser.Scene {
       if (stairs) for (let i = 1; i < 5; i++) this.add.rectangle(it.x, g - i * 18, 56, 1, 0x000000, 0.35).setOrigin(0.5, 1).setDepth(4);
     } else if (it.type === 'npc') {
       const sprite = a.npcSprite?.[it.id];
-      if (sprite && this.textures.exists(`${sprite}_idle_0`)) this.npcSprites.set(it.id, this.add.sprite(it.x, g, `${sprite}_idle_0`).setOrigin(0.5, 1).setFlipX(flipFor(sprite, a.npcFacing?.[it.id] === 'left')).setDepth(5).setVisible(!(it.introScene && !hasFlag(this.state, triggerKey(this.areaId, it.id)))).play(`${sprite}_idle`));
+      if (sprite && this.textures.exists(`${sprite}_idle_0`)) this.npcSprites.set(it.id, this.add.sprite(it.x, g, `${sprite}_idle_0`).setOrigin(0.5, 1).setFlipX(flipFor(sprite, a.npcFacing?.[it.id] === 'left')).setDepth(5).setVisible(!(it.introScene && !hasFlag(this.state, triggerKey(this.areaId, it.id)))).play(it.introScene && this.anims.exists(`${sprite}_idle_side`) ? `${sprite}_idle_side` : `${sprite}_idle`)); // 연출로 걸어 들어온 NPC 는 멈춘 뒤에도 옆모습 정지 그림 (구역을 다시 그려도 같다)
       else { // 회색 실루엣 placeholder (몸 + 머리)
         this.add.rectangle(it.x, g, 30, 66, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
         this.add.rectangle(it.x, g - 66, 22, 24, 0x8a8f94).setOrigin(0.5, 1).setDepth(5);
@@ -225,7 +229,7 @@ export class ExploreScene extends Phaser.Scene {
     else if (it.type === 'npc') this.talk(it);
     else if (it.closeup) { setPrompt(null); openCloseup(this.state, it.closeup, () => {}); }
     else if (it.puzzleId && (hasFlag(this.state, `puzzle_opened:${it.puzzleId}`) || !(it.evidenceId || it.evidenceIds || it.dialogueId))) this.puzzle(it.puzzleId); // 이미 한 번 열린 퍼즐은 다시 연다
-    else if (it.evidenceId || it.evidenceIds || it.dialogueId) this.examine(it);
+    else if (it.evidenceId || it.evidenceIds || it.dialogueId || it.docId) this.examine(it);
   }
 
   private useTransition(it: Transition) {
@@ -243,7 +247,10 @@ export class ExploreScene extends Phaser.Scene {
     setPrompt(null);
     const ids = [...(it.evidenceId ? [it.evidenceId] : []), ...(it.evidenceIds ?? [])];
     const have = ids.length > 0 && ids.every((id) => this.state.evidenceIds.includes(id));
-    if (it.dialogueId && !have) { openDialogue(this.state, it.dialogueId, (got) => this.showDocs(got)); return; }
+    // 맥락 문서(docId): 독백이 있으면 독백 → 문서. 이미 본 문서는 문서만 다시 연다. 단서가 아니라 수첩에 들어가지 않는다.
+    const afterDialogue = (got: string[]) => { if (it.docId) openDocument(it.docId, () => { if (it.doneFlag) setFlag(this.state, it.doneFlag); this.showDocs(got); }); else this.showDocs(got); };
+    if (it.dialogueId && !have && !(it.docId && it.doneFlag && hasFlag(this.state, it.doneFlag))) { openDialogue(this.state, it.dialogueId, afterDialogue); return; }
+    if (it.docId) { afterDialogue([]); return; }
     const fresh = ids.filter((id) => acquireEvidence(this.state, id));
     for (const id of fresh) showToast(`단서 획득: ${shownEvidence(this.state, id)!.title}`);
     if (fresh.length) sfx('onEvidenceGet');
@@ -258,16 +265,14 @@ export class ExploreScene extends Phaser.Scene {
       if (id) { openViewer(this.state, id, () => { const f = evidenceById.get(id)?.afterView; if (f) setFlag(this.state, f); step(); }); return; }
       if (then) { then(); return; } // 연출 중에는 구역을 다시 그리지 않고 이어서 진행한다
       this.refresh();
-      this.autoOpenPuzzle();
+      if (!this.announceBasement()) this.autoOpenPuzzle();
     };
     step();
   }
 
   private autoOpenPuzzle() {
     for (const p of puzzles) {
-      if (!p.layout || !p.openWhen || this.state.solvedPuzzleIds.includes(p.id) || hasFlag(this.state, `puzzle_opened:${p.id}`)) continue;
-      const w = p.openWhen;
-      if (!(w.flags ?? []).every((f) => hasFlag(this.state, f)) || !(w.evidence ?? []).every((id) => this.state.evidenceIds.includes(id))) continue;
+      if (!puzzleReady(this.state, p) || hasFlag(this.state, `puzzle_opened:${p.id}`)) continue;
       setFlag(this.state, `puzzle_opened:${p.id}`);
       this.puzzle(p.id);
       return;
@@ -277,16 +282,20 @@ export class ExploreScene extends Phaser.Scene {
   private puzzle(id: string) {
     setPrompt(null);
     const p = puzzles.find((q) => q.id === id)!;
-    const solvedText = () => { if (p.solvedDialogue) openDialogue(this.state, p.solvedDialogue, () => this.announceBasement()); };
+    const solvedText = () => { if (p.solvedDialogue) openDialogue(this.state, p.solvedDialogue); };
     if (this.state.solvedPuzzleIds.includes(id)) { solvedText(); return; }
-    openPuzzle(this.state, id, (solved) => { if (solved) { this.refresh(); solvedText(); } });
+    openPuzzle(this.state, id, (solved) => {
+      if (solved) { this.refresh(); solvedText(); return; }
+      if (!hasFlag(this.state, 'pending_hint_seen')) { setFlag(this.state, 'pending_hint_seen'); openDialogue(this.state, 'mono_pending_hint'); } // 처음 한 번: 미결 사건은 수첩에 남는다
+    });
   }
 
-  /** P03·P04 를 모두 풀면 지하 계단이 열렸음을 한 번 알린다 */
-  private announceBasement() {
-    if (!isBasementOpen(this.state) || hasFlag(this.state, 'basement_announced')) return;
+  /** 오미란에게 지하 열쇠(basement_key)를 받으면 지하 계단이 열렸음을 한 번 알린다. 알렸으면 true */
+  private announceBasement(): boolean {
+    if (!isBasementOpen(this.state) || hasFlag(this.state, 'basement_announced')) return false;
     setFlag(this.state, 'basement_announced');
-    openDialogue(this.state, 'mono_basement_open'); // 철창문이 열리는 순간의 gate_clank 는 audio.json nodeEvents(mono_basement_open:m)
+    openDialogue(this.state, 'mono_basement_open', () => this.autoOpenPuzzle()); // 철창문이 열리는 순간의 gate_clank 는 audio.json nodeEvents(mono_basement_open:m)
+    return true;
   }
 
   private talk(npc: Npc) {
@@ -422,7 +431,7 @@ export class ExploreScene extends Phaser.Scene {
           const toX = s.toX ?? this.player.x + (s.gap ?? 56);
           sp.setFlipX(walkFlip(key, sp.x, toX)).play(walkAnim, true); this.scripted.add(sp);
           while (Math.abs(sp.x - toX) > 0.5 && !this.skip) { sp.x += Math.sign(toX - sp.x) * Math.min(Math.abs(toX - sp.x), (s.speed ?? PLAYER_SPEED) * (this.lastDt / 1000)); await this.frame(); }
-          sp.x = toX; this.scripted.delete(sp); sp.play(`${key}_idle`, true);
+          sp.x = toX; this.scripted.delete(sp); sp.play(this.anims.exists(`${key}_idle_side`) ? `${key}_idle_side` : `${key}_idle`, true); // 걷다 멈추면 옆모습 정지 그림이 있는 인물은 그것으로
           if (s.actor === 'eunho' && s.toX === undefined) sp.setFlipX(flipFor(key, true)); // 도착하면 플레이어(왼쪽)를 본다
           break;
         }

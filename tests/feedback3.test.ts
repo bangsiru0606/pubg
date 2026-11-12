@@ -81,17 +81,17 @@ describe('플레이 테스트 3차: 맵·연출', () => {
     expect(nearest(areas.b1, h.x, s)?.id).not.toBe('haneul_b1'); // 말을 걸 수 없다
     expect(h.type === 'npc' && h.hideWhen).toBe('haneul_cleared'); // 정리는 보고서로 넘어갈 때
   });
-  it('부원장 PC: desk_pc 를 쓰고, 그림이 오기 전에는 책상 소품 위에 기존 PC 를 올린다', () => {
+  it('부원장 PC: 책상이 붙은 desk_pc 그림을 쓴다 (배치 8)', () => {
     const pc = areas.room_baek.interactables.find((i) => i.id === 'revision')!;
     expect(pc.type === 'examine' && pc.art).toBe('desk_pc');
-    expect(pc.type === 'examine' && pc.artFallback).toEqual({ art: 'baek_pc', base: 'director_desk', artBottom: 52 });
-    expect((spec.pending as string[])).toContain('desk_pc');
+    expect(pc.type === 'examine' && pc.artFallback).toBeUndefined();
+    expect((spec.pending as string[])).not.toContain('desk_pc');
   });
   it('지하 첫 입장 컷신이 지도에 연결되어 있다 (그림은 pending)', () => {
     const st = areas.floor1.interactables.find((i) => i.id === 'stairs_b1')!;
     expect(st.type === 'transition' && st.cutscene).toBe('basement_intro');
     expect(st.type === 'transition' && st.cutsceneDialogue).toBe('mono_basement_intro');
-    expect((spec.pending as string[])).toEqual(expect.arrayContaining(['basement_intro', 'newspaper_desk', 'ev_newspaper']));
+    expect(spec.pending as string[]).toEqual([]);
   });
 });
 

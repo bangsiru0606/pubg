@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import characters from '../src/data/characters.json';
 import real from '../src/data/dialogue.json';
-import spec from '../art/asset-spec.json';
 import { areas } from '../src/explore/interaction';
 import { PROP_HEIGHT } from '../tools/import-generated';
 
 // docs/에셋_생성_프롬프트.md 배치 4·5 파일명
 const WALLS = ['director_wall', 'ward_wall', 'patientroom_wall', 'staff_wall', 'nurse_wall', 'basement_wall', 'lobby_wall', 'wall'];
 const FLOORS = ['wood_floor', 'ward_floor', 'basement_floor', 'lobby_floor_v2', 'floor'];
-const PROPS = ['door_hospital', 'door_director', 'door_staff', 'stairs_up', 'stairs_down', 'stairs_basement', 'cleaning_cart', 'papers_floor', 'altar', 'blood_mark', 'director_desk', 'director_chair', 'order_emblem', 'bed_ward', 'bed_empty', 'broadcast_board', 'baek_pc', 'nurse_counter', 'lee_desk', 'ledger_shelf', 'code_chart', 'belongings_locker', 'cold_crate', 'floor_plan_board', 'stairs_basement_closed'];
+const PROPS = ['door_hospital', 'door_director', 'door_staff', 'stairs_up', 'stairs_down', 'stairs_basement', 'cleaning_cart', 'papers_floor', 'altar', 'blood_mark', 'director_desk', 'director_chair', 'order_emblem', 'bed_ward', 'bed_empty', 'broadcast_board', 'baek_pc', 'nurse_counter', 'lee_desk', 'ledger_shelf', 'code_chart', 'belongings_locker', 'cold_crate', 'floor_plan_board', 'stairs_basement_closed', 'desk_pc', 'doctrine_frame', 'prayer_corner', 'donor_plaque'];
 
 describe('배치 3~5 미리 연결', () => {
   it('구역 배경 키는 모두 프롬프트 문서의 파일명이다', () => {
@@ -24,10 +23,9 @@ describe('배치 3~5 미리 연결', () => {
       (a.objects ?? []).forEach((o) => keys.add(o.tex)); (a.props ?? []).forEach((p) => p.tex && keys.add(p.tex));
       for (const it of a.interactables) { if ('art' in it && it.art) keys.add(it.art); if ('artLocked' in it && it.artLocked) keys.add(it.artLocked); }
     }
-    const pend = new Set<string>(spec.pending as string[]); // 그림이 오기 전 대체 표시를 쓰는 항목(desk_pc)은 PROPS(배치 5 파일)에 아직 없다
-    for (const k of keys) if (!pend.has(k) && k !== 'door' && k !== 'window' && k !== 'desk_bg' && k !== 'evidence_board') { expect(PROPS, k).toContain(k); expect(PROP_HEIGHT[k], k).toBeGreaterThan(0); }
+    for (const k of keys) if (k !== 'door' && k !== 'window' && k !== 'desk_bg' && k !== 'evidence_board') { expect(PROPS, k).toContain(k); expect(PROP_HEIGHT[k], k).toBeGreaterThan(0); }
     // 배치 5 의 23개 중 쓰이지 않는 것이 없다
-    expect([...keys].filter((k) => PROPS.includes(k)).sort()).toEqual([...PROPS].filter((k) => k !== 'baek_pc').sort()); // baek_pc 는 desk_pc 가 오기 전 대체 그림(artFallback)
+    expect([...keys].filter((k) => PROPS.includes(k)).sort()).toEqual([...PROPS].filter((k) => k !== 'baek_pc').sort()); // baek_pc 는 desk_pc(책상 포함)로 대체되어 쓰이지 않는다 // baek_pc 는 desk_pc 가 오기 전 대체 그림(artFallback)
   });
   it('초상: 생성 인물의 대사 표정은 characters.json 의 expressions 안에 있다', () => {
     const ch = new Map((characters.characters as { id: string; portrait: string | null; expressions?: string[] }[]).map((c) => [c.id, c]));

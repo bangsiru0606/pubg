@@ -22,7 +22,7 @@ export async function placeCorrect(page: Page, id: string, overrides: Record<str
   }
 }
 /** 진술 카드는 같은 화자의 진술이 여럿이라 이름만으로 고를 수 없다: 문장 일부로 고른다 */
-const STATEMENT_SNIPPET: Record<string, string> = { baek_s_natural: '집무실 의자에 앉으신 채', choi_s_thud: '쿵 하고 둔탁한', han_s_bracelet: '노란 실팔찌', chae_s_return: '밤에 나갔다가 돌아왔어요', han_o_chair: '길게 긁혀 있다' };
+const STATEMENT_SNIPPET: Record<string, string> = { baek_s_natural: '집무실 의자에 앉으신 채', choi_s_thud: '쿵 하고 둔탁한', han_s_bracelet: '노란 실팔찌', chae_s_return: '밤에 나갔다가 돌아왔어요', han_o_chair: '길게 긁혀 있다', chae_s_time: '10시 51분', chae_s_out: '10시 34분이에요' };
 /** 그 칸에 근거 카드를 붙인다. 단서는 제목으로, 진술(STATEMENT_SNIPPET 에 있는 ID)은 문장 일부로 고른다. */
 export async function attachLink(page: Page, slot: string, cardId: string) {
   await page.locator(`#puzzle [data-link="${slot}"]`).first().click();

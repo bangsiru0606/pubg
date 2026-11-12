@@ -48,6 +48,5 @@ export function chooseEvidencePreservation(s: GameState, secure: boolean) {
 
 export function setReportTarget(s: GameState, t: GameState['reportTarget']) { s.reportTarget = t; }
 
-/** 지하 계단 개방 조건 (기획서 4장 "지하 개방 조건"): P03 + P04 */
-export const isBasementOpen = (s: GameState) =>
-  s.solvedPuzzleIds.includes('P03_revision_diff') && s.solvedPuzzleIds.includes('P04_approval_chain');
+/** 지하 계단 개방 조건: 오미란이 이송 지시서(E11)를 보고 지하 열쇠를 건넸다 (basement_key). 퍼즐은 층 이동을 막지 않는다 (이전계획 11.11) */
+export const isBasementOpen = (s: GameState) => s.flags.includes('basement_key');

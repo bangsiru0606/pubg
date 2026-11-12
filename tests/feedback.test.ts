@@ -5,7 +5,7 @@ import { areas } from '../src/explore/interaction';
 import { GROUND_Y } from '../src/explore/interaction';
 import assets from '../public/assets/assets.json';
 
-type N = { speaker: string; text: string; source?: string; voice?: string };
+type N = { speaker: string; text: string; source?: string; voice?: string; statement?: { id: string } };
 const D = real.dialogues as unknown as Record<string, { nodes: Record<string, N> }>;
 const nodes = Object.entries(D).flatMap(([id, d]) => Object.entries(d.nodes).map(([n, x]) => ({ key: `${id}:${n}`, id, n, x })));
 
@@ -41,8 +41,9 @@ describe('새로 쓴 대사·잠김 독백·마스터키', () => {
   it('채소연이 22:34 와 청소용 마스터키 분실을 직접 말하고, E06 설명에도 있다 (P02 22:34 칸을 진술로 추론)', () => {
     const t = Object.values(D.chae_soyeon.nodes).filter((x) => x.speaker === 'chae_soyeon').map((x) => x.text).join(' ');
     expect(t).toContain('10시 34분'); expect(t).toContain('청소용 마스터키'); expect(t).toContain('소등 방송');
-    const e6 = (evidence as unknown as { id: string; description: string }[]).find((e) => e.id === 'E06_torn_sleeve')!;
-    expect(e6.description).toContain('22시 34분'); expect(e6.description).toContain('마스터키');
+    expect(D.chae_soyeon.nodes.s5.statement?.id).toBe('chae_s_out'); // 22:34 는 진술 카드로 분리했다 (E06 은 소매 조각 물증만)
+    const e6 = (evidence as unknown as { id: string; sourceType: string; body: string[] }[]).find((e) => e.id === 'E06_torn_sleeve')!;
+    expect(e6.sourceType).toBe('physical'); expect(e6.body.join(' ')).not.toMatch(/22:34|22:51|마스터키/);
   });
 });
 

@@ -54,6 +54,7 @@ export function presentEvidence(s: GameState, d: Dialogue, dialogueId: string, n
 
 /** 조건: 플래그 이름, 'evidence:ID'(획득), '@basement_open' */
 export function condMet(s: GameState, cond: string): boolean {
+  if (cond.includes('&')) return cond.split('&').every((c) => condMet(s, c)); // 여러 조건을 모두
   if (cond === '@basement_open') return isBasementOpen(s);
   if (cond.startsWith('evidence:')) return s.evidenceIds.includes(cond.slice(9));
   return s.flags.includes(cond);
@@ -69,7 +70,10 @@ export const nextOf = (s: GameState, node: DialogueNode) => node.nextIf?.find((r
  * 대화를 닫을 때 markDialogueDone 이 '그때의 시작 노드'를 기록한다.
  */
 export const doneKey = (dialogueId: string, nodeId: string) => `dlgdone:${dialogueId}:${nodeId}`;
-export const openingNodeOf = (s: GameState, d: Dialogue, dialogueId: string) => { const n = startNodeOf(s, d); return s.flags.includes(doneKey(dialogueId, n)) ? d.start : n; };
+export const openingNodeOf = (s: GameState, d: Dialogue, dialogueId: string) => {
+  const r = d.restart?.find((x) => condMet(s, x.when)), n = r?.node ?? d.start;
+  return !r?.keep && s.flags.includes(doneKey(dialogueId, n)) ? d.start : n;
+};
 export const markDialogueDone = (s: GameState, d: Dialogue, dialogueId: string) => setFlag(s, doneKey(dialogueId, startNodeOf(s, d)));
 
 export const availableChoices = (s: GameState, node: DialogueNode) =>

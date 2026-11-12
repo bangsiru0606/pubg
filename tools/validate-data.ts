@@ -22,6 +22,7 @@ const pendingIds = new Set<string>(((JSON.parse(readFileSync('art/asset-spec.jso
 for (const d of [...Object.values(real.dialogues), ...Object.values(fixture.dialogues)] as unknown as Dialogue[])
   for (const n of Object.values(d.nodes)) for (const f of n.onEnter?.setFlags ?? []) knownFlags.add(f);
 const needEvLater: [string, string][] = [];
+const evidenceIdsAll = new Set((JSON.parse(readFileSync('src/data/evidence.json', 'utf8')) as { id: string }[]).map((e) => e.id));
 for (const [aid, a] of Object.entries(areas)) {
   const where = `map/${aid}`;
   if (a.minX >= a.maxX) err(`${where}: 범위 이상`);
@@ -38,7 +39,9 @@ for (const [aid, a] of Object.entries(areas)) {
       if (it.cutsceneDialogue && !dialogueIds.has(it.cutsceneDialogue)) err(`${w}: 없는 컷신 독백 ${it.cutsceneDialogue}`);
       if ((it.requires || it.requiresEvidence?.length) && !it.lockedDialogue) err(`${w}: 잠금 조건(requires)이 있는 이동 지점은 lockedDialogue(잠김 독백)가 있어야 한다`);
     }
-    if (it.requires && !knownFlags.has(it.requires)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.requires}`);
+    for (const c of (it.requires ?? '').split('&').filter(Boolean)) { // 조건: 플래그, evidence:단서ID, 여러 개는 & 로 잇는다
+      if (c.startsWith('evidence:')) { if (!evidenceIdsAll.has(c.slice(9))) err(`${w}: 없는 단서 조건 ${c}`); } else if (!knownFlags.has(c)) err(`${w}: 어디서도 설정되지 않는 플래그 ${c}`);
+    }
     if (it.hideWhen && !knownFlags.has(it.hideWhen)) err(`${w}: 어디서도 설정되지 않는 플래그 ${it.hideWhen}`);
     for (const id of it.requiresEvidence ?? []) needEvLater.push([id, w]);
     const dlg = it.type === 'transition' ? it.lockedDialogue : it.type === 'examine' ? it.dialogueId : undefined;

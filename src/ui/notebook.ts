@@ -2,7 +2,7 @@
 // 키보드: ←→ 탭, ↑↓ 이동, Enter 실행, Esc/Tab 닫기. 마우스: 클릭.
 import {
   CONFLICT_MESSAGE, characterName, MAX_SUPPORT_SLOTS, canSaveConclusion, claims, clearConclusion, shownEvidence, findConflicts, hasFlag,
-  isClaimOpen, isVerified, relatedEvidenceIds, saveConclusion, type Claim, type GameState,
+  isClaimOpen, isVerified, pendingPuzzles, relatedEvidenceIds, saveConclusion, type Claim, type GameState,
 } from '../core';
 import { el, esc, root } from './hud';
 import { sfx } from '../audio/audio';
@@ -12,13 +12,13 @@ import { openViewer } from './viewer';
 
 type Tab = { id: string; label: string };
 const TABS: Tab[] = [{ id: 'evidence', label: '단서' }, { id: 'statements', label: '진술' },
-  ...claims.map((c, i) => ({ id: c.claimId, label: `질문 ${'ABCD'[i]}` }))];
+  ...claims.map((c, i) => ({ id: c.claimId, label: `질문 ${'ABCD'[i]}` })), { id: 'pending', label: '미결 사건' }]; // 새 탭은 맨 뒤에 둔다 (앞 탭의 번호 유지)
 const STAGE_LABEL = { unconfirmed: '“ 미확인', contradiction: '≠ 모순', revised: '✎ 수정' } as const; // 색만이 아니라 기호로도 구분
 
 interface Draft { hyp: string | null; support: string[]; rebuttal: string[] }
 const VISIBLE_ROWS = 14;
 
-export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
+export function openNotebook(s: GameState, onClose: () => void, startTab = 0, onPuzzle: (id: string) => void = () => {}) {
   const box = el('div', 'modal'); box.id = 'notebook';
   root().append(box); sfx('onPageFlip');
   let tab = startTab;
@@ -68,6 +68,14 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
       : `<span class="st-${st.stage}">${st.stage === 'unconfirmed' ? '“' + esc(st.text) + '”' : esc(st.text)}</span>`;
     return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(characterName(st.speaker))}의 ${st.speaker === 'han_jisu' ? '관찰' : '진술'}</h3><p>${body}</p></div>`;
   }
+  /** 미결 사건: 재료가 모였는데 아직 풀지 못한 퍼즐. Enter 로 다시 연다 (층 이동은 퍼즐과 무관하다). */
+  function pendingTab(): string {
+    const list = pendingPuzzles(s);
+    if (!list.length) return '<div class="nlist"></div><div class="ndetail note">지금 미결 사건은 없다. 재료가 모인 사건이 생기면 여기에 남는다.</div>';
+    const c = Math.min(cur(), list.length - 1);
+    const rows = list.map((p, i) => `<button class="row${i === c ? ' sel' : ''}" data-row="${i}">${esc(p.title ?? p.id)}</button>`).join('');
+    return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(list[c].title ?? '')}</h3><p>필요한 자료가 모였다. 풀지 않아도 이야기는 이어지지만, 풀어야 검증되는 단서가 있다.</p><button class="row sel" data-row="${c}" style="width:auto;display:inline-block">사건 열기 (Enter)</button></div>`;
+  }
   // 가설 표시 순서는 질문마다 다르게 돌려 둔다 (정답이 항상 같은 자리에 오지 않게). 데이터 순서는 그대로.
   const SHIFT = [0, 1, 2, 1];
   const hypsOf = (c: Claim) => { const k = SHIFT[claims.indexOf(c)] % c.hypotheses.length; return [...c.hypotheses.slice(k), ...c.hypotheses.slice(0, k)]; };
@@ -110,7 +118,7 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
     const t = TABS[tab];
     const tabs = TABS.map((x, i) => `<button class="tab${i === tab ? ' sel' : ''}" data-tab="${i}">${x.label}</button>`).join('');
     const c = claimOf(t.id);
-    const body = t.id === 'evidence' ? evidenceTab() : t.id === 'statements' ? statementsTab() : claimTab(c!);
+    const body = t.id === 'evidence' ? evidenceTab() : t.id === 'statements' ? statementsTab() : t.id === 'pending' ? pendingTab() : claimTab(c!);
     box.innerHTML = `<div class="tabs">${tabs}</div><div class="nbody">${body}</div>${picker && c ? pickerHtml(c) : ''}
       <div class="foot">←→ 탭 · ↑↓ 이동 · Enter 선택 · Esc/Tab 닫기</div>`;
   }
@@ -119,6 +127,7 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
   function activate() {
     const t = TABS[tab], c = claimOf(t.id);
     if (t.id === 'evidence') { const ids = orderedIds(); const id = ids[Math.min(cur(), ids.length - 1)]; if (id) openViewer(s, id); return; }
+    if (t.id === 'pending') { const p = pendingPuzzles(s)[Math.min(cur(), pendingPuzzles(s).length - 1)]; if (p) { close(); onPuzzle(p.id); } return; }
     if (!c || !isClaimOpen(s, c)) return;
     const dr = draftOf(c), i = Math.min(cur(), rowsOfClaim(c) - 1), n = c.hypotheses.length;
     msg = '';
@@ -175,7 +184,7 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0) {
       else if (e.key === 'ArrowLeft') { tab = (tab + TABS.length - 1) % TABS.length; msg = ''; }
       else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         const t = TABS[tab].id;
-        const n = t === 'evidence' ? s.evidenceIds.length : t === 'statements' ? Object.keys(s.statements).length : rowsOfClaim(claimOf(t)!);
+        const n = t === 'evidence' ? s.evidenceIds.length : t === 'statements' ? Object.keys(s.statements).length : t === 'pending' ? pendingPuzzles(s).length : rowsOfClaim(claimOf(t)!);
         if (n) setCur((cur() + (e.key === 'ArrowDown' ? 1 : n - 1)) % n);
       } else if (e.key === 'Enter' && !e.repeat) activate();
       else return;

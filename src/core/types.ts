@@ -64,7 +64,8 @@ export interface DialogueNode {
   onEnter?: { acquire?: string[]; setFlags?: string[]; contradict?: string[]; preserve?: 'secure' | 'confront' }; // preserve: 씬 6 증거 보존 선택 // contradict: 미확인 진술을 모순 단계로
 }
 export interface Dialogue { start: string; then?: string; // then: 끝난 뒤 이어지는 장면 ('report' = 최종 보고서)
-  restart?: { when: string; node: string }[]; nodes: Record<string, DialogueNode> } // restart: 조건(플래그 또는 evidence:ID)이 맞는 첫 항목의 노드에서 다시 시작
+  restart?: { when: string; node: string; keep?: boolean }[]; // 조건(플래그 또는 evidence:ID, & 로 여러 개)이 맞는 첫 항목의 노드에서 다시 시작. keep: 같은 상태에서도 처음부터 재생하지 않고 항상 그 노드에서 시작(그 노드에서 단서 제시로 이야기가 이어질 때)
+  nodes: Record<string, DialogueNode> }
 export type Dialogues = Record<string, Dialogue>;
 
 export type ReportTarget = 'eunho_only' | 'external';

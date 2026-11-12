@@ -70,7 +70,7 @@
   "title": "원장실 출입 기록",
   "description": "22시 41분 청소용 마스터키로 원장실 문이 열린 기록.",
   "sourceType": "record",
-  "acquiredSceneId": "floor2",
+  "acquiredSceneId": "room_oh",
   "sourceCharacterId": "",
   "timestamp": "22:41",
   "body": [
@@ -81,15 +81,15 @@
  {
   "id": "E06_torn_sleeve",
   "title": "찢어진 환자복 소매",
-  "description": "채소연이 본 정하늘의 찢어진 소매와 병실 복귀 시각, 그리고 22시 34분에 병실에서 청소용 마스터키가 사라진 사정에 관한 진술.",
-  "sourceType": "testimony",
+  "description": "정하늘의 환자복에서 뜯겨 나온 소매 조각. 몸싸움의 흔적이다.",
+  "sourceType": "physical",
   "acquiredSceneId": "room_jeong",
   "sourceCharacterId": "chae_soyeon",
   "timestamp": "22:51",
   "body": [
-   "채소연의 진술",
-   "22:34 정하늘이 병실을 나감. 채소연이 맡아 두던 청소용 마스터키도 그때 사라졌다.",
-   "22:51 정하늘이 찢어진 소매 차림으로 병실에 돌아옴. 손목띠는 없었다."
+   "찢어진 환자복 소매 조각",
+   "팔꿈치 아래부터 거칠게 뜯겨 나간 흔적이 남아 있다.",
+   "채소연이 침대 밑에 보관하던 것을 건네받았다."
   ],
   "illust": "ev_torn_sleeve"
  },
@@ -169,7 +169,7 @@
  {
   "id": "E12_ledger",
   "title": "특별 치료 장부",
-  "description": "P-271이 2주 전 처리 완료됐고 선정·승인·진행 담당 약자가 적힌 장부.",
+  "description": "P-271이 2주 전 처리 완료됐고 선정·승인·진행 담당 약자와 후원자 배정이 적힌 장부.",
   "sourceType": "record",
   "acquiredSceneId": "b1",
   "sourceCharacterId": "",
@@ -179,6 +179,8 @@
    "선정: LHJ",
    "승인: LHS",
    "진행: BSW",
+   "후원자 배정: 후원회 D-07 (신장)",
+   "후원금: 4,800만 원",
    "상태: 처리 완료",
    "일자: 2주 전"
   ]
@@ -214,7 +216,7 @@
  {
   "id": "E15_transport_manifest",
   "title": "생체 보존물 운송표",
-  "description": "수용 병원이 비어 있고 백선우 결재와 이혜정 관리번호가 함께 적힌 운송표.",
+  "description": "수용 병원이 비어 있고 백선우 결재와 이혜정 관리번호, 후원자 측 수령이 함께 적힌 운송표.",
   "sourceType": "record",
   "acquiredSceneId": "b1",
   "sourceCharacterId": "baek_sunwoo",
@@ -222,6 +224,7 @@
   "body": [
    "수용 병원: (공란)",
    "화물 분류: 생체 보존물",
+   "수령: 후원자 측 수령 (D-07 가족 대리인)",
    "결재: 백선우 · 관리번호: 이혜정"
   ]
  },

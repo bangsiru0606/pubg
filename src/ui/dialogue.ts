@@ -21,13 +21,13 @@ export function hasDialogue(id: string) { return !!dialogues[id]; }
 let thenHandler: (then: string) => void = () => {};
 export const setThenHandler = (f: (then: string) => void) => { thenHandler = f; };
 
-export function openDialogue(s: GameState, dialogueId: string, onClose: (acquired: string[]) => void = () => {}) {
+export function openDialogue(s: GameState, dialogueId: string, onClose: (acquired: string[]) => void = () => {}, startAt?: string) { // startAt: 시험·스크린샷용으로 중간 노드에서 연다
   const d: Dialogue = dialogues[dialogueId];
   const box = el('div', 'dlg'); box.id = 'dialogue';
   root().append(box);
   bgmPush('dialogue', dialogueTrack(dialogueId)); // 심문·고백·보고 대화는 전용 음악 (없으면 구역 음악 그대로)
 
-  let nodeId = openingNodeOf(s, d, dialogueId);
+  let nodeId = startAt ?? openingNodeOf(s, d, dialogueId);
   let node: DialogueNode;
   let shown = 0, timer = 0, typing = false;
   let items: Item[] = [], sel = 0;

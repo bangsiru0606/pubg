@@ -1679,5 +1679,261 @@
       "Art/ParkEunho/idle_0.png"
     ],
     "prompt": "Use case: precise-object-edit. Park Eunho WALK_PASS animation frame. Image 1 is the exact scale template; preserve its hair/head dimensions, face size, neck, shoulder, torso/jacket width, upper-arm thickness, hand size, colors, pixel clusters, outline, placement, and total scale. Image 2 confirms the opposite stride and Image 3 confirms face/colors. Change only limbs: bring both legs together as one foot passes the other at the highest body point, and move arms to mid-swing while retaining thickness. Strict left profile, full silhouette width about 390-415px, hair top about 44px, soles about 1140px, exact 672x1152, pure #00FF00, no shadow, floor, green on character, trouser pattern, added detail, clipping, smoothing, or background variation."
+  },
+  {
+    "file": "characters/player/idle_0.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/player/walk_pass_v2.png",
+      "generated/characters/player/walk_0_v2.png"
+    ],
+    "prompt": "Identity-preserving Han Jisu side idle. Exact walk_pass_v2 scale, head/hat dimensions, coat width, body proportions, colors, pixel blocks, head position and baseline; strict left profile, feet together, arms resting beside body. Pure #00FF00, no shadow, green on character, text, added detail, clipping or three-quarter view."
+  },
+  {
+    "file": "characters/eunho/idle_0.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/eunho/walk_pass_v3.png",
+      "generated/characters/eunho/walk_0_v2.png"
+    ],
+    "prompt": "Identity-preserving Park Eunho side idle. Exact walk_pass_v3 scale, head dimensions, jacket width, body proportions, colors, pixel blocks, head position and baseline; strict left profile, feet together, arms resting beside body. Plain trousers, pure #00FF00, no shadow, green, pattern, text, clipping or three-quarter view."
+  },
+  {
+    "file": "characters/baek/idle_0_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/baek/walk_pass.png",
+      "generated/characters/baek/walk_0.png"
+    ],
+    "prompt": "Identity-preserving Baek Seonwoo side idle. Match walk_pass scale, head/hair and glasses, coat width, proportions, colors, pixel blocks, head position and baseline; strict right profile, feet together, arms beside body. Remove accidental green contamination. Pure #00FF00, no shadow, text, detail, clipping or three-quarter view."
+  },
+  {
+    "file": "characters/haneul/walk_0.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": "generated/characters/haneul/idle_0.png",
+    "prompt": "Identity-preserving Jeong Haneul walk_0: first contact with forward leg and opposite arm swing. Preserve exact face, long messy black hair, pale striped patient clothing, colors, head/body proportions, height, pixel clusters and baseline; strict right profile. Change only limbs and minimal hem motion. Pure #00FF00, no shadow, green on character, book, text, added detail, clipping or three-quarter view."
+  },
+  {
+    "file": "characters/haneul/walk_1.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/haneul/idle_0.png",
+      "generated/characters/haneul/walk_0.png"
+    ],
+    "prompt": "Identity-preserving Jeong Haneul walk_1: lowered first-step pose with bent knees. Preserve exact face, long messy black hair, pale striped patient clothing, colors, head/body proportions, height, pixel clusters and baseline; strict right profile. Change only limbs and minimal hem motion. Pure #00FF00, no shadow, green on character, book, text, added detail, clipping or three-quarter view."
+  },
+  {
+    "file": "characters/haneul/walk_pass.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/haneul/idle_0.png",
+      "generated/characters/haneul/walk_0.png"
+    ],
+    "prompt": "Identity-preserving Jeong Haneul walk_pass: highest passing pose with feet close together. Preserve exact face, long messy black hair, pale striped patient clothing, colors, head/body proportions, height, pixel clusters and baseline; strict right profile. Change only limbs and minimal hem motion. Pure #00FF00, no shadow, green on character, book, text, added detail, clipping or three-quarter view."
+  },
+  {
+    "file": "characters/haneul/walk_2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/haneul/idle_0.png",
+      "generated/characters/haneul/walk_0.png"
+    ],
+    "prompt": "Identity-preserving Jeong Haneul walk_2: opposite contact with reversed legs and arms. Preserve exact face, long messy black hair, pale striped patient clothing, colors, head/body proportions, height, pixel clusters and baseline; strict right profile. Change only limbs and minimal hem motion. Pure #00FF00, no shadow, green on character, book, text, added detail, clipping or three-quarter view."
+  },
+  {
+    "file": "characters/haneul/walk_3.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/haneul/idle_0.png",
+      "generated/characters/haneul/walk_0.png"
+    ],
+    "prompt": "Identity-preserving Jeong Haneul walk_3: lowered opposite-step pose with bent knees. Preserve exact face, long messy black hair, pale striped patient clothing, colors, head/body proportions, height, pixel clusters and baseline; strict right profile. Change only limbs and minimal hem motion. Pure #00FF00, no shadow, green on character, book, text, added detail, clipping or three-quarter view."
+  },
+  {
+    "file": "characters/haneul/idle_side.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/haneul/idle_0.png",
+      "generated/characters/haneul/walk_0.png"
+    ],
+    "prompt": "Identity-preserving Jeong Haneul idle_side: neutral side idle with feet together and arms beside body. Preserve exact face, long messy black hair, pale striped patient clothing, colors, head/body proportions, height, pixel clusters and baseline; strict right profile. Change only limbs and minimal hem motion. Pure #00FF00, no shadow, green on character, book, text, added detail, clipping or three-quarter view."
+  },
+  {
+    "file": "props/stairs_down_v2.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "generated/props/stairs_down.png",
+      "generated/props/stairs_up.png",
+      "generated/props/stairs_basement.png"
+    ],
+    "prompt": "Coarse pixel prop on pure #00FF00: preserve the dark wooden doorframe and show concrete stairs descending away and turning down into deep darkness, with repeated lower steps and no wall immediately blocking the view. No gate, chain, floor, shadow, text, logo, green in object or extra detail."
+  },
+  {
+    "file": "props/desk_pc.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "generated/props/lee_desk.png",
+      "generated/backgrounds/staff_wall.png",
+      "Resources/Art/Office/desk.png"
+    ],
+    "prompt": "Coarse pixel prop on pure #00FF00: worn dark-walnut vice-director desk with old beige-gray CRT monitor and simple keyboard. Match office wood and muted palette. No floor, shadow, readable screen, text, logo, green in object or added detail."
+  },
+  {
+    "file": "props/newspaper_desk.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/newspaper.png",
+      "generated/props/lee_desk.png",
+      "Resources/Art/Office/desk.png"
+    ],
+    "prompt": "Coarse pixel prop on pure #00FF00: one small folded yellowed newspaper lying flat, isolated, with only simple article boxes and blurred horizontal bands. No readable letters, words, numbers, masthead, logo, desk, shadow, green or extra items."
+  },
+  {
+    "file": "props/doctrine_frame.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "generated/props/order_emblem.png",
+      "generated/props/floor_plan_board.png"
+    ],
+    "prompt": "Coarse pixel wall frame on pure #00FF00: dark-walnut frame, exact simple muted-orange cult sun emblem at top, blurred horizontal doctrine bands below. No readable text, numbers, floor, shadow, green in object, added symbols or ornate detail."
+  },
+  {
+    "file": "props/prayer_corner.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "generated/props/order_emblem.png",
+      "generated/props/bed_ward.png",
+      "generated/backgrounds/patientroom_wall.png"
+    ],
+    "prompt": "Coarse pixel patient-room prayer corner on pure #00FF00: low dark-wood stand, small framed muted-orange cult sun emblem, two short unlit candles and folded schedule paper with faint stripes. No wall, floor, shadow, readable text, flame, green or extra ritual objects."
+  },
+  {
+    "file": "props/donor_plaque.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "generated/props/order_emblem.png",
+      "generated/props/floor_plan_board.png"
+    ],
+    "prompt": "Coarse pixel donor plaque on pure #00FF00: dark walnut backing, worn brass plate, exact muted-orange cult sun emblem and blurred horizontal name rows. No readable text, numbers, shadow, green, added symbols or ornate detail."
+  },
+  {
+    "file": "illust/basement_intro.png",
+    "size": [
+      1536,
+      864
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "Resources/Art/Cutscenes/hospital_intro.png",
+      "generated/props/stairs_basement.png"
+    ],
+    "prompt": "Subdued semi-realistic game cutscene: narrow concrete hospital stairway descending into darkness, open iron-bar gate, one weak bare ceiling bulb, damp aged walls, no people. Muted blue-gray hand-drawn style matching hospital_intro; no text, logo, body, blood or gore."
+  },
+  {
+    "file": "illust/ev_newspaper.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "generated/illust/ev_belongings.png",
+      "Resources/Art/Office/item_letter.png"
+    ],
+    "prompt": "Top-down evidence close-up: unfolded yellowed newspaper on dark wood, one photo box with muted hospital-building silhouette, all headline/article zones represented only by blurred horizontal bands for HTML overlay. Match restrained hand-painted evidence style. No readable text, numbers, logo, people, blood or extra objects."
   }
 ]

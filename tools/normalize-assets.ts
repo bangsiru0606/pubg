@@ -68,13 +68,16 @@ async function alignFeet(buf: Buffer, w: number, h: number): Promise<Buffer> {
 // 시퀀스: 같은 캐릭터의 모든 프레임을 가로로 이어 붙여 한 번에 양자화 → 프레임별로 다시 자름 (프레임 간 팔레트 동일)
 for (const q of spec.sequences) {
   const frames = await Promise.all(q.frames.map(async (f: string) => {
-    const src = await load(join(SRC, `${q.frameSrc?.[f] ?? `${q.src}/${f}`}.png`), q.chromaKey); // frameSrc: 같은 이름 그림의 최신판(_v2 …) 경로
+    const keyed0 = !!(q.chromaKey || q.frameSrc?.[f]); // 새로 만든 그림(frameSrc, 생성 폴더)은 초록 배경을 지운다. craft_on 원본은 이미 투명
+    const src = await load(join(SRC, `${q.frameSrc?.[f] ?? `${q.src}/${f}`}.png`), keyed0); // frameSrc: 같은 이름 그림의 최신판(_v2 …) 경로
     const meta = await sharp(src).metadata();
     const w = Math.round((meta.width! * q.canvasHeight) / meta.height!);
     const h = q.outline ? q.canvasHeight - 1 : q.canvasHeight; // 외곽선용 위 여백 1px 을 빼고 만든다 (캔버스 높이 90 유지)
-    const resized = await sharp(src).resize(w, h, { kernel: 'lanczos3' }).png().toBuffer();
-    let keyed = q.chromaKey ? await binarizeAlpha(resized) : resized;
-    if (q.alignFeet) keyed = await alignFeet(keyed, w, h); // 걷기 프레임: 같은 배율 그대로, 발 하단 줄을 캔버스 바닥선에 맞춘다
+    const k = q.frameSrc?.[f] && q.walkScale ? q.walkScale : 1; // walkScale: 새 걷기 그림과 craft_on 대기 그림의 몸 높이 차를 맞추는 배율 (캔버스 높이는 그대로, 넘치는 부분은 위·옆을 자른다)
+    const resized = await sharp(src).resize(Math.round(w * k), Math.round(h * k), { kernel: 'lanczos3' }).png().toBuffer();
+    let keyed = keyed0 ? await binarizeAlpha(resized) : resized;
+    if (q.alignFeet) keyed = await alignFeet(keyed, Math.round(w * k), Math.round(h * k)); // 걷기 프레임: 같은 배율 그대로, 발 하단 줄을 캔버스 바닥선에 맞춘다
+    if (k !== 1) { const W2 = Math.round(w * k), H2 = Math.round(h * k); keyed = await sharp(keyed).extract({ left: Math.floor((W2 - w) / 2), top: H2 - h, width: w, height: h }).png().toBuffer(); }
     if (!q.outline) return { f, w, buf: keyed };
     return { f, w: w + 2, buf: await applyOutline(await padForOutline(keyed), await outlineColor()) }; // 좌우 여백 1px 씩 // 외곽선 보정은 숨쉬기 프레임을 만들기 전에 적용한다
   }));

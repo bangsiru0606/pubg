@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import spec from '../art/asset-spec.json';
 import audio from '../src/data/audio.json';
@@ -26,16 +27,22 @@ describe('걷기 5프레임·1/3 속도 (asset-spec 데이터)', () => {
   it('연출 속 이동(오프닝 박은호·1층 첫 입장 플레이어·백선우)도 같은 속도 규칙: 단계에 speed 를 따로 쓰지 않는다', () => {
     for (const st of [...map.opening.steps, ...(map.areas.floor1.stage?.steps ?? [])]) if (st.do === 'walk') expect(st, JSON.stringify(st)).not.toHaveProperty('speed');
   });
-  it('모든 걷는 인물의 순서는 걷기·걷기·가운데·걷기·걷기이고 그림이 실제로 있다 (가운데: 백선우 walk_pass, 한지수·박은호는 _v2 가 올 때까지 idle_0)', () => {
-    for (const q of seqs.filter((x) => x.frames.some((f) => f.startsWith('walk_')))) {
-      const cycle = q.walkCycle ?? spec.walk.cycle;
-      expect(cycle, q.id).toHaveLength(5); expect(['idle_0', 'walk_pass'], q.id).toContain(cycle[2]);
-      for (const [i, f] of cycle.entries()) { expect(q.frames, `${q.id}:${f}`).toContain(f); if (i !== 2) expect(f).toMatch(/^walk_\d$/); }
-      expect(new Set(cycle.filter((_, i) => i !== 2)).size, q.id).toBe(4);
+  it('모든 걷는 인물이 공통 순서(걷기·걷기·walk_pass·걷기·걷기)를 쓰고 그림이 실제로 있다 (인물별 walkCycle 없음)', () => {
+    const walkers = seqs.filter((x) => x.frames.some((f) => f.startsWith('walk_')));
+    expect(walkers.map((q) => q.id).sort()).toEqual(['baek', 'eunho', 'player']);
+    for (const q of walkers) {
+      expect(q.walkCycle, q.id).toBeUndefined();
+      for (const f of spec.walk.cycle) expect(q.frames, `${q.id}:${f}`).toContain(f);
+      expect((q as Seq & { alignFeet?: boolean }).alignFeet, q.id).toBe(true);
     }
-    expect(seqs.find((q) => q.id === 'eunho')!.walkCycle).toEqual(['walk_0', 'walk_1', 'idle_0', 'walk_3', 'walk_4']);
-    expect(seqs.find((q) => q.id === 'player')!.walkCycle).toEqual(['walk_0', 'walk_1', 'idle_0', 'walk_2', 'walk_3']);
-    expect(seqs.find((q) => q.id === 'baek')!.walkCycle).toBeUndefined(); // 공통 순서: walk_0, walk_1, walk_pass, walk_2, walk_3
+  });
+  it('한지수·박은호는 새 걷기(_v2, 박은호 walk_pass 는 _v3 최신판)를 쓰고 대기 그림은 craft_on 그대로다', () => {
+    type S2 = Seq & { src: string; frameSrc: Record<string, string> };
+    const p = seqs.find((q) => q.id === 'player') as S2, e = seqs.find((q) => q.id === 'eunho') as S2;
+    expect(p.src).toBe('Art/Player'); expect(e.src).toBe('Art/ParkEunho');
+    expect(p.frameSrc).toEqual({ walk_0: 'generated/characters/player/walk_0_v2', walk_1: 'generated/characters/player/walk_1_v2', walk_2: 'generated/characters/player/walk_2_v2', walk_3: 'generated/characters/player/walk_3_v2', walk_pass: 'generated/characters/player/walk_pass_v2' });
+    expect(e.frameSrc.walk_pass).toBe('generated/characters/eunho/walk_pass_v3'); expect(e.frameSrc.walk_0).toBe('generated/characters/eunho/walk_0_v2');
+    for (const f of Object.values({ ...p.frameSrc, ...e.frameSrc })) expect(existsSync(`art/source/${f}.png`), f).toBe(true);
   });
   it('백선우 걷기 5장이 들어왔다(pending 없음), 정규화는 발 하단 줄 정렬', () => {
     expect(spec.pending).toEqual([]);

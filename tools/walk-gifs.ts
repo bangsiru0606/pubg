@@ -23,18 +23,18 @@ for (const [id, mode] of [['player', 'walk'], ['player', 'run'], ['eunho', 'walk
   console.log(`${out}: ${cycle.join(' → ')} @ ${fps}fps (한 주기 ${(cycle.length / fps).toFixed(2)}초)`);
 }
 
-// 대기 → 걷기 → 대기 전환 (몸 크기·발 높이가 바뀌지 않는지 확인): 바닥선(분홍 줄)과 머리 높이 줄(청록)을 함께 그린다 → docs/screenshots/walk_transition_baek.gif
-{
-  const id = 'baek', q = spec.sequences.find((x) => x.id === id)!, cycle = q.walkCycle ?? spec.walk.cycle, fps = spec.walk.fps;
+// 대기 → 걷기 → 대기 전환 (몸 크기·발 높이가 바뀌지 않는지 확인): 바닥선(분홍 줄)과 머리 높이 줄(청록)을 함께 그린다 → docs/screenshots/walk_transition_<인물>.gif
+for (const id of ['player', 'eunho', 'baek']) {
+  const q = spec.sequences.find((x) => x.id === id)!, cycle = q.walkCycle ?? spec.walk.cycle, fps = spec.walk.fps;
   const seq = ['idle_0', 'idle_0', 'idle_0', ...cycle, ...cycle, 'idle_0', 'idle_0', 'idle_0'];
-  const dir = '.tmp/gif_transition_baek'; rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
+  const dir = `.tmp/gif_transition_${id}`; rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
   const S = 4, W = 70 * S, H = 94 * S, groundY = H - 2 * S;
   for (const [i, f] of seq.entries()) {
     const img = await sharp(`public/assets/${id}_${f}.png`).resize({ height: 90 * S, kernel: 'nearest' }).png().toBuffer(), m = await sharp(img).metadata();
     const lines = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><rect x="0" y="${groundY}" width="${W}" height="1" fill="#ff5fa0"/><rect x="0" y="${groundY - 86 * S}" width="${W}" height="1" fill="#40e0d0"/></svg>`;
     await sharp({ create: { width: W, height: H, channels: 3, background: '#3a4a50' } }).composite([{ input: img, left: Math.round((W - m.width!) / 2), top: H - m.height! - 2 * S }, { input: Buffer.from(lines), left: 0, top: 0 }]).png().toFile(`${dir}/${i}.png`);
   }
-  const out = 'docs/screenshots/walk_transition_baek.gif';
+  const out = `docs/screenshots/walk_transition_${id}.gif`;
   const r = spawnSync(ff, ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', `${dir}/%d.png`, '-vf', 'split[a][b];[a]palettegen[p];[b][p]paletteuse', '-loop', '0', out]);
   if (r.status !== 0) throw new Error(String(r.stderr));
   console.log(`${out}: idle ×3 → ${cycle.join(' → ')} ×2 → idle ×3 @ ${fps}fps`);

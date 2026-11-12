@@ -24,18 +24,20 @@
         "walk_0",
         "walk_1",
         "walk_2",
-        "walk_3"
+        "walk_3",
+        "walk_pass"
       ],
       "canvasHeight": 90,
       "colours": 64,
       "note": "캐릭터 2유닛 = 90px. 프레임 캔버스 전체를 같은 배율로 축소(잘라내지 않음, 하단 중앙 피벗)",
-      "walkCycle": [
-        "walk_0",
-        "walk_1",
-        "idle_0",
-        "walk_2",
-        "walk_3"
-      ]
+      "frameSrc": {
+        "walk_0": "generated/characters/player/walk_0_v2",
+        "walk_1": "generated/characters/player/walk_1_v2",
+        "walk_2": "generated/characters/player/walk_2_v2",
+        "walk_3": "generated/characters/player/walk_3_v2",
+        "walk_pass": "generated/characters/player/walk_pass_v2"
+      },
+      "alignFeet": true
     },
     {
       "id": "eunho",
@@ -49,18 +51,21 @@
         "walk_2",
         "walk_3",
         "walk_4",
-        "walk_5"
+        "walk_5",
+        "walk_pass"
       ],
       "canvasHeight": 90,
       "colours": 64,
       "note": "원본 그림(idle·walk 모두)이 왼쪽을 본다 — 이전에 right 로 잘못 적어 걸을 때 몸이 반대로 향했다",
-      "walkCycle": [
-        "walk_0",
-        "walk_1",
-        "idle_0",
-        "walk_3",
-        "walk_4"
-      ]
+      "frameSrc": {
+        "walk_0": "generated/characters/eunho/walk_0_v2",
+        "walk_1": "generated/characters/eunho/walk_1_v2",
+        "walk_2": "generated/characters/eunho/walk_2_v2",
+        "walk_3": "generated/characters/eunho/walk_3_v2",
+        "walk_pass": "generated/characters/eunho/walk_pass_v3"
+      },
+      "alignFeet": true,
+      "walkScale": 1.034
     },
     {
       "id": "baek",

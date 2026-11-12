@@ -115,8 +115,12 @@ await cw("cw.state.solvedPuzzleIds.push('P03_revision_diff', 'P04_approval_chain
 await wait(60);
 check((await promptText()).includes('지하로 내려가기'), 'P03·P04 해결 후 지하 계단 프롬프트');
 await press('Enter');
+// 지하 첫 입장: 컷신(그림은 배치 8 전까지 대체 배경) + 독백 3줄 → 지하 (한 번만)
+await page.waitForSelector('#cutscene'); await page.waitForFunction(() => document.querySelector('#dialogue .text')?.textContent?.includes('차가운 공기가 올라온다.'));
+check((await page.locator('#cutscene .cutph').count()) === 1 || (await page.locator('#cutscene img').count()) === 1, '[지하 첫 입장] 컷신 그림(또는 pending 대체 배경) + 독백');
+for (let i = 0; i < 14 && (await area()) !== 'b1'; i++) { await wait(180); await press('Enter'); }
 await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'b1' && !(window as any).__cw.scene.busy);
-check((await area()) === 'b1', '1층 → 지하');
+check((await area()) === 'b1' && await cw<boolean>("cw.state.flags.includes('cutscene_done:basement_intro')"), '1층 → 지하 (첫 입장 컷신을 본 뒤)');
 
 await cw(`(cw.state.evidenceIds.splice(0, 99, 'E01_last_letter', 'E02_altar_blood', 'E03_preliminary_exam', 'E07_report_revision'),
   cw.state.verifiedEvidenceIds.splice(0, 99, 'E01_last_letter', 'E02_altar_blood', 'E03_preliminary_exam', 'E07_report_revision'),
@@ -149,6 +153,7 @@ check((await page.locator('#notebook').count()) === 0, 'Tab 으로 수첩 닫기
 // B. 이야기 시험 (새 게임, 실제 대사): 씬 1 → 씬 2 → P01 → 2층 계단 개방
 // =====================================================================
 const NAME = '서윤'; // 기본 이름(한지수)과 다른 이름: 화면에 기본 이름이 남으면 안 된다
+await page.evaluate(() => { try { localStorage.clear(); } catch { /* 무시 */ } }); // 앞 시험의 저장을 지워 "저장 없음" 상태에서 시작한다
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__cw?.scene?.player, null, { timeout: 10000 });
 const noDefault = async (where: string) => { const t = await page.locator('#ui').innerText(); check(!t.includes('한지수'), `${where}: 기본 이름 “한지수” 가 남아 있지 않다`); };
@@ -159,6 +164,14 @@ const closeViewer = async () => { await press('Enter'); await page.waitForFuncti
 // ---- 타이틀 → 이름 입력 ----
 await page.waitForSelector('#title');
 await shot('stage7_fix_title');
+check((await page.locator('#title .opt.dis').count()) === 1 && (await page.locator('#title .opt.dis').innerText()) === '이어하기', '[타이틀] 저장이 없으면 이어하기는 회색이다');
+check((await page.locator('#title .opt', { hasText: '전체화면' }).count()) === 1 && (await page.locator('#title .opt', { hasText: 'F11' }).count()) === 1, '[타이틀] 전체화면 항목 (F11 안내)');
+await press('ArrowDown'); await wait(50);
+check((await page.locator('#title .opt.sel').innerText()) === '조작법', '[타이틀] ↓ 는 회색 이어하기를 건너뛴다');
+await press('ArrowUp'); await wait(50);
+check((await page.locator('#title .opt.sel').innerText()) === '새 게임', '[타이틀] ↑ 도 건너뛴다');
+await page.locator('#title .opt.dis').click({ force: true }); await wait(80);
+check((await page.locator('#title').count()) === 1, '[타이틀] 회색 이어하기는 눌러도 시작되지 않는다');
 await press('Enter'); // 새 게임
 await page.waitForSelector('#namepopup');
 await page.waitForFunction(() => document.activeElement?.id === 'nameinput', null, { timeout: 2000 }); // 이름 입력창은 열리자마자 포커스를 가진다 (첫 글자를 잃지 않는다)
@@ -184,7 +197,7 @@ await press('Enter');
 await page.waitForSelector('#closeup', { timeout: 3000 });
 check((await cw<string>('cw.state.playerName')) === NAME, '[이름] 앞뒤 공백을 지운 이름이 저장된다');
 check((await page.locator('#closeup .title').innerText()).includes('출근한 아침, 책상을 살펴본다 (마우스로 조사)'), '[오프닝] 근접 조사 안내 문구');
-check((await page.locator('#closeup .hot').count()) === 2, '[오프닝] 소품은 모자와 캘린더만 (신문 제외)');
+check((await page.locator('#closeup .hot').count()) === 3, '[오프닝] 소품은 모자·캘린더·신문 (신문은 그림이 오기 전까지 종이 모양 대체 표시)');
 const hat = page.locator('#closeup .hot').first();
 const hb = (await hat.boundingBox())!;
 const bright = (loc: typeof hat) => loc.locator('img').evaluate((el) => getComputedStyle(el).filter);
@@ -202,7 +215,7 @@ check((await page.locator('#closeup-detail').count()) === 0, '[근접 조사] �
 await page.mouse.click(hb.x + hb.width / 2, hb.y + hb.height / 2);
 await page.waitForSelector('#closeup-detail');
 const det = async (label: string) => {
-  const a = (await page.locator('#closeup-detail .dart img').boundingBox())!, t = (await page.locator('#closeup-detail .dtext').boundingBox())!;
+  const a = (await page.locator('#closeup-detail .dart img, #closeup-detail .dart .dph').boundingBox())!, t = (await page.locator('#closeup-detail .dtext').boundingBox())!;
   check(a.x + a.width <= t.x + 1, `[근접 조사] ${label}: 확대 그림은 왼쪽, 글은 오른쪽 칸 (겹치지 않음)`);
   const fits = await page.locator('#closeup-detail .dbody').evaluate((el) => el.scrollHeight <= el.clientHeight + 1);
   check(fits, `[근접 조사] ${label}: 설명 글이 모두 보인다`);
@@ -220,6 +233,13 @@ check((await page.locator('#closeup-detail .dbody').innerText()).includes('8월 
 await shot('stage7_fix_calendar_1280');
 await page.setViewportSize({ width: 1920, height: 1080 }); await wait(250);
 await det('캘린더 1920×1080');
+await press('Enter'); await press('ArrowRight'); await press('Enter'); // 캘린더 상세 닫기 → 신문 → 상세
+await page.waitForSelector('#closeup-detail');
+await det('신문 1920×1080');
+{ const body = await page.locator('#closeup-detail .dbody.doc').innerText();
+  check(body.includes('은혜요양병원 이한신 원장 별세') && body.includes('지병으로 별세') && body.includes('8월 17일') && (await page.locator('#closeup-detail .dbody.doc .dhead').count()) === 1, '[근접 조사] 신문: 기사 본문은 HTML(표제·출처·문단), 병원 측 발표만');
+  check(!/의혹|타살|수상/.test(body), '[근접 조사] 신문: 의혹을 쓰지 않는다'); }
+await shot('fb3_newspaper_1920');
 await press('Enter'); await press('Escape'); // 상세 닫기 → 근접 조사 닫기
 check(await cw<boolean>('cw.state.evidenceIds.length === 0'), '[오프닝] 캘린더·모자는 단서로 등록되지 않는다');
 
@@ -255,7 +275,10 @@ const gap = (await cw<number>("cw.scene.actors.get('eunho').x")) - (await cw<num
 check(Math.abs(gap - 72) <= 1, '[오프닝] 박은호는 플레이어 앞 72px 까지 걸어온다');
 check(await cw<boolean>('!cw.scene.playerFacesLeft()') && await cw<boolean>("cw.scene.actors.get('eunho').flipX === false"), '[오프닝] 서로 마주 본다 (박은호 원본이 왼쪽을 보므로 flip 없음)');
 await press('Enter');
-check((await page.locator('#dialogue .text').innerText()).includes('병원은 은지가 치료 중이라고만 합니다'), '[씬 1] 첫 대사는 기획서 문장');
+await page.waitForFunction((t) => document.querySelector('#dialogue .text')?.textContent?.includes(t), `${NAME} 탐정님 사무실…맞죠?`, { timeout: 5000 });
+check(true, '[씬 1] 박은호는 인사부터 한다 ({player} 토큰이 입력한 이름으로)');
+for (let i = 0; i < 14 && !(await page.locator('#dialogue .text').innerText()).includes('병원은 은지가 치료 중이라고만 합니다'); i++) { await wait(80); await press('Enter'); } // 인사·소개(3줄) 뒤 본론
+check((await page.locator('#dialogue .text').innerText()).includes('병원은 은지가 치료 중이라고만 합니다'), '[씬 1] 인사·소개 뒤 기획서 문장(본론)');
 check((await page.locator('#dialogue .name').innerText()) === '박은호', '[씬 1] 박은호 화자');
 await noIds('[씬 1] 대화창');
 await noDefault('[씬 1] 대화창');
@@ -445,6 +468,8 @@ const enterRoom = async (doorX: number, areaId: string) => {
 };
 const exitRoom = async (toArea: string) => enterRoom(0, toArea);
 const talkTo = async (x: number) => { await teleport(x); await wait(60); await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); };
+/** 플레이어의 짧은 질문(첫 노드)을 넘긴다: 타이핑 완료 → 다음 노드 */
+const opener = async () => { await press('Enter'); await wait(40); await press('Enter'); await wait(60); };
 const pickEvidence = async (n: number) => { await press('ArrowDown'); await press('Enter'); for (let i = 0; i < n; i++) await press('ArrowDown'); await press('Space'); };
 
 await teleport(1350); await wait(60);
@@ -457,12 +482,17 @@ check((await area()) === 'floor2', '[진행] P02 해결 전에는 3층에 갈 �
 
 await enterRoom(270, 'room_choi');
 await talkTo(150);
+check((await page.locator('#dialogue .name').innerText()) === NAME, '[씬 3] 최옥자 대화는 플레이어의 짧은 질문으로 시작한다');
+await opener();
 await press('Enter');
 check((await page.locator('#dialogue .opt').count()) === 2, '[씬 3] 최옥자: 선택지 2개');
 await noIds('[씬 3] 최옥자 대화');
 await shot('stage5_scene3_dialogue');
 await press('1'); await mash();
 check(await cw<boolean>("cw.state.statements.choi_s_prayer?.stage === 'unconfirmed' && cw.state.evidenceIds.length === 4"), '[씬 3] 최옥자 진술은 수첩에만 기록되고 단서가 아니다');
+await press('l'); await page.waitForSelector('#backlog');
+check((await page.locator('#backlog').innerText()).includes('어르신, 어젯밤 병동에서') && (await page.locator('#backlog').innerText()).includes('원장님은 밤새 기도하셨어요'), '[대사 기록] 탐색 중 L: 이 구역에서 본 대사를 다시 읽는다');
+await press('Escape'); await page.waitForFunction(() => !document.querySelector('#backlog'));
 await exitRoom('floor2');
 
 await enterRoom(810, 'room_jeong');
@@ -484,10 +514,11 @@ await confirmPick();
 await until('그 방에 들어간 적 없어요');
 check(await cw<boolean>("cw.state.statements.haneul_s_denial?.stage === 'unconfirmed'"), '[씬 3] “그 방에 들어간 적 없어요”는 진술로만 기록(유죄 단서 아님)');
 await mash();
+const evCount = await cw<number>('cw.state.evidenceIds.length');
 await talkTo(370);
-await until('…더 말하면 저도 없어져요.');
-await press('Enter'); await wait(80);
-check((await page.locator('#dialogue').count()) === 0, '[씬 3] 반복 추궁해도 대화가 늘어나지 않는다');
+check(await until('박은지 씨의 오빠가 찾고 있습니다.'), '[씬 3] 새로 바뀐 것이 없으면 대화를 처음부터 다시 재생한다');
+await mash();
+check((await page.locator('#dialogue').count()) === 0 && (await cw<number>('cw.state.evidenceIds.length')) === evCount, '[씬 3] 반복 추궁해도 대화가 늘어나지 않는다 (단서·진술 그대로)');
 await exitRoom('floor2');
 
 await enterRoom(540, 'room_han');
@@ -549,7 +580,7 @@ check(true, '[진행] P02 해결 후 2층 → 3층');
 await enterRoom(315, 'room_baek');
 await teleport(360); await wait(60);
 check((await promptText()) === '', '[씬 4] 백선우가 거절하기 전에는 부원장 PC 를 볼 수 없다');
-await talkTo(150); await press('Enter');
+await talkTo(150); await opener(); await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('지병으로 돌아가셨습니다'), '[씬 4] 백선우 첫 진술');
 await pickEvidence(1); await confirmPick(); // E03 제시
 await wait(60);
@@ -598,7 +629,7 @@ await exitRoom('floor3');
 
 // 4-2 오미란
 await enterRoom(630, 'room_oh');
-await talkTo(150); await press('Enter');
+await talkTo(150); await opener(); await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('의자에 앉은 채 숨을 쉬지 않았어요'), '[씬 4] 오미란 첫 진술');
 await pickEvidence(1); await confirmPick(); // E03
 check(await cw<boolean>("cw.state.statements.oh_s_first.stage === 'contradiction'"), '[씬 4] E03 제시 → 오미란 진술이 모순으로');
@@ -622,7 +653,7 @@ check(await cw<boolean>("cw.state.evidenceIds.includes('E09_sedative_gap') && cw
 await exitRoom('floor3');
 
 // 4-3 이혜정
-await enterRoom(945, 'room_lee');
+await enterRoom(870, 'room_lee');
 await talkTo(150); await mash();
 await teleport(340); await wait(60); await press('Enter');
 await page.waitForSelector('#viewer'); await press('Enter'); await wait(200);
@@ -672,6 +703,7 @@ check((await promptText()).includes('지하로 내려가기'), '[진행] 1층 �
 // =====================================================================
 // 씬 5~7: 지하 → P05 → 정하늘 최종 대면 → 증거 보존 선택 → 최종 보고서 → 엔딩 A
 // =====================================================================
+await cw("cw.state.flags.push('cutscene_done:basement_intro')"); // 첫 입장 컷신은 위에서 확인했다
 await press('Enter');
 await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'b1' && !(window as any).__cw.scene.busy);
 check(true, '[씬 5] 지하 계단으로 내려간다');
@@ -728,7 +760,7 @@ check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P05_patient_code') &
 await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); await press('Enter'); await press('Enter'); // P05 결과 독백
 
 // 정하늘 최종 대면 (일기장을 닫은 뒤 계단 쪽에서 등장, 2층 재방문 없음)
-await page.waitForSelector('#dialogue', { timeout: 3000 });
+await page.waitForSelector('#dialogue', { timeout: 20000 }); // 발소리 → 계단 쪽에서 걸어 들어온 뒤 대화
 check((await area()) === 'b1', '[씬 5] 정하늘은 지하에서 나타난다 (2층 재방문 없음)');
 await until('명단에서 제 이름도 봤어요');
 check((await page.locator('#dialogue .opt').count()) === 3, '[씬 5] 정하늘 최종 대면: 선택지 3개');
@@ -737,17 +769,21 @@ await shot('stage6_haneul');
 const optCount = async (n: number) => { for (let i = 0; i < 25 && (await page.locator('#dialogue .opt').count()) !== n; i++) { await press('Enter'); await wait(40); } };
 await press('1'); await optCount(2);
 check((await page.locator('#dialogue .opt').count()) === 2, '[씬 5] 들은 선택지는 사라진다');
-await press('1'); await optCount(1); await press('1'); await optCount(1);
-check((await page.locator('#dialogue .opt').innerText()).includes('계속'), '[씬 5] 세 선택지를 모두 듣고 나서 이어진다');
-await press('Enter');
+await press('1'); await optCount(1); await press('1');
+check(await until('당신이 민 힘으로 원장은 죽었습니다.'), '[씬 5] 세 선택지를 모두 들으면 [계속] 없이 자연스럽게 이어진다');
 check(await until('당신이 민 힘으로 원장은 죽었습니다.'), '[씬 5] “당신이 민 힘으로 원장은 죽었습니다.”');
-check(await until('제 손이 없어지는 건 아니니까.'), '[씬 5] 정하늘은 정당방위로 면죄를 주장하지 않는다');
+check(await until('제가 한 일이 없던 일이 되는 건 아니라는 거.'), '[씬 5] 정하늘은 정당방위로 면죄를 주장하지 않는다');
 check(await until('특별 치료 대상자 이송까지 15분 남았습니다.'), '[씬 5] 방송: 이송까지 15분');
 
 // 씬 6: 증거 보존 선택
 await press('Enter'); // 대화 끝 → 씬 6
 await page.waitForSelector('#dialogue'); await wait(60);
 check(await until('뭐든 찾았으면 먼저 보내 주세요.'), '[씬 6] 박은호 메시지');
+check((await page.locator('#dialogue.message').count()) === 1 && (await page.locator('#dialogue .name').innerText()).includes('박은호의 메시지') && (await page.locator('#dialogue .portrait').count()) === 0 && !(await page.locator('#dialogue .text').innerText()).startsWith('('), '[씬 6] 박은호의 메시지는 대화가 아니라 메시지 띠(머리말, 초상·괄호 없음)로 보인다');
+check(await cw<boolean>("cw.scene.npcSprites.get('haneul_b1')?.visible === true && !cw.state.flags.includes('haneul_cleared')"), '[씬 6] 증거 보존 선택이 끝날 때까지 정하늘은 유품 보관함 옆에 남아 있다');
+await page.keyboard.press('l'); await page.waitForSelector('#backlog');
+check((await page.locator('#backlog').innerText()).includes('정하늘') && (await page.locator('#backlog').innerText()).includes('박은호의 메시지'), '[대사 기록] 대화 중 L: 정하늘 고백과 박은호의 메시지가 기록에 있다');
+await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('#backlog'));
 await press('Enter');
 check(await until('이 선택은 되돌릴 수 없다.'), '[씬 6] 선택 전에 “원본 자료가 회수될 수 있고, 되돌릴 수 없다”를 명확히 경고');
 check((await page.locator('#dialogue .opt').count()) === 2 && (await page.locator('#dialogue').innerText()).includes('원본 자료가 회수될 수 있다'), '[씬 6] 선택 B 항목에도 회수 경고');
@@ -761,6 +797,7 @@ await press('Enter'); // 대화 끝 → 씬 7
 // 씬 7: 최종 보고서
 await page.waitForSelector('#report', { timeout: 3000 });
 check(true, '[씬 7] 최종 보고서 시작');
+check(await cw<boolean>("cw.state.flags.includes('haneul_cleared')") && await cw<boolean>("!cw.scene.npcSprites.get('haneul_b1')?.visible"), '[씬 7] 보고서로 넘어갈 때 정하늘이 정리된다');
 // 질문 A~D 네 개를 사건 수첩 UI 에서 키보드로 직접 채운다 (시험 훅 사용 안 함)
 const selText = async (sel: string) => (await page.locator(sel).first().innerText().catch(() => '')).replace(/\s+/g, ' ');
 const moveTo = async (sel: string, text: string, key = 'ArrowDown') => { for (let i = 0; i < 20 && !(await selText(sel)).includes(text); i++) await press(key); };

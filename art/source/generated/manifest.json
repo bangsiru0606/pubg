@@ -1266,5 +1266,418 @@
       "generated/props/stairs_basement.png"
     ],
     "prompt": "Precise pixel-art state variant on solid #00FF00: preserve stairs_basement wooden frame, dark stair recess, bounds, hinge positions, pixel clusters, colors, and floor baseline; change only the iron gate to fully closed with a gray chain and small dull padlock. No green in prop, text, shadow, or thicker outline."
+  },
+  {
+    "file": "characters/player/walk_0.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/walk_1.png",
+      "Art/Player/idle_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art character sprite for the game “병원의 고해”. Use the first reference as the exact outfit, hat, body proportions, coarse pixel clustering, thick near-black outline, limited shading steps, and muted palette anchor. Use the second reference as the exact face, colors, hat, and identity anchor. The same detective Han Jisu, no redesign and no added detail. Canvas and background: exact 672 x 1152 portrait canvas. Fill every background pixel with perfectly uniform chroma-key #00FF00. No floor, no cast shadow, no ambient shadow, no texture, no gradient, no glow. Composition: full-body strict side profile facing LEFT, torso and face never turning toward camera. Place the character at lower center, both feet fully inside the canvas on the same bottom baseline used by the reference, with the same head-top margin and overall character height. Generous empty green space around the entire silhouette; absolutely no clipping. Pose: WALK_0, a clearly readable first contact/front-step pose. The LEFT-facing leading leg reaches distinctly forward with heel/contact, the trailing leg extends behind, and arms swing oppositely. The stride must be much more distinct than the old nearly identical walk frames, while keeping head, torso, coat, hat, height, and colors unchanged. Style: preserve the reference’s deliberately coarse low-resolution pixel art, thick dark contour, same block size, same few flat shade bands, and same low detail. Hard pixel edges only; no antialiasing, smooth painting, high detail, text, logo, props, or extra accessories. The person must contain no green or lime colors."
+  },
+  {
+    "file": "characters/eunho/walk_0.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/walk_2.png",
+      "Art/ParkEunho/idle_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art character sprite for the game “병원의 고해”. The references define the exact young man Park Eunho: identical face, tousled brown-gray hair, charcoal jacket, brown trousers, shoes, body proportions, coarse pixel clusters, thick dark outline, muted palette, and limited shading. Do not redesign or add detail. Canvas/background: exact 672 x 1152 portrait canvas, every background pixel perfectly uniform #00FF00 chroma green. No floor, shadow, texture, gradient, glow, or scenery. Composition: full-body strict side profile facing LEFT, never turning toward camera. Lower-center placement; feet on the reference bottom baseline, same head-top margin and exact overall height. Keep generous green margins on every side. Entire hair, jacket, arms, legs, and shoes fully visible with absolutely no clipping, especially the left edge. Pose: WALK_0 clear first contact/front-step. The left-facing leading leg reaches strongly forward with heel/contact, trailing leg extends behind, arms swing opposite. The leg positions must read immediately as a distinct walking phase. Style: exactly the references’ coarse low-detail pixel art, same thick near-black outline, few shade steps, same saturation and pixel block size. Hard pixel edges; no smoothing, antialiasing, extra detail, text, logo, or new accessory. No green or lime color anywhere on the character."
+  },
+  {
+    "file": "characters/baek/walk_0.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/baek/idle_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking sprite of the exact same character Baek Seonwoo shown in the reference. Preserve exactly his swept dark hair, rectangular glasses, face, white doctor coat, charcoal suit and tie, tiny muted orange lapel pin, shoes, body proportions, coarse pixel clusters, thick near-black outline, limited shading, muted hospital palette, and detail level. No redesign and no added detail. Canvas/background: exact 672 x 1152 portrait canvas with every background pixel perfectly uniform chroma-key #00FF00. No ground, floor line, cast shadow, texture, gradient, glow, or scenery. Composition: full-body strict side profile facing RIGHT, not three-quarter and never turned toward camera. Lower center, feet on the same bottom baseline as the reference, same head-top margin and exact total height. Entire silhouette fully inside with generous side margins and no clipping. Pose: WALK_0, clearly readable first contact/front step. The right-facing leading leg extends distinctly forward with heel/contact, trailing leg extends behind, arms swing oppositely, coat hem moves only slightly. Keep the head, torso, coat, identity, height, and colors fixed. Style: exactly the reference’s deliberately coarse low-detail pixel art, same pixel block size, thick outline, and few flat shade bands. Hard pixel edges only; no smoothing, antialiasing, text, logo, or extra accessories. No green or lime color on the person."
+  },
+  {
+    "file": "characters/player/walk_1.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/walk_1.png",
+      "Art/Player/idle_0.png",
+      "generated/characters/player/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Han Jisu detective: exact tan fedora, tan trench coat, face, dark trousers and brown shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing LEFT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_1: keep the same leading leg phase as walk_0 but bend both knees and lower the whole body slightly. The forward foot is planted and the trailing heel lifts; arms continue their opposite swing. This must visibly differ from walk_0. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/player/walk_pass.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/walk_1.png",
+      "Art/Player/idle_0.png",
+      "generated/characters/player/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Han Jisu detective: exact tan fedora, tan trench coat, face, dark trousers and brown shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing LEFT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_PASS: passing pose with both feet close together beneath the body, one foot crossing/passing the other, and the body at its HIGHEST point. Legs must remain separately readable, with arms near the midpoint of their swing. This must clearly differ from every contact pose. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/player/walk_2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/walk_1.png",
+      "Art/Player/idle_0.png",
+      "generated/characters/player/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Han Jisu detective: exact tan fedora, tan trench coat, face, dark trousers and brown shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing LEFT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_2: the exact opposite contact from walk_0. Reverse which leg leads: the previously trailing leg now reaches distinctly forward with heel/contact while the other extends behind. Reverse the arm swing. The stride must be unmistakably opposite to walk_0. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/player/walk_3.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/walk_1.png",
+      "Art/Player/idle_0.png",
+      "generated/characters/player/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Han Jisu detective: exact tan fedora, tan trench coat, face, dark trousers and brown shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing LEFT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_3: keep the opposite leading leg phase from walk_2 but bend both knees and lower the whole body slightly. The opposite forward foot is planted and the rear heel lifts; arms continue their reversed swing. This must visibly differ from walk_2 and walk_1. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/eunho/walk_1.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/walk_2.png",
+      "Art/ParkEunho/idle_0.png",
+      "generated/characters/eunho/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Park Eunho: exact tousled brown-gray hair, face, charcoal jacket, brown trousers and shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing LEFT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_1: keep the same leading leg phase as walk_0 but bend both knees and lower the whole body slightly. The forward foot is planted and the trailing heel lifts; arms continue their opposite swing. This must visibly differ from walk_0. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/eunho/walk_pass.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/walk_2.png",
+      "Art/ParkEunho/idle_0.png",
+      "generated/characters/eunho/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Park Eunho: exact tousled brown-gray hair, face, charcoal jacket, brown trousers and shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing LEFT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_PASS: passing pose with both feet close together beneath the body, one foot crossing/passing the other, and the body at its HIGHEST point. Legs must remain separately readable, with arms near the midpoint of their swing. This must clearly differ from every contact pose. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/eunho/walk_2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/walk_2.png",
+      "Art/ParkEunho/idle_0.png",
+      "generated/characters/eunho/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Park Eunho: exact tousled brown-gray hair, face, charcoal jacket, brown trousers and shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing LEFT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_2: the exact opposite contact from walk_0. Reverse which leg leads: the previously trailing leg now reaches distinctly forward with heel/contact while the other extends behind. Reverse the arm swing. The stride must be unmistakably opposite to walk_0. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/eunho/walk_3.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/walk_2.png",
+      "Art/ParkEunho/idle_0.png",
+      "generated/characters/eunho/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Park Eunho: exact tousled brown-gray hair, face, charcoal jacket, brown trousers and shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing LEFT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_3: keep the opposite leading leg phase from walk_2 but bend both knees and lower the whole body slightly. The opposite forward foot is planted and the rear heel lifts; arms continue their reversed swing. This must visibly differ from walk_2 and walk_1. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/baek/walk_1.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/baek/idle_0.png",
+      "generated/characters/baek/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Baek Seonwoo: exact swept dark hair, rectangular glasses, face, white doctor coat, charcoal suit and tie, tiny muted orange lapel pin and shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing RIGHT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_1: keep the same leading leg phase as walk_0 but bend both knees and lower the whole body slightly. The forward foot is planted and the trailing heel lifts; arms continue their opposite swing. This must visibly differ from walk_0. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/baek/walk_pass.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/baek/idle_0.png",
+      "generated/characters/baek/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Baek Seonwoo: exact swept dark hair, rectangular glasses, face, white doctor coat, charcoal suit and tie, tiny muted orange lapel pin and shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing RIGHT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_PASS: passing pose with both feet close together beneath the body, one foot crossing/passing the other, and the body at its HIGHEST point. Legs must remain separately readable, with arms near the midpoint of their swing. This must clearly differ from every contact pose. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/baek/walk_2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/baek/idle_0.png",
+      "generated/characters/baek/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Baek Seonwoo: exact swept dark hair, rectangular glasses, face, white doctor coat, charcoal suit and tie, tiny muted orange lapel pin and shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing RIGHT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_2: the exact opposite contact from walk_0. Reverse which leg leads: the previously trailing leg now reaches distinctly forward with heel/contact while the other extends behind. Reverse the arm swing. The stride must be unmistakably opposite to walk_0. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "characters/baek/walk_3.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "right",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/baek/idle_0.png",
+      "generated/characters/baek/walk_0.png"
+    ],
+    "prompt": "Create one production-ready 2D pixel-art walking animation frame for the game “병원의 고해”. Identity and visual lock: Baek Seonwoo: exact swept dark hair, rectangular glasses, face, white doctor coat, charcoal suit and tie, tiny muted orange lapel pin and shoes from the references. The LAST reference is the newly approved/generated WALK_0 and is the exact anchor for character identity, outfit, canvas placement, head size, head-top position, total height, pixel block size, outline thickness, palette, shading count, and foot baseline. Copy all of those exactly. Change only legs, arms, and the smallest necessary coat hem motion. Canvas/background: exact 672 x 1152 portrait canvas. Every background pixel must be perfectly uniform chroma-key #00FF00. No floor, floor line, cast shadow, ambient shadow, texture, gradient, glow, or scenery. Composition: full-body STRICT side profile facing RIGHT; never three-quarter and never turned toward camera. Same horizontal center, same head size and head-top margin as WALK_0, and feet on the exact same bottom baseline. Entire silhouette fully inside with generous margins; no clipping. Required phase: WALK_3: keep the opposite leading leg phase from walk_2 but bend both knees and lower the whole body slightly. The opposite forward foot is planted and the rear heel lifts; arms continue their reversed swing. This must visibly differ from walk_2 and walk_1. Animation consistency is critical: head, hair/hat, face, neck, torso, clothes, color blocks, overall scale, and baseline must not drift from WALK_0. The five poses must read as one cycle with clearly different leg silhouettes. Style: exactly the references’ coarse low-detail pixel art, thick near-black outline, same few shade bands, same muted saturation, same large pixel cluster size. Hard pixel edges only; no smoothing, antialiasing, high-detail rendering, text, logo, new accessory, or removed accessory. No green or lime color on the character."
+  },
+  {
+    "file": "illust/ev_altar_blood_v2.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": false,
+    "refs": [
+      "generated/illust/ev_altar_blood.png",
+      "Resources/Art/Office/hat_detail.png"
+    ],
+    "prompt": "Revise the evidence close-up for the game “병원의 고해”. Keep the exact same worn brass prayer stand base, subdued semi-realistic hand-painted illustration style, dark brown lighting, muted palette, brush texture, and black-brown contour language of Image 1. Image 2 reinforces the same game’s warm worn-object rendering and restrained detail. Create a square 1024 x 1024 close-up from a slightly LOWER viewpoint, still focused on the lower brass pedestal and floor. Under one front corner of the base, make a dark dried burgundy stain immediately visible at a glance. The stain should be about one quarter of the base’s visible floor-width, with a clear partially wiped one-direction smear. Add only one or two tiny dark burgundy specks on that same brass base corner. This is restrained evidence, not gore: no flowing blood, no puddle, no splatter field, no wound, no body. Darken the surrounding floor and edges slightly so the visual focus falls on the stain, while keeping the brass base recognizable and consistent with Image 1. No text, number, logo, signature, border, or chroma background."
+  },
+  {
+    "file": "characters/player/walk_pass_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/idle_0.png",
+      "Art/Player/walk_1.png"
+    ],
+    "prompt": "Identity-preserving corrected Han Jisu WALK_PASS. Keep the idle reference oversized head and fedora, short stocky body, broad shoulders, thick upper arms, wide boxy trench coat, short thick legs, exact clothing colors and coarse pixels. Strict left side profile with both feet together. Exact 672x1152, hat top about 48px, soles about 1142px, uniform #00FF00, no ground, shadow, green on character, added detail, pattern, clipping, narrow anatomy, or long legs."
+  },
+  {
+    "file": "characters/eunho/walk_pass_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/idle_0.png",
+      "Art/ParkEunho/walk_2.png"
+    ],
+    "prompt": "Identity-preserving corrected Park Eunho WALK_PASS. Keep the idle reference oversized wide head, short stocky body, broad shoulders, thick upper arms, broad boxy charcoal jacket, short thick legs, plain brown trousers and coarse pixels. Strict left side profile with both feet together. Exact 672x1152, hair top about 45px, soles about 1142px, uniform #00FF00, no ground, shadow, green on character, clipping, added detail, trouser stripes, checks, diagonal marks, texture, or long thin anatomy."
+  },
+  {
+    "file": "characters/player/walk_0_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/idle_0.png",
+      "generated/characters/player/walk_pass_v2.png"
+    ],
+    "prompt": "Identity-preserving production pixel-art walk_0 for Han Jisu, strict left-facing side profile. Idle is the exact identity/body-proportion authority and walk_pass_v2 is the side-view, scale, head-size, torso-width, clothing, pixel-style and baseline authority. Pose: first contact: the left-facing front leg reaches clearly forward with heel contact, rear leg extends backward, opposite arm swing, head at high neutral level. Preserve oversized head and fedora, short stocky body, broad shoulders, thick upper arms, extremely wide boxy tan trench coat, short thick legs, and exact muted tan/brown clothing blocks. Change only legs, arms and minimal coat/jacket hem motion. Exact 672x1152, uniform #00FF00, no floor or shadow, soles at about 1142px; neutral head top about 48px and down-frame head only 15-25px lower. Coarse large pixel clusters, thick near-black outline, few shade steps. Avoid narrow coat, narrow torso, small head, long legs, realistic proportions, or clothing pattern, green on character, text, logo, clipping, smoothing, three-quarter view, front-facing chest, or added detail."
+  },
+  {
+    "file": "characters/player/walk_1_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/idle_0.png",
+      "generated/characters/player/walk_pass_v2.png"
+    ],
+    "prompt": "Identity-preserving production pixel-art walk_1 for Han Jisu, strict left-facing side profile. Idle is the exact identity/body-proportion authority and walk_pass_v2 is the side-view, scale, head-size, torso-width, clothing, pixel-style and baseline authority. Pose: down pose after first contact: same leading-leg family as walk_0, both knees bent, head only 15-25px lower, rear heel raised, arms continue swing. Preserve oversized head and fedora, short stocky body, broad shoulders, thick upper arms, extremely wide boxy tan trench coat, short thick legs, and exact muted tan/brown clothing blocks. Change only legs, arms and minimal coat/jacket hem motion. Exact 672x1152, uniform #00FF00, no floor or shadow, soles at about 1142px; neutral head top about 48px and down-frame head only 15-25px lower. Coarse large pixel clusters, thick near-black outline, few shade steps. Avoid narrow coat, narrow torso, small head, long legs, realistic proportions, or clothing pattern, green on character, text, logo, clipping, smoothing, three-quarter view, front-facing chest, or added detail."
+  },
+  {
+    "file": "characters/player/walk_2_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/idle_0.png",
+      "generated/characters/player/walk_pass_v2.png"
+    ],
+    "prompt": "Identity-preserving production pixel-art walk_2 for Han Jisu, strict left-facing side profile. Idle is the exact identity/body-proportion authority and walk_pass_v2 is the side-view, scale, head-size, torso-width, clothing, pixel-style and baseline authority. Pose: opposite contact: reverse walk_0 so the other leg reaches forward and the first leg extends backward, reverse arm swing, head at high neutral level. Preserve oversized head and fedora, short stocky body, broad shoulders, thick upper arms, extremely wide boxy tan trench coat, short thick legs, and exact muted tan/brown clothing blocks. Change only legs, arms and minimal coat/jacket hem motion. Exact 672x1152, uniform #00FF00, no floor or shadow, soles at about 1142px; neutral head top about 48px and down-frame head only 15-25px lower. Coarse large pixel clusters, thick near-black outline, few shade steps. Avoid narrow coat, narrow torso, small head, long legs, realistic proportions, or clothing pattern, green on character, text, logo, clipping, smoothing, three-quarter view, front-facing chest, or added detail."
+  },
+  {
+    "file": "characters/player/walk_3_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/Player/idle_0.png",
+      "generated/characters/player/walk_pass_v2.png"
+    ],
+    "prompt": "Identity-preserving production pixel-art walk_3 for Han Jisu, strict left-facing side profile. Idle is the exact identity/body-proportion authority and walk_pass_v2 is the side-view, scale, head-size, torso-width, clothing, pixel-style and baseline authority. Pose: down pose after opposite contact: same leading-leg family as walk_2, both knees bent, head only 15-25px lower, rear heel raised, arms continue reversed swing. Preserve oversized head and fedora, short stocky body, broad shoulders, thick upper arms, extremely wide boxy tan trench coat, short thick legs, and exact muted tan/brown clothing blocks. Change only legs, arms and minimal coat/jacket hem motion. Exact 672x1152, uniform #00FF00, no floor or shadow, soles at about 1142px; neutral head top about 48px and down-frame head only 15-25px lower. Coarse large pixel clusters, thick near-black outline, few shade steps. Avoid narrow coat, narrow torso, small head, long legs, realistic proportions, or clothing pattern, green on character, text, logo, clipping, smoothing, three-quarter view, front-facing chest, or added detail."
+  },
+  {
+    "file": "characters/eunho/walk_0_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/idle_0.png",
+      "generated/characters/eunho/walk_pass_v2.png"
+    ],
+    "prompt": "Identity-preserving production pixel-art walk_0 for Park Eunho, strict left-facing side profile. Idle is the exact identity/body-proportion authority and walk_pass_v2 is the side-view, scale, head-size, torso-width, clothing, pixel-style and baseline authority. Pose: first contact: the left-facing front leg reaches clearly forward with heel contact, rear leg extends backward, opposite arm swing, head at high neutral level. Preserve oversized wide head and tousled hair, short stocky body, broad shoulders, thick upper arms, wide boxy charcoal jacket, short thick legs, and completely plain brown trousers. Change only legs, arms and minimal coat/jacket hem motion. Exact 672x1152, uniform #00FF00, no floor or shadow, soles at about 1142px; neutral head top about 45px and down-frame head only 15-25px lower. Coarse large pixel clusters, thick near-black outline, few shade steps. Avoid narrow jacket, narrow torso, small head, long legs, realistic proportions, stripes, checks, diagonal marks, texture, highlights, or trouser pattern, green on character, text, logo, clipping, smoothing, three-quarter view, front-facing chest, or added detail."
+  },
+  {
+    "file": "characters/eunho/walk_1_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/idle_0.png",
+      "generated/characters/eunho/walk_pass_v2.png"
+    ],
+    "prompt": "Identity-preserving production pixel-art walk_1 for Park Eunho, strict left-facing side profile. Idle is the exact identity/body-proportion authority and walk_pass_v2 is the side-view, scale, head-size, torso-width, clothing, pixel-style and baseline authority. Pose: down pose after first contact: same leading-leg family as walk_0, both knees bent, head only 15-25px lower, rear heel raised, arms continue swing. Preserve oversized wide head and tousled hair, short stocky body, broad shoulders, thick upper arms, wide boxy charcoal jacket, short thick legs, and completely plain brown trousers. Change only legs, arms and minimal coat/jacket hem motion. Exact 672x1152, uniform #00FF00, no floor or shadow, soles at about 1142px; neutral head top about 45px and down-frame head only 15-25px lower. Coarse large pixel clusters, thick near-black outline, few shade steps. Avoid narrow jacket, narrow torso, small head, long legs, realistic proportions, stripes, checks, diagonal marks, texture, highlights, or trouser pattern, green on character, text, logo, clipping, smoothing, three-quarter view, front-facing chest, or added detail."
+  },
+  {
+    "file": "characters/eunho/walk_2_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/idle_0.png",
+      "generated/characters/eunho/walk_pass_v2.png"
+    ],
+    "prompt": "Identity-preserving production pixel-art walk_2 for Park Eunho, strict left-facing side profile. Idle is the exact identity/body-proportion authority and walk_pass_v2 is the side-view, scale, head-size, torso-width, clothing, pixel-style and baseline authority. Pose: opposite contact: reverse walk_0 so the other leg reaches forward and the first leg extends backward, reverse arm swing, head at high neutral level. Preserve oversized wide head and tousled hair, short stocky body, broad shoulders, thick upper arms, wide boxy charcoal jacket, short thick legs, and completely plain brown trousers. Change only legs, arms and minimal coat/jacket hem motion. Exact 672x1152, uniform #00FF00, no floor or shadow, soles at about 1142px; neutral head top about 45px and down-frame head only 15-25px lower. Coarse large pixel clusters, thick near-black outline, few shade steps. Avoid narrow jacket, narrow torso, small head, long legs, realistic proportions, stripes, checks, diagonal marks, texture, highlights, or trouser pattern, green on character, text, logo, clipping, smoothing, three-quarter view, front-facing chest, or added detail."
+  },
+  {
+    "file": "characters/eunho/walk_3_v2.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "Art/ParkEunho/idle_0.png",
+      "generated/characters/eunho/walk_pass_v2.png"
+    ],
+    "prompt": "Identity-preserving production pixel-art walk_3 for Park Eunho, strict left-facing side profile. Idle is the exact identity/body-proportion authority and walk_pass_v2 is the side-view, scale, head-size, torso-width, clothing, pixel-style and baseline authority. Pose: down pose after opposite contact: same leading-leg family as walk_2, both knees bent, head only 15-25px lower, rear heel raised, arms continue reversed swing. Preserve oversized wide head and tousled hair, short stocky body, broad shoulders, thick upper arms, wide boxy charcoal jacket, short thick legs, and completely plain brown trousers. Change only legs, arms and minimal coat/jacket hem motion. Exact 672x1152, uniform #00FF00, no floor or shadow, soles at about 1142px; neutral head top about 45px and down-frame head only 15-25px lower. Coarse large pixel clusters, thick near-black outline, few shade steps. Avoid narrow jacket, narrow torso, small head, long legs, realistic proportions, stripes, checks, diagonal marks, texture, highlights, or trouser pattern, green on character, text, logo, clipping, smoothing, three-quarter view, front-facing chest, or added detail."
+  },
+  {
+    "file": "characters/eunho/walk_pass_v3.png",
+    "size": [
+      672,
+      1152
+    ],
+    "kind": "sprite",
+    "facing": "left",
+    "chromaKey": true,
+    "refs": [
+      "generated/characters/eunho/walk_0_v2.png",
+      "generated/characters/eunho/walk_2_v2.png",
+      "Art/ParkEunho/idle_0.png"
+    ],
+    "prompt": "Use case: precise-object-edit. Park Eunho WALK_PASS animation frame. Image 1 is the exact scale template; preserve its hair/head dimensions, face size, neck, shoulder, torso/jacket width, upper-arm thickness, hand size, colors, pixel clusters, outline, placement, and total scale. Image 2 confirms the opposite stride and Image 3 confirms face/colors. Change only limbs: bring both legs together as one foot passes the other at the highest body point, and move arms to mid-swing while retaining thickness. Strict left profile, full silhouette width about 390-415px, hair top about 44px, soles about 1140px, exact 672x1152, pure #00FF00, no shadow, floor, green on character, trouser pattern, added detail, clipping, smoothing, or background variation."
   }
 ]

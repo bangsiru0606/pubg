@@ -325,15 +325,16 @@
 .dlg .portrait.flip { transform: scaleX(-1); } /* 원래 왼쪽을 보는 초상은 뒤집어 대화 상대(화면 안쪽)를 보게 한다. 원본 그림은 그대로 */
 
 /* ---------- 배치 6 일러스트: 증거 사진 · 엔딩 카드 · 타이틀 ---------- */
-.viewer.photo > *:not(.docbg):not(.foot) { margin-right: 138px; }
-.viewer .docbg.photo { right: 14px; top: 34px; width: 120px; height: 120px; opacity: 1; object-fit: cover; border: 2px solid var(--brass-d); box-shadow: 0 2px 8px #000; background: #000; }
-.ending .ebg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.ending .etop { position: absolute; left: 0; right: 0; top: 0; padding: 8px 20px 18px; text-align: center; background: linear-gradient(180deg, rgba(8,6,5,.9) 0, rgba(8,6,5,.78) 60%, rgba(8,6,5,0) 100%); }
+.viewer.photo > *:not(.docbg):not(.foot) { margin-right: 236px; }
+.viewer.photo .docbody { max-width: none; }
+.viewer .docbg.photo { right: 12px; top: calc(50% - 6px); transform: translateY(-50%); width: 212px; height: 212px; opacity: 1; object-fit: cover; border: 2px solid var(--brass-d); box-shadow: 0 2px 10px #000; background: #000; }
+.ending .ebg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(7px) brightness(.5); transform: scale(1.06); }
+.ending .ebf { position: absolute; left: 50%; top: 8px; height: 174px; width: auto; transform: translateX(-50%); box-shadow: 0 0 14px 6px rgba(8,6,5,.8); }
+.ending .etop { position: absolute; left: 0; right: 0; top: 0; padding: 6px 20px 14px; text-align: center; background: linear-gradient(180deg, rgba(8,6,5,.88) 0, rgba(8,6,5,.7) 60%, rgba(8,6,5,0) 100%); }
 .ending .etop .etitle { margin-top: 0; }
-.ending .etop .ecard { margin: 4px 0 0; padding: 0; font-size: 11px; color: #ece0c2; background: none; box-shadow: none; text-shadow: 0 1px 2px #000; }
-.ending .eres { position: absolute; left: 0; right: 0; bottom: 13px; display: flex; justify-content: space-between; align-items: flex-end; padding: 22px 12px 4px; font-size: 9px; line-height: 1.4; background: linear-gradient(0deg, rgba(8,6,5,.88) 0, rgba(8,6,5,.7) 65%, rgba(8,6,5,0) 100%); text-shadow: 0 1px 2px #000; pointer-events: none; }
-.ending .eres .el { width: 41%; } .ending .eres .er { width: 31%; }
-.ending .eres p { margin: 0 0 2px; }
+.ending .etop .ecard { margin: 3px 0 0; padding: 0; font-size: 11px; color: #ece0c2; background: none; box-shadow: none; text-shadow: 0 1px 2px #000; }
+.ending .eres { position: absolute; left: 0; right: 0; top: 184px; bottom: 12px; box-sizing: border-box; padding: 5px 14px 3px; font-size: 9px; line-height: 1.25; overflow: hidden; background: linear-gradient(180deg, rgba(8,6,5,0) 0, rgba(8,6,5,.82) 8%, rgba(8,6,5,.88) 92%, rgba(8,6,5,.6) 100%); text-shadow: 0 1px 2px #000; pointer-events: none; }
+.ending .eres p { margin: 0 0 1px; }
 .ending .foot { z-index: 2; text-shadow: 0 1px 2px #000; }
 .title .tbg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .title .tveil { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,6,5,.92) 0, rgba(8,6,5,.72) 24%, rgba(8,6,5,0) 44%), linear-gradient(0deg, rgba(8,6,5,.6) 0, rgba(8,6,5,0) 22%); }
@@ -345,4 +346,3 @@
 .title:not(.dim) .ts { margin: 2px 0 12px 22px; }
 .title:not(.dim) .tm { width: 112px; margin: 0 0 0 18px; }
 .title:not(.dim) .ctrl { position: absolute; right: 10px; top: 28px; width: 178px; margin: 0; }
-.title:not(.dim) .anykey { right: auto; left: 22px; bottom: 14px; text-align: left; text-shadow: 0 1px 2px #000; }

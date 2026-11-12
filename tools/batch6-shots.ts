@@ -13,7 +13,7 @@ const errors: string[] = [];
 page.on('pageerror', (e) => errors.push(String(e)));
 const cw = (fn: string) => page.evaluate(`(() => { const cw = window.__cw; return ${fn}; })()`);
 const wait = (ms: number) => page.waitForTimeout(ms);
-const shot = (name: string) => page.screenshot({ path: `docs/screenshots/batch6_${name}.png` });
+const shot = async (name: string) => { await page.screenshot({ path: `docs/screenshots/batch6_${name}.png` }); await page.setViewportSize({ width: 1280, height: 720 }); await wait(150); await page.screenshot({ path: `docs/screenshots/batch6_${name}_1280.png` }); await page.setViewportSize({ width: 1920, height: 1080 }); await wait(100); };
 const fresh = async () => {
   await page.goto(pathToFileURL(resolve('.tmp/e2e/index.html')).href);
   await page.waitForFunction(() => (window as any).__cw?.scene?.player); await page.waitForSelector('#title');

@@ -1,5 +1,5 @@
 // 최소 타이틀 화면: 새 게임 / 이어하기(저장이 있을 때만) / 조작법. 아트는 7단계.
-import { getVolumes, isUnlocked, onUnlock, setVolume, sfx, toggleMute } from '../audio/audio';
+import { getVolumes, setVolume, sfx, toggleMute } from '../audio/audio';
 import credits from '../data/credits.json';
 import bgmCredits from '../data/bgm-credits.json';
 import { el, esc, root } from './hud';
@@ -41,7 +41,6 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
   const bgmLines = (bgmCredits as string[]).length ? groupCredits(bgmCredits as string[]) : [credits.bgmPending];
   function render() {
     box.classList.toggle('dim', page !== 'main'); // 설정·정보 화면은 그림을 어둡게 눌러 글자가 읽히게 한다
-    const hint = isUnlocked() ? '' : '<div class="anykey">아무 키나 눌러 시작</div>';
     if (page === 'settings') {
       const v = getVolumes();
       box.innerHTML = `${ART}<div class="tt" style="font-size:18px">설정</div>
@@ -58,7 +57,7 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
       box.innerHTML = `${ART}<div class="tt">병원의 고해</div><div class="ts">Confession Ward</div>
         <div class="tm">${items.map((it, i) => `<button class="opt${i === sel ? ' sel' : ''}" data-i="${i}">${esc(it.label)}</button>`).join('')}</div>
         ${showControls ? `<div class="ctrl">${CONTROLS.map(([k, v]) => `<div><kbd>${esc(k)}</kbd> ${esc(v)}</div>`).join('')}</div>` : ''}
-        ${hint}<div class="foot">↑↓ 이동 · Enter 선택</div>`;
+        <div class="foot">↑↓ 이동 · Enter 선택</div>`;
     }
   }
   const adjust = (i: number, d: number) => { if (i < 3) { const k = VOLS[i][0]; setVolume(k, getVolumes()[k] + d * 0.1); sfx('onUiMove'); } };
@@ -70,8 +69,6 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
     if (page === 'settings') { if (v) { setSel = +v.dataset.v!; if (setSel >= 3) pickSetting(setSel); else render(); } return; }
     if (b) { sel = +b.dataset.i!; items[sel].run(); }
   });
-  // 첫 입력(소리 잠금 해제)이 일어나면 "아무 키나" 안내를 지운다
-  onUnlock(() => { if (box.isConnected) render(); });
   pushModal({
     id: 'title',
     onKey(e) {

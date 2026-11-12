@@ -40,7 +40,7 @@ page.on('requestfailed', (r) => { if (!(/\.(mp3|ogg|wav|webp)$/.test(r.url()) &&
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__game?.scene.getScene('Explore')?.player, null, { timeout: 10000 });
 await page.waitForSelector('#title'); // 타이틀 → (소리) 설정·정보 화면을 지나 새 게임
-const hintBefore = await page.locator('#title .anykey').count(); // 첫 입력 전에는 "아무 키나 눌러 시작" 안내
+const hintBefore = await page.locator('#title .anykey').count(); // 메뉴가 곧 입력 대기라 "아무 키나" 안내는 없다
 for (const k of ['ArrowDown', 'ArrowDown']) await page.keyboard.press(k); // 새 게임 → 조작법 → 설정 (이어하기는 저장이 없어 없다)
 await page.keyboard.press('Enter'); await page.waitForTimeout(100);
 const settingsText = await page.locator('#title').innerText();
@@ -87,7 +87,7 @@ if (!canvas || canvas[0] !== 480 || canvas[1] !== 270) fail.push(`캔버스 이�
 if (hook !== 'undefined') fail.push('시험 훅(__cw) 이 제출 빌드에 노출됨');
 if (toolFiles.length) fail.push(`개발 도구 파일이 제출물에 있음: ${toolFiles.join(', ')}`);
 if (audioBad.length) fail.push(`브라우저가 못 읽는 소리 파일: ${audioBad.join(', ')}`);
-if (hintBefore !== 1 || hintAfter !== 0) fail.push(`"아무 키나 눌러 시작" 안내 이상: 입력 전 ${hintBefore}, 입력 후 ${hintAfter}`);
+if (hintBefore !== 0 || hintAfter !== 0) fail.push(`타이틀에 "아무 키나" 안내가 남아 있음: 입력 전 ${hintBefore}, 입력 후 ${hintAfter}`);
 if (!settingsText.includes('마스터 음량') || !infoText.includes('배경음악')) fail.push('설정/정보 화면이 열리지 않음');
 if (audioSaved === 'blocked') console.warn('! file:// 에서 localStorage 가 막혀 있다 (음량은 저장되지 않지만 소리 동작에는 문제 없다)');
 if (!(x1 > x0)) fail.push(`이동 안 됨: ${x0} → ${x1}`);

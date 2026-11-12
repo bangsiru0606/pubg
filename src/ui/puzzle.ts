@@ -157,7 +157,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
       : `${conflicts.length ? `<div class="warn">${conflicts.map((c) => `· ${esc(c)}`).join('<br>')}</div>` : ''}${note ? `<div class="note">${esc(note)}</div>` : ''}${hintTxt}`;
     const info = (p.info ?? []).length ? `<div class="slotlbl">제공 정보</div><ul>${p.info!.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : '';
     const quotes = (p.statements ?? []).map((id) => { const st = s.statements[id]; return st ? `<div class="quote">${esc(characterName(st.speaker))}의 진술: “${esc(st.text)}”</div>` : ''; }).join('');
-    const side = `${info}${quotes}${srcs ? '<div class="slotlbl">원문 자료 다시 열기</div>' + srcs : ''}${fb}`;
+    const side = `<div class="pscroll">${info}${quotes}${srcs ? '<div class="slotlbl">원문 자료 다시 열기</div>' + srcs : ''}</div>${fb ? `<div class="pfb">${fb}</div>` : ''}`; // 안내·힌트는 따로 아래에 고정한다 (자료가 많아도 잘리지 않게, 위쪽만 스크롤)
     box.className = `modal puzzle lay-${layout}`;
     box.innerHTML = `<div class="ptitle">${esc(p.title ?? '')}${p.subtitle ? ` <span class="psub">${esc(p.subtitle)}</span>` : ''}</div>
       <div class="pleft">${mainHtml()}${tray}</div>

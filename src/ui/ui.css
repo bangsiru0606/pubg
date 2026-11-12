@@ -163,7 +163,9 @@
 .tk.grab { background: linear-gradient(180deg, #b8923f, #86672b); }
 .foc { outline: 1px solid var(--gold); outline-offset: 1px; }
 .tk.ghost { position: absolute; transform: translate(-50%, -50%); pointer-events: none; z-index: 9; }
-.puzzle .pright { position: absolute; left: 284px; right: 6px; top: 18px; height: 160px; overflow: hidden; font-size: 8px; }
+.puzzle .pright { position: absolute; left: 284px; right: 6px; top: 18px; height: 160px; overflow: hidden; font-size: 8px; display: flex; flex-direction: column; }
+.puzzle .pscroll { flex: 1 1 0; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #86672b transparent; }
+.puzzle .pfb { flex: 0 0 auto; max-height: 76px; overflow-y: auto; border-top: 1px solid var(--wood-line); padding-top: 1px; line-height: 1.3; scrollbar-width: thin; scrollbar-color: #86672b transparent; overflow-wrap: anywhere; } /* 힌트·경고 문장은 줄바꿈하고, 길면 이 칸만 스크롤 */
 .puzzle .pright ul { margin: 0 0 3px; padding-left: 10px; }
 .puzzle .src { display: block; width: 100%; text-align: left; background: rgba(0,0,0,.35); border: 1px solid var(--wood-line); padding: 0 3px; margin-bottom: 1px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .puzzle .src:hover { border-color: var(--brass-d); }
@@ -195,7 +197,7 @@
 .lay-lightbox .ph-t { color: #6a4a12; font-weight: 700; font-family: 'Malgun Gothic', sans-serif; border-bottom: 1px solid rgba(90,70,40,.5); margin-bottom: 2px; }
 .lay-lightbox .ptasks { top: 130px; right: 6px; }
 .lay-lightbox .chip { display: inline-block; margin: 0 3px 2px 0; font-size: 8px; text-align: left; }
-.lay-lightbox .pright { left: 6px; right: 74px; top: 180px; height: 80px; font-size: 8px; }
+.lay-lightbox .pright { left: 6px; right: 74px; top: 180px; height: 76px; font-size: 8px; }
 .lay-lightbox .pright ul { display: none; }
 .lay-lightbox .submit { top: 62px; }
 .lay-lightbox .ptitle { white-space: nowrap; }
@@ -211,7 +213,7 @@
 .lay-logic .ptasks { top: 108px; right: 6px; }
 .lay-logic .chip { font-size: 8px; padding: 0 3px; margin: 0 2px 1px 0; }
 .lay-logic .trow { margin-bottom: 1px; font-size: 8px; }
-.lay-logic .pright { left: 6px; right: 70px; top: 206px; height: 56px; font-size: 8px; }
+.lay-logic .pright { left: 6px; right: 70px; top: 206px; height: 51px; font-size: 8px; }
 .lay-logic .pright ul { display: none; }
 .lay-logic .src { display: inline-block; width: auto; margin-right: 3px; }
 .lay-logic .submit { top: 72px; }
@@ -229,6 +231,8 @@
 .title .ts { color: var(--text-dim); margin-bottom: 14px; letter-spacing: 2px; }
 .title .tm { width: 140px; margin: 0 auto; }
 .title .tm .opt { text-align: center; border: 1px solid transparent; border-left-width: 1px; margin-bottom: 2px; padding: 1px 4px; }
+.title .tm .opt.dis { color: #6f685a; cursor: default; }
+.title .tm .opt.dis:hover { background: none; }
 .title .tm .opt.sel { background: linear-gradient(180deg, rgba(196,160,82,.3), rgba(134,103,43,.25)); border-color: var(--brass-d); }
 .title .ctrl { width: 220px; margin: 10px auto 0; text-align: left; font-size: 9px; padding: 5px 8px; color: var(--ink); background: var(--grain), linear-gradient(180deg, #ddcea8, var(--paper-2)); box-shadow: inset 0 0 12px rgba(110,80,30,.35); }
 .title kbd { background: #3b2a1c; color: #f0dcb0; padding: 0 3px; border-radius: 2px; font: inherit; display: inline-block; min-width: 50px; text-align: center; }
@@ -346,3 +350,36 @@
 .title:not(.dim) .ts { margin: 2px 0 12px 22px; }
 .title:not(.dim) .tm { width: 112px; margin: 0 0 0 18px; }
 .title:not(.dim) .ctrl { position: absolute; right: 10px; top: 28px; width: 178px; margin: 0; }
+
+/* 받은 메시지(voice: message): 대화창과 다른 바탕의 회상 띠. 머리말 "○○의 메시지", 초상 없음, 괄호 없음 */
+.dlg.message { background: var(--grain), linear-gradient(180deg, rgba(26,38,48,.98), rgba(14,22,30,.99)); border-top: 2px solid #5f7f99; box-shadow: 0 -1px 0 #000, inset 0 1px 0 rgba(159,180,200,.25); }
+.dlg.message .name { background: #7d9ab3; color: #0f1a24; border-radius: 6px 6px 1px 1px; }
+.dlg .voice-message { color: #dbe8f2; display: block; border-left: 2px solid #7d9ab3; padding-left: 6px; }
+.dlg .logbtn { position: absolute; right: 6px; top: 2px; font-size: 8px; padding: 0 4px; background: rgba(0,0,0,.4); border: 1px solid var(--brass-d); color: var(--gold); cursor: pointer; }
+.dlg .logbtn:hover { background: rgba(196,160,82,.25); }
+
+/* 대사 기록 */
+.backlog { background: rgba(8,6,5,.94); z-index: 8; }
+.backlog .btitle { position: absolute; left: 0; right: 0; top: 0; padding: 2px 8px; color: var(--gold); background: rgba(10,7,5,.9); border-bottom: 1px solid var(--brass-d); }
+.backlog .blist { position: absolute; left: 10px; right: 10px; top: 20px; bottom: 14px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #86672b transparent; }
+.backlog .bl { margin: 0 0 4px; line-height: 1.4; }
+.backlog .bl b { color: var(--gold); }
+.backlog .bl.v-inner { font-style: italic; color: #cbbf9f; }
+.backlog .bl.v-action { color: #9d957f; }
+.backlog .bl.v-message { color: #dbe8f2; border-left: 2px solid #7d9ab3; padding-left: 5px; }
+
+/* 컷신 그림이 아직 없을 때(pending)의 대체 배경: 어두운 푸른 회색 + 가장자리 어둡게 (읽을 글자 없음) */
+.cutscene .cutph { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 55%, #1b2528 0, #0a0f11 75%); }
+
+/* 근접 조사 소품 그림이 아직 없을 때(pending)의 대체 표시: 종이 모양 + 흐린 줄무늬 (읽을 글자 없음) */
+.hot.ph { background: repeating-linear-gradient(180deg, transparent 0 7%, rgba(60,50,35,.35) 7% 9%), linear-gradient(180deg, #cfc6ad, #b9ae92); border: 1px solid #5a4d36; box-shadow: 0 3px 6px rgba(0,0,0,.6); filter: brightness(.8); transform: translate(-50%, -50%) rotate(-3deg); }
+.hot.ph.on, .hot.ph.sel { filter: brightness(1); cursor: pointer; }
+.detail .dph { width: 90%; aspect-ratio: 1.3; max-height: 100%; background: repeating-linear-gradient(180deg, transparent 0 7%, rgba(60,50,35,.35) 7% 9%), linear-gradient(180deg, #cfc6ad, #b9ae92); border: 1px solid #5a4d36; box-shadow: 0 4px 8px #000; transform: rotate(-2deg); }
+/* 문서 본문(신문 기사): 표제 · 출처 · 문단 */
+.detail .dbody.doc .dhead { font-size: 13px; font-weight: 700; line-height: 1.3; margin-bottom: 2px; }
+.detail .dbody.doc .dmeta { font-size: 8px; color: #6e5d40; margin-bottom: 5px; border-bottom: 1px dotted rgba(90,70,40,.5); padding-bottom: 2px; }
+.detail .dbody.doc p { margin: 0 0 4px; font-size: 10px; }
+/* 문서 상세(신문): 글이 길어 글 칸을 넓힌다 */
+.detail.doc .dart { flex-basis: 34%; }
+.detail.doc .dtext { margin-left: 0; }
+.detail.doc .dbody.doc .dhead { font-size: 12px; }

@@ -1,12 +1,13 @@
 // 최소 타이틀 화면: 새 게임 / 이어하기(저장이 있을 때만) / 조작법. 아트는 7단계.
 import { getVolumes, setVolume, sfx, toggleMute } from '../audio/audio';
+import { getFill, isFullscreen, setFill, toggleFullscreen } from './display';
 import credits from '../data/credits.json';
 import bgmCredits from '../data/bgm-credits.json';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
 
 export const CONTROLS: [string, string][] = [
-  ['← → / A D', '이동'], ['Shift', '달리기'], ['Enter', '조사 · 대화 · 선택'], ['Tab', '사건 수첩 열기/닫기'],
+  ['← → / A D', '이동'], ['Shift', '달리기'], ['Enter', '조사 · 대화 · 선택'], ['Tab', '사건 수첩 열기/닫기'], ['L', '대사 기록 다시 보기'],
   ['↑ ↓', '선택지 이동'], ['1~9', '선택지 번호'], ['Esc', '닫기 · 취소'], ['M', '소리 켬/끔'], ['마우스', '근접 조사 · 퍼즐 드래그 · 클릭'],
 ];
 
@@ -29,13 +30,16 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
   const box = el('div', 'modal title'); box.id = 'title';
   root().append(box);
   let page: 'main' | 'settings' | 'info' = 'main', sel = 0, setSel = 0, showControls = false;
-  const items = [
-    { label: '새 게임', run: () => { sfx('onUiConfirm'); close(); opts.onNew(); } },
-    ...(opts.canContinue ? [{ label: '이어하기', run: () => { sfx('onUiConfirm'); close(); opts.onContinue(); } }] : []),
-    { label: '조작법', run: () => { showControls = !showControls; render(); } },
-    { label: '설정', run: () => { page = 'settings'; setSel = 0; render(); } },
-    { label: '정보', run: () => { page = 'info'; render(); } },
+  const items: { label: () => string; run: () => void; disabled?: boolean }[] = [
+    { label: () => '새 게임', run: () => { sfx('onUiConfirm'); close(); opts.onNew(); } },
+    { label: () => '이어하기', disabled: !opts.canContinue, run: () => { sfx('onUiConfirm'); close(); opts.onContinue(); } }, // 저장이 없으면 회색으로 두고 고를 수 없다
+    { label: () => '조작법', run: () => { showControls = !showControls; render(); } },
+    { label: () => '설정', run: () => { page = 'settings'; setSel = 0; render(); } },
+    { label: () => `전체화면 ${isFullscreen() ? '끄기' : '켜기'} (F11)`, run: () => { void toggleFullscreen().then(render); } },
+    { label: () => '정보', run: () => { page = 'info'; render(); } },
   ];
+  const move = (d: number) => { for (let i = 0; i < items.length; i++) { sel = (sel + d + items.length) % items.length; if (!items[sel].disabled) return; } };
+  sel = items.findIndex((it) => !it.disabled);
   const close = () => { popModal('title'); box.remove(); closeCurrent = null; };
   closeCurrent = close;
   const bgmLines = (bgmCredits as string[]).length ? groupCredits(bgmCredits as string[]) : [credits.bgmPending];
@@ -46,7 +50,9 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
       box.innerHTML = `${ART}<div class="tt" style="font-size:18px">설정</div>
         <div class="tm wide">${VOLS.map(([k, name], i) => `<button class="opt${i === setSel ? ' sel' : ''}" data-v="${i}">${name}  ${bar(v[k])}</button>`).join('')}
         <button class="opt${setSel === 3 ? ' sel' : ''}" data-v="3">전체 음소거 (M)  ${v.muted ? '켬' : '끔'}</button>
-        <button class="opt${setSel === 4 ? ' sel' : ''}" data-v="4">돌아가기</button></div>
+        <button class="opt${setSel === 4 ? ' sel' : ''}" data-v="4">전체화면 (F11)  ${isFullscreen() ? '켬' : '끔'}</button>
+        <button class="opt${setSel === 5 ? ' sel' : ''}" data-v="5">화면 채우기  ${getFill() ? '켬 (창에 맞춤)' : '끔 (정수 배율)'}</button>
+        <button class="opt${setSel === 6 ? ' sel' : ''}" data-v="6">돌아가기</button></div>
         <div class="foot">↑↓ 이동 · ←→ 음량 · Enter 선택 · Esc 돌아가기</div>`;
     } else if (page === 'info') {
       box.innerHTML = `${ART}<div class="tt" style="font-size:18px">정보</div><div class="ctrl info" style="text-align:left">
@@ -55,37 +61,38 @@ export function openTitle(opts: { canContinue: boolean; onNew: () => void; onCon
         <div class="foot">Enter / Esc 돌아가기</div>`;
     } else {
       box.innerHTML = `${ART}<div class="tt">병원의 고해</div><div class="ts">Confession Ward</div>
-        <div class="tm">${items.map((it, i) => `<button class="opt${i === sel ? ' sel' : ''}" data-i="${i}">${esc(it.label)}</button>`).join('')}</div>
+        <div class="tm">${items.map((it, i) => `<button class="opt${i === sel ? ' sel' : ''}${it.disabled ? ' dis' : ''}" data-i="${i}"${it.disabled ? ' aria-disabled="true"' : ''}>${esc(it.label())}</button>`).join('')}</div>
         ${showControls ? `<div class="ctrl">${CONTROLS.map(([k, v]) => `<div><kbd>${esc(k)}</kbd> ${esc(v)}</div>`).join('')}</div>` : ''}
         <div class="foot">↑↓ 이동 · Enter 선택</div>`;
     }
   }
   const adjust = (i: number, d: number) => { if (i < 3) { const k = VOLS[i][0]; setVolume(k, getVolumes()[k] + d * 0.1); sfx('onUiMove'); } };
-  const pickSetting = (i: number) => { if (i === 3) { toggleMute(); } else if (i === 4) { page = 'main'; } render(); };
+  const N_SET = 7;
+  const pickSetting = (i: number) => { if (i === 3) { toggleMute(); } else if (i === 4) { void toggleFullscreen().then(render); return; } else if (i === 5) { setFill(!getFill()); } else if (i === 6) { page = 'main'; } render(); };
   box.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
     const v = t.closest('[data-v]') as HTMLElement | null, b = t.closest('[data-i]') as HTMLElement | null;
     if (page === 'info') { page = 'main'; render(); return; }
     if (page === 'settings') { if (v) { setSel = +v.dataset.v!; if (setSel >= 3) pickSetting(setSel); else render(); } return; }
-    if (b) { sel = +b.dataset.i!; items[sel].run(); }
+    if (b && !items[+b.dataset.i!].disabled) { sel = +b.dataset.i!; items[sel].run(); }
   });
   pushModal({
     id: 'title',
     onKey(e) {
       if (page === 'info') { if ((e.key === 'Enter' || e.key === 'Escape') && !e.repeat) { page = 'main'; render(); } return; }
       if (page === 'settings') {
-        if (e.key === 'ArrowDown') setSel = (setSel + 1) % 5;
-        else if (e.key === 'ArrowUp') setSel = (setSel + 4) % 5;
+        if (e.key === 'ArrowDown') setSel = (setSel + 1) % N_SET;
+        else if (e.key === 'ArrowUp') setSel = (setSel + N_SET - 1) % N_SET;
         else if (e.key === 'ArrowLeft') adjust(setSel, -1);
         else if (e.key === 'ArrowRight') adjust(setSel, 1);
         else if (e.key === 'Escape') page = 'main';
         else if (e.key === 'Enter' && !e.repeat) { pickSetting(setSel); return; }
         render(); return;
       }
-      if (e.key === 'ArrowDown') sel = (sel + 1) % items.length;
-      else if (e.key === 'ArrowUp') sel = (sel + items.length - 1) % items.length;
+      if (e.key === 'ArrowDown') move(1);
+      else if (e.key === 'ArrowUp') move(-1);
       else if (e.key === 'Escape' && showControls) showControls = false;
-      else if (e.key === 'Enter' && !e.repeat) { items[sel].run(); return; }
+      else if (e.key === 'Enter' && !e.repeat) { if (!items[sel].disabled) items[sel].run(); return; }
       render();
     },
   });

@@ -8,10 +8,12 @@ import { ExploreScene } from './scenes/ExploreScene';
 import { openDialogue } from './ui/dialogue';
 import { openEnding } from './ui/ending';
 import { openViewer } from './ui/viewer';
+import { openCloseup } from './ui/closeup';
 import { openNotebook } from './ui/notebook';
 import { openPuzzle } from './ui/puzzle';
 import { closeTitleNow } from './ui/title';
 import { initHud } from './ui/hud';
+import { initDisplay } from './ui/display';
 
 export const W = 480;
 export const H = 270;
@@ -37,17 +39,8 @@ const game = new Phaser.Game({
 });
 stage.append(ui); // 캔버스 위에 UI 오버레이
 
-// 정수 배율로만 확대, 남는 영역은 레터박스(검정). UI 오버레이도 같은 배율.
-function fit() {
-  const k = Math.max(1, Math.floor(Math.min(window.innerWidth / W, window.innerHeight / H)));
-  stage.style.width = `${W * k}px`;
-  stage.style.height = `${H * k}px`;
-  game.canvas.style.width = `${W * k}px`;
-  game.canvas.style.height = `${H * k}px`;
-  ui.style.transform = `scale(${k})`;
-}
-window.addEventListener('resize', fit);
-fit();
+// 기본은 정수 배율, 남는 영역은 레터박스(검정). 설정의 "화면 채우기"는 소수 배율. UI 오버레이도 같은 배율.
+initDisplay(W, H, { stage, canvas: game.canvas, ui });
 scene.openTitle(); // 타이틀: 새 게임 / 이어하기 / 조작법
 
 // 개발 서버(npm run dev)에서만: 디버그 메뉴(F9). 제출 빌드에서는 이 분기가 통째로 제거된다.
@@ -77,6 +70,7 @@ if (isTestBuild) {
       notebook: (tab: number) => openNotebook(scene.state, () => {}, tab),
       puzzle: (id: string) => openPuzzle(scene.state, id, () => {}),
       viewer: (id: string) => openViewer(scene.state, id),
+      closeup: (id: string) => openCloseup(scene.state, id, () => {}),
       ending: () => openEnding(scene.state, { onRetry: () => {}, onRestart: () => {}, onTitle: () => {} }),
       prepare: (n: number) => applyScene(scene.state, n, true, { puzzles: false }), // 씬 n 의 대사·조사까지 마친, 퍼즐이 열리기 직전 상태
       acquire: (ids: string[]) => ids.forEach((id) => acquireEvidence(scene.state, id)),

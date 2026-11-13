@@ -30,10 +30,10 @@ function applyExamine(s: GameState, areaId: string, id: string) {
 }
 
 /** 씬 `scene` 에서 거치는 대사·조사·퍼즐을 적용한다. opts.puzzles=false 면 퍼즐은 풀지 않는다 (퍼즐이 열리기 직전 상태: 화면 확인·근거 점검용). */
-/** 틀린 답을 세 번 내서 검증 실패로 닫는다 (F9·시험용). 칸은 모두 채우되 정답이 아닌 값을 넣는다. */
+/** 틀린 답으로 한 번 확정한다 = 틀리게 정리 (F9·시험용). 칸은 모두 채우되 정답이 아닌 값을 넣는다. */
 export function failPuzzle(s: GameState, id: string) {
   const p = puzzles.find((q) => q.id === id)!;
-  for (let i = 0; i < 3 && !s.failedPuzzleIds.includes(id); i++) submitPuzzle(s, id, p.quiz ? { path: quizWrongPath(p) } : Object.fromEntries(p.slots.map((sl) => [sl, ['__wrong__']])));
+  submitPuzzle(s, id, p.quiz ? { path: quizWrongPath(p) } : Object.fromEntries(p.slots.map((sl) => [sl, ['__wrong__']])));
 }
 
 export function applyScene(s: GameState, scene: number, secure = true, opts: { puzzles?: boolean; fail?: string[] } = {}) {
@@ -51,7 +51,7 @@ export function applyScene(s: GameState, scene: number, secure = true, opts: { p
   }
   for (const [a, id] of st.examines ?? []) applyExamine(s, a, id);
   for (const f of st.flags ?? []) setFlag(s, f);
-  if (opts.puzzles !== false) for (const id of st.puzzles ?? []) { const p = puzzles.find((q) => q.id === id)!; if (opts.fail?.includes(id)) failPuzzle(s, id); else submitPuzzle(s, id, p.correctSlots); } // 조각을 정답 칸에 놓은 상태 (fail: 검증 실패로 닫은 상태)
+  if (opts.puzzles !== false) for (const id of st.puzzles ?? []) { const p = puzzles.find((q) => q.id === id)!; if (opts.fail?.includes(id)) failPuzzle(s, id); else submitPuzzle(s, id, p.correctSlots); } // 조각을 정답 칸에 놓은 상태 (fail: 틀리게 정리한 상태)
 }
 
 /** 씬 `scene`(1~7)을 시작하는 시점의 상태. 앞선 씬을 모두 거친 것으로 만든다. */

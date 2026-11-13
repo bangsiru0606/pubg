@@ -1,5 +1,5 @@
 import { claimById, claims, conflictPairs, evidenceById } from './data';
-import { hasFlag, isVerified } from './state';
+import { hasFlag, isUnsettledClue, isVerified } from './state';
 import type { Claim, GameState } from './types';
 
 export const MAX_SUPPORT_SLOTS = 2;
@@ -26,7 +26,7 @@ export function saveConclusion(s: GameState, claimId: string, hypothesisId: stri
     const e = evidenceById.get(id);
     if (!e) return { ok: false, reason: `알 수 없는 단서 ${id}` };
     if (!s.evidenceIds.includes(id)) return { ok: false, reason: '획득하지 않은 단서' };
-    if (!isVerified(s, id)) return { ok: false, reason: '검증되지 않은 단서는 근거로 제출할 수 없음' };
+    if (isUnsettledClue(s, id)) return { ok: false, reason: '아직 정리하지 않은 사건의 자료' }; // 틀리게 정리한 단서는 꽂을 수 있고, 점수만 받지 못한다 (resolveClaim)
     if (e.sourceType === 'context') return { ok: false, reason: '맥락 단서는 핵심 근거 슬롯에 넣을 수 없음' };
   }
   s.selectedHypothesisByClaim[claimId] = hypothesisId;

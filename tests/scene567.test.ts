@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import real from '../src/data/dialogue.json';
 import {
-  acquireEvidence, availableChoices, claimById, createGameState, enterNode, evidenceList, nextOf, gradeOf, hasFlag, loadGame, puzzles, relatedEvidenceIds,
+  acquireEvidence, availableChoices, isCorrectAnswer, claimById, createGameState, enterNode, evidenceList, nextOf, gradeOf, hasFlag, loadGame, puzzles, relatedEvidenceIds,
   resolveEnding, saveConclusion, saveGame, setReportTarget, shownEvidence, startNodeOf, type Dialogues, type GameState, type KeyValueStore,
 } from '../src/core';
 import { submitPuzzle } from './helpers';
@@ -79,7 +79,7 @@ describe('씬 5·P05', () => {
     expect(w.flags).toEqual(['han_done']);
     expect(w.evidence).toEqual(['E12_ledger', 'E13_identity_map', 'E14_belongings_diary', 'E15_transport_manifest']);
     const s = createGameState(); w.evidence!.forEach((id) => acquireEvidence(s, id));
-    expect(submitPuzzle(s, 'P05_patient_code', P('P05_patient_code').correctSlots).status).toBe('solved');
+    expect(submitPuzzle(s, 'P05_patient_code', P('P05_patient_code').correctSlots).status).toBe('settled'); expect(s.solvedPuzzleIds).toContain('P05_patient_code');
     expect(s.verifiedEvidenceIds).toEqual(expect.arrayContaining(w.evidence!));
     expect(hasFlag(s, 'flag_claim_d_open')).toBe(true);
   });
@@ -87,11 +87,11 @@ describe('씬 5·P05', () => {
     const p = P('P05_patient_code');
     expect(p.statements).toEqual(['han_s_bracelet']);
     expect(p.correctSlots.linkedSources).toContain('han_s_bracelet');
-    expect(submitPuzzle(createGameState(), p.id, { ...p.correctSlots, linkedSources: ['E14_belongings_diary'] }).status).toBe('wrong');
+    expect(isCorrectAnswer(p, { ...p.correctSlots, linkedSources: ['E14_belongings_diary'] })).toBe(false);
   });
   it('오답은 충돌 조건만 알려 준다', () => {
     const r = submitPuzzle(createGameState(), 'P05_patient_code', { ...P('P05_patient_code').correctSlots, identity: ['yujin'] });
-    expect(r.status).toBe('wrong'); expect(r.conflicts).toEqual(['특별 치료 장부와 맞지 않는다.']); // 한 번에 하나, 자료 이름으로
+    expect(r.status).toBe('settled');
   });
   it('E14 원문을 닫으면 계단 쪽에서 정하늘이 나타나 자동으로 대화한다', () => {
     const s = createGameState();

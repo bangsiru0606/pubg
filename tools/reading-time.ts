@@ -9,11 +9,11 @@ const D = dlg.dialogues as Record<string, { nodes: Record<string, { text: string
 const chars = (ids: string[]) => ids.flatMap((id) => Object.values(D[id].nodes).map((n) => count(n.text))).reduce((a, b) => a + b, 0);
 const E = ev as { id: string; body?: string[]; description: string }[];
 const doc = (ids: string[]) => ids.reduce((a, id) => { const e = E.find((x) => x.id === id)!; return a + (e.body ?? [e.description]).reduce((b, l) => b + count(l), 0); }, 0);
-type P = { id: string; info?: string[]; tasks?: { label: string; detail?: string; options: { label: string }[] }[]; panels?: { lines?: string[]; evidenceId?: string }[]; conflicts: Record<string, string> };
+type P = { id: string; info?: string[]; tasks?: { label: string; detail?: string; options: { label: string }[] }[]; panels?: { lines?: string[]; evidenceId?: string }[] };
 const pz = (id: string) => {
   const p = (puz as unknown as P[]).find((x) => x.id === id)!;
   return (p.info ?? []).reduce((a, l) => a + count(l), 0) + (p.tasks ?? []).reduce((a, t) => a + count(t.label) + count(t.detail ?? '') + (p.panels ? t.options.reduce((b, o) => b + count(o.label), 0) : 0), 0)
-    + (p.panels ?? []).reduce((a, pn) => a + (pn.lines ?? []).reduce((b, l) => b + count(l), 0), 0) + Object.values(p.conflicts).slice(0, 2).reduce((a, l) => a + count(l), 0);
+    + (p.panels ?? []).reduce((a, pn) => a + (pn.lines ?? []).reduce((b, l) => b + count(l), 0), 0);
 };
 
 // 필수 흐름만 센다 (선택지의 [더 묻기] 같은 추가 대사는 필수 진행에서 제외)

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import real from '../src/data/dialogue.json';
 import {
-  acquireEvidence, condMet, createGameState, enterNode, getNode, hasFlag, isBasementOpen, presentEvidence, puzzles, shownEvidence,
+  acquireEvidence, condMet, isCorrectAnswer, createGameState, enterNode, getNode, hasFlag, isBasementOpen, presentEvidence, puzzles, shownEvidence,
   startNodeOf, type Dialogues, type GameState,
 } from '../src/core';
 import { submitPuzzle } from './helpers';
@@ -89,10 +89,10 @@ describe('씬 4 관계자 구역', () => {
     expect(P('P03_revision_diff').openWhen!.evidence).toEqual(['E03_preliminary_exam', 'E07_report_revision']);
     const s = createGameState(); acquireEvidence(s, 'E03_preliminary_exam'); acquireEvidence(s, 'E07_report_revision');
     const bad = submitPuzzle(s, 'P03_revision_diff', { chg_position: ['d_time'], chg_laceration: ['impact_injury'], chg_breath: ['alive_delay'] });
-    expect(bad.status).toBe('wrong');
-    expect(bad.conflicts).toHaveLength(1);
-    expect(submitPuzzle(s, 'P03_revision_diff', P('P03_revision_diff').correctSlots).status).toBe('solved');
-    expect(s.verifiedEvidenceIds).toContain('E07_report_revision');
+    expect(bad.status).toBe('settled'); expect(s.failedPuzzleIds).toEqual(['P03_revision_diff']); expect(s.verifiedEvidenceIds).not.toContain('E07_report_revision');
+    const s2 = createGameState(); acquireEvidence(s2, 'E03_preliminary_exam'); acquireEvidence(s2, 'E07_report_revision');
+    expect(submitPuzzle(s2, 'P03_revision_diff', P('P03_revision_diff').correctSlots).status).toBe('settled');
+    expect(s2.verifiedEvidenceIds).toContain('E07_report_revision');
   });
   it('오미란: 핵심 수정 증언은 E04+E06 정확히 둘이 있어야 열린다, 수정 진술 → E08', () => {
     const s = createGameState();
@@ -119,10 +119,10 @@ describe('씬 4 관계자 구역', () => {
     expect(p.people).toHaveLength(4); expect(p.people!.filter((q) => q.decoy)).toHaveLength(1); // 인물 카드 3 + 오답 카드 1
     const s = createGameState(); acquireEvidence(s, 'E10_consent_forms'); acquireEvidence(s, 'E11_transfer_order');
     const swapped = submitPuzzle(s, 'P04_approval_chain', { ...p.correctSlots, doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'] });
-    expect(swapped.status).toBe('wrong');
-    expect(swapped.conflicts.join()).toContain('작성 약자와 맞지 않는다');
-    expect(submitPuzzle(s, 'P04_approval_chain', p.correctSlots).status).toBe('solved');
-    expect(s.verifiedEvidenceIds).toEqual(expect.arrayContaining(['E10_consent_forms', 'E11_transfer_order']));
+    expect(swapped.status).toBe('settled'); expect(s.solvedPuzzleIds).toEqual([]);
+    const s2 = createGameState(); acquireEvidence(s2, 'E10_consent_forms'); acquireEvidence(s2, 'E11_transfer_order');
+    expect(submitPuzzle(s2, 'P04_approval_chain', p.correctSlots).status).toBe('settled');
+    expect(s2.verifiedEvidenceIds).toEqual(expect.arrayContaining(['E10_consent_forms', 'E11_transfer_order']));
   });
   it('지하 계단은 오미란에게 이송 지시서(E11)를 보여 주고 열쇠를 받아야 열린다 (퍼즐과 무관)', () => {
     const s = createGameState();
@@ -156,17 +156,16 @@ describe('P02 시간 배열', () => {
     const p = P('P02_night_timeline');
     const s = createGameState();
     const r = submitPuzzle(s, p.id, { t2234: ['t_out'], t2241: ['t_door'], t2246: ['d_sermon'], t2251: ['t_time'] });
-    expect(r.status).toBe('wrong');
-    expect(r.conflicts.join()).toContain('방송표와 맞지 않는다');
+    expect(r.status).toBe('settled'); expect(s.failedPuzzleIds).toEqual([p.id]);
     expect(p.tokens).toHaveLength(6);
     expect(Object.values(p.correctSlots).flat()).not.toContain('d_sermon');
-    expect(submitPuzzle(s, p.id, p.correctSlots).status).toBe('solved');
+    expect(isCorrectAnswer(p, p.correctSlots)).toBe(true);
     expect(hasFlag(s, 'flag_night_timeline')).toBe(true);
   });
-  it('결과 문구는 정하늘이 원장실에 있었다까지만, 계획 살인 여부는 말하지 않는다', () => {
-    const t = D.mono_p02_solved.nodes.m.text;
-    expect(t).toContain('정하늘이 원장실에 있었다');
-    expect(t).not.toMatch(/계획|살인|살해|의도/);
+  it('정리 독백은 맞고 틀림과 무관하게 하나뿐이고 결과·내용을 말하지 않는다', () => {
+    const t = D.mono_puzzle_settled.nodes.m.text;
+    expect(t).toContain('정리했다'); expect(t).not.toMatch(/맞|틀|해결|정답|정하늘|계획|살인/);
+    for (const k of ['mono_p01_solved', 'mono_p02_solved', 'mono_p03_solved', 'mono_p04_solved', 'mono_p05_solved']) expect(D[k]).toBeUndefined();
   });
 });
 
@@ -185,8 +184,7 @@ describe('5단계 보완', () => {
     expect(transfer.detail).toBeUndefined(); // 칸에는 답의 근거 요약을 쓰지 않는다 (서식 문구는 원문 E10·E11 의 인용)
     expect(shownEvidence(createGameState(), 'E11_transfer_order')!.body).toContain('서명: 이사 이혜정 / 권한: 이송 지시');
     expect(JSON.stringify(p.tasks)).not.toContain('BSW_ADMIN');
-    const s = createGameState();
-    expect(submitPuzzle(s, p.id, { ...p.correctSlots, doc_transfer: ['baek_sunwoo'] }).status).toBe('wrong');
+    expect(isCorrectAnswer(p, { ...p.correctSlots, doc_transfer: ['baek_sunwoo'] })).toBe(false);
   });
   it('P03: 바탕화면 파일은 E03·E07 원문을 참조하고, 비교 결과에는 의미 있는 변경 3줄만 있다 (띄어쓰기·문장 위치·시각 표기 변경 없음)', () => {
     const p = P('P03_revision_diff'), d = p.desktop!;

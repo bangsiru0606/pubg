@@ -31,7 +31,7 @@ export interface PuzzleDesktop {
   diffs: { id: string; before: string; after: string }[]; // 비교하면 표시되는 바뀐 줄 (의미 없는 변경은 넣지 않는다)
 }
 /** P01 추리 문답: 질문 노드마다 선택지(판단 + 이유). 답에 따라 다음 질문이 달라진다. next 가 없는 선택지가 마지막 판단이다. 결론 문장 = subject + 지나온 선택지의 says 를 이은 것. quote: source(단서·진술 ID) 원문에 실제 있는 문장 */
-export interface QuizChoice { id: string; judge: string; reason: string; source: string; srcName?: string; quote: string; short: string; says: string; next?: string; conflict?: string }
+export interface QuizChoice { id: string; judge: string; reason: string; source: string; srcName?: string; quote: string; short: string; says: string; next?: string }
 export interface PuzzleQuiz { start: string; subject: string; nodes: Record<string, { q: string; choices: QuizChoice[] }> }
 export interface Puzzle {
   id: string; type: PuzzleType; flagOnSolve: string;
@@ -45,13 +45,11 @@ export interface Puzzle {
   people?: { id: string; label: string; decoy?: boolean }[]; // tree: 인물 카드 (칸마다 같은 카드를 놓을 수 있다)
   desktop?: PuzzleDesktop;                              // desktop: 부원장 PC 바탕화면
   boxes?: { id: string; label: string }[];             // timeline: 시간 칸 (id = 슬롯)
-  pieceConflict?: string;    // 조각을 틀린 칸에 놓았을 때의 문장 틀 ("{src}" = 조각의 출처 이름)
   subtitle?: string;       // lightbox: 겹쳐 보는 문서
   openWhen?: { flags?: string[]; evidence?: string[] }; // 자동으로 열리는 조건
-  solvedDialogue?: string;                              // 해결 직후 독백 (중간 결론만)
   sourceEvidenceIds: string[]; verifiedEvidenceIds: string[];
   slots: string[]; correctSlots: Record<string, string[]>;
-  distractors: string[]; conflicts: Record<string, string>; hintTexts: string[];
+
 }
 export interface LineWhen {
   solved?: string[]; notSolved?: string[]; anySolved?: string[]; secured?: boolean; external?: boolean;
@@ -93,9 +91,9 @@ export interface GameState {
   selectedHypothesisByClaim: Record<string, string>;
   submittedEvidenceByClaim: Record<string, string[]>;
   submittedRebuttalByClaim: Record<string, string[]>;
-  hintCountByPuzzle: Record<string, number>; // 도달한 힌트 단계(0~2)
-  failedPuzzleIds: string[];                  // 결론 기회 3번을 모두 써서 검증에 실패한 퍼즐 (닫혀서 다시 열 수 없다)
-  puzzleDrafts: Record<string, Record<string, string[]>>; // 보류하고 나간 퍼즐의 놓은 조각 (남은 기회와 함께 저장)
+  hintCountByPuzzle: Record<string, number>; // 쓰지 않는다 (힌트 없음). 저장 호환용으로 남겨 둔다
+  failedPuzzleIds: string[];                  // 틀리게 정리한 퍼즐 (한 번 확정하면 바꿀 수 없다. 화면에는 "정리함"으로만 보인다)
+  puzzleDrafts: Record<string, Record<string, string[]>>; // 보류하고 나간 퍼즐의 놓은 조각
   wrongCountByPuzzle: Record<string, number>;
   evidenceSecured: boolean;
   reportTarget: ReportTarget | null;

@@ -5,10 +5,10 @@
 //  tree     P04: 승인 체계 트리 — 서식 문구(약자·권한)를 보고 인물 카드를 칸에 놓는다
 //  logic    P05: 후보 표와 대조 (조각 표시만 통일)
 //  quiz     P01: 추리 문답 — 질문에 판단+이유 선택지로 답하며 결론에 이른다. 고르는 동안 맞고 틀림을 알리지 않고, 확정 전에는 이전 질문으로 돌아갈 수 있다
-// 결론은 [결론 확정] → 확인 창(남은 기회) 으로만 낸다. 기회는 3번, [보류하고 나가기]는 벌점 없이 놓은 조각을 저장한다.
+// 결론은 [결론 확정] → 확인 창으로만 낸다. 확정은 한 번뿐이고 결과(맞고 틀림)는 화면에 내지 않는다. [보류하고 나가기]는 벌점 없이 놓은 조각을 저장한다.
 // 마우스: 조각 드래그 / 클릭 → 칸 클릭. 키보드: ←→ 선택 → Enter 로 잡기 → ←→ 위치 → Enter 로 놓기.
 import {
-  MAX_ATTEMPTS, attemptsLeft, availablePieces, hintFor, isAnswerComplete, puzzleById, puzzleDraftOf, quizConclusion, quizWalk, savePuzzleDraft, setFlag, shownEvidence, sourceName, submitPuzzle,
+  availablePieces, isAnswerComplete, puzzleById, puzzleDraftOf, quizConclusion, quizWalk, savePuzzleDraft, setFlag, shownEvidence, sourceName, submitPuzzle,
   type GameState, type PuzzleAnswer, type PuzzlePiece, type PuzzleTask,
 } from '../core';
 import { el, esc, root } from './hud';
@@ -18,7 +18,7 @@ import { openViewer } from './viewer';
 
 type Focus = { kind: 'piece' | 'person' | 'chip' | 'cycle' | 'icon' | 'cmp' | 'src' | 'submit' | 'hold' | 'choice' | 'back'; id: string };
 const TRAY = 'tray';
-export const RULE_TEXT = '결론은 세 번까지 확정할 수 있다. 확신이 없으면 보류하고 나가도 된다.';
+export const RULE_TEXT = '사건 재구성은 단서가 사라지기 전에 해야 한다. 결론은 한 번만 확정할 수 있다.';
 
 export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boolean) => void) {
   const p = puzzleById.get(puzzleId)!;
@@ -32,26 +32,18 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
 
   // ---- 상태: ans[칸] = 그 칸에 놓은 조각·인물·표시 (draft 로 저장되는 형식과 같다) ----
   const ans: PuzzleAnswer = JSON.parse(JSON.stringify(puzzleDraftOf(s, puzzleId)));
-  let removed = new Set<string>();
-  let conflicts: string[] = [], note = '', hintText = '';
-  let phase: 'play' | 'solved' | 'failed' = s.failedPuzzleIds.includes(puzzleId) ? 'failed' : s.solvedPuzzleIds.includes(puzzleId) ? 'solved' : 'play';
+  let note = '';
+  let phase: 'play' | 'done' = 'play';
   let grabbed: string | null = null, grabZone: string | null = null; // 키보드로 잡은 조각/인물과 지금 가리키는 칸
   let fi = 0;
   let confirming = false, confirmSel = 0;
-  let rule = !s.flags.includes('puzzle_rule_seen') && phase === 'play';
+  let rule = !s.flags.includes('puzzle_rule_seen');
   const isQuiz = layout === 'quiz';
   const qpath = () => ans.path ?? [];
-  const isRemoved = (slot: string, id: string) => removed.has(`${slot}:${id}`) || removed.has(`*:${id}`);
-  const applyHint = () => {
-    const h = hintFor(p, s.wrongCountByPuzzle[puzzleId] ?? 0); removed = new Set(h.removedTokens); hintText = h.text;
-    if (isQuiz) { const i = qpath().findIndex((id) => isRemoved('', id)); if (i >= 0) ans.path = qpath().slice(0, i); } // 제거된 선택지를 골랐던 길은 그 질문까지 되돌린다
-    return h;
-  };
-  applyHint();
   function choose(id: string) { ans.path = [...qpath(), id]; note = ''; fi = 0; render(); }
   function goBack(to = qpath().length - 1) { if (to < 0) return; ans.path = qpath().slice(0, to); note = ''; fi = 0; render(); }
 
-  const pieces = (): PuzzlePiece[] => availablePieces(s, p).filter((t) => !isRemoved('', t.id));
+  const pieces = (): PuzzlePiece[] => availablePieces(s, p);
   const zoneOf = (id: string) => Object.keys(ans).find((k) => ans[k]?.includes(id));
   const zoneList = (): { id: string; label: string }[] =>
     layout === 'plan' ? [...(p.zones ?? []).map((z) => ({ id: z.id, label: z.label })), { id: TRAY, label: '조각 보관' }]
@@ -72,7 +64,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     ans[slot] = single ? (i >= 0 ? [] : [id]) : i >= 0 ? a.filter((x) => x !== id) : [...a, id];
     note = ''; render();
   }
-  const cycle = (slot: string) => { const t = tasks.find((q) => q.slot === slot)!; const ops = t.options.filter((o) => !isRemoved(slot, o.id)); const cur = ops.findIndex((o) => o.id === (ans[slot] ?? [])[0]); ans[slot] = cur + 1 >= ops.length ? [] : [ops[cur + 1].id]; note = ''; render(); };
+  const cycle = (slot: string) => { const t = tasks.find((q) => q.slot === slot)!; const ops = t.options; const cur = ops.findIndex((o) => o.id === (ans[slot] ?? [])[0]); ans[slot] = cur + 1 >= ops.length ? [] : [ops[cur + 1].id]; note = ''; render(); };
   const placeSlotsFilled = () => p.slots.filter((sl) => !markTasks.some((t) => t.slot === sl)).every((sl) => !!ans[sl]?.length);
   const complete = () => isAnswerComplete(p, ans);
 
@@ -97,15 +89,15 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     if (phase !== 'play') return [];
     const out: Focus[] = [];
     if (pieceLayout) out.push(...pieces().map((t) => ({ kind: 'piece' as const, id: t.id })));
-    if (layout === 'tree') out.push(...people.filter((q) => !isRemoved('', q.id)).map((q) => ({ kind: 'person' as const, id: q.id })));
+    if (layout === 'tree') out.push(...people.map((q) => ({ kind: 'person' as const, id: q.id })));
     if (layout === 'logic') out.push(...placeTasks.map((t) => ({ kind: 'person' as const, id: t.slot })));
-    if (isQuiz) { const w = quizWalk(p, qpath()); if (w.at) out.push(...p.quiz!.nodes[w.at].choices.filter((c) => !isRemoved('', c.id)).map((c) => ({ kind: 'choice' as const, id: c.id }))); if (qpath().length) out.push({ kind: 'back', id: 'back' }); }
+    if (isQuiz) { const w = quizWalk(p, qpath()); if (w.at) out.push(...p.quiz!.nodes[w.at].choices.map((c) => ({ kind: 'choice' as const, id: c.id }))); if (qpath().length) out.push({ kind: 'back', id: 'back' }); }
     if (layout === 'desktop') {
       out.push(...deskFiles().filter((f) => !f.inTrash).map((f) => ({ kind: 'icon' as const, id: `file:${f.id}` })), { kind: 'icon', id: 'trash' }, { kind: 'icon', id: 'compare' });
       if (wins.some((w) => w.kind === 'compare')) out.push({ kind: 'cmp', id: 'a' }, { kind: 'cmp', id: 'b' }, { kind: 'cmp', id: 'run' });
       out.push(...markTasks.map((t) => ({ kind: 'cycle' as const, id: t.slot })));
     } else if (!pieceLayout || placeSlotsFilled()) {
-      out.push(...markTasks.flatMap((t) => t.options.filter((o) => !isRemoved(t.slot, o.id)).map((o) => ({ kind: 'chip' as const, id: `${t.slot}|${o.id}` }))));
+      out.push(...markTasks.flatMap((t) => t.options.map((o) => ({ kind: 'chip' as const, id: `${t.slot}|${o.id}` }))));
     }
     out.push(...p.sourceEvidenceIds.filter((id) => s.evidenceIds.includes(id) && layout !== 'desktop').map((id) => ({ kind: 'src' as const, id })), { kind: 'hold', id: 'hold' }, { kind: 'submit', id: 'submit' });
     return out;
@@ -121,7 +113,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     if (layout === 'quiz') {
       const w = quizWalk(p, qpath()), q = p.quiz!;
       if (!w.at) return `<div class="qq">마지막 판단까지 이르렀다. 지나온 판단을 한 문장으로 정리하면:</div><div class="qconc">${esc(quizConclusion(p, qpath()))}</div><div class="slotlbl">확신이 없으면 이전 질문으로 돌아가 다시 고를 수 있다. [결론 확정]을 누르면 확인 창이 뜬다.</div>`;
-      return `<div class="qq">질문 ${w.chosen.length + 1}. ${esc(q.nodes[w.at].q)}</div>${q.nodes[w.at].choices.filter((c) => !isRemoved('', c.id)).map((c) => `<button class="qc${fcls('choice', c.id)}" data-choice="${esc(c.id)}"><b>${esc(c.judge)}</b><span>${esc(c.reason)}<i>‹${esc(sourceName(s, { source: c.source, srcName: c.srcName }))}›</i></span></button>`).join('')}`;
+      return `<div class="qq">질문 ${w.chosen.length + 1}. ${esc(q.nodes[w.at].q)}</div>${q.nodes[w.at].choices.map((c) => `<button class="qc${fcls('choice', c.id)}" data-choice="${esc(c.id)}"><b>${esc(c.judge)}</b><span>${esc(c.reason)}<i>‹${esc(sourceName(s, { source: c.source, srcName: c.srcName }))}›</i></span></button>`).join('')}`;
     }
     if (layout === 'plan') {
       return `<div class="pz-grid">${(p.zones ?? []).map((z) => `<div class="zone" data-zone="${z.id}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span class="zl">${esc(z.label)}</span>${pieces().filter((t) => zoneOf(t.id) === z.id).map(pcHtml).join('')}</div>`).join('')}</div>`;
@@ -140,7 +132,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     }
     if (layout === 'logic') {
       const cols = p.table!.columns.map((c) => `<th>${esc(c)}</th>`).join('');
-      const rows = p.table!.rows.filter((row) => !isRemoved('identity', row.id)).map((row) => {
+      const rows = p.table!.rows.map((row) => {
         const here = (ans.identity ?? []).includes(row.id) ? `<span class="pc person placed${fcls('person', 'identity')}" data-token="identity">P-271</span>` : '';
         return `<tr class="zone" data-zone="${row.id}"><td>${esc(row.cells[0])} ${here}</td>${row.cells.slice(1).map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`;
       }).join('');
@@ -169,26 +161,23 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   function sideHtml(): string {
     if (layout === 'quiz') { const ch = quizWalk(p, qpath()).chosen; return `<div class="slotlbl">지나온 판단 (누르면 그 질문으로 돌아간다)</div>${ch.map((c, i) => `<button class="qt" data-trail="${i}">${i + 1}. ${esc(c.short)}</button>`).join('') || '<div class="slotlbl">(아직 없다)</div>'}${ch.length ? `<button class="qb${fcls('back', 'back')}" data-back>← 이전 질문으로 <kbd>Bksp</kbd></button>` : ''}`; }
     if (pieceLayout) { const u = unplaced(); return `<div class="slotlbl">단서 조각 — 놓지 않은 조각</div>${u.map(pcHtml).join('') || '<div class="slotlbl">모두 놓았다</div>'}`; }
-    if (layout === 'tree') return `<div class="slotlbl">인물 카드 (같은 카드를 여러 칸에 놓을 수 있다)</div>${people.filter((q) => !isRemoved('', q.id)).map((q) => personHtml(q)).join('')}`;
+    if (layout === 'tree') return `<div class="slotlbl">인물 카드 (같은 카드를 여러 칸에 놓을 수 있다)</div>${people.map((q) => personHtml(q)).join('')}`;
     if (layout === 'desktop') return markTasks.map((t) => { const cur = t.options.find((o) => o.id === (ans[t.slot] ?? [])[0]); return `<div class="ctask"><div class="slotlbl">${esc(t.label)}</div><button class="cyc${fcls('cycle', t.slot)}" data-cycle="${t.slot}">${cur ? esc(cur.label) : '(눌러서 고른다)'}</button></div>`; }).join('');
     return '';
   }
   function bottomHtml(): string {
     const chips = markTasks.length && layout !== 'desktop' && (!pieceLayout || placeSlotsFilled())
-      ? markTasks.map((t) => `<div class="trow">${esc(t.label)}: ${t.options.filter((o) => !isRemoved(t.slot, o.id)).map((o) => { const key = `${t.slot}|${o.id}`, on = (ans[t.slot] ?? []).includes(o.id); return `<button class="chip${on ? ' on' : ''}${fcls('chip', key)}" data-chip="${esc(key)}">${on ? '☑' : '☐'} ${esc(o.label)}</button>`; }).join('')}</div>`).join('')
+      ? markTasks.map((t) => `<div class="trow">${esc(t.label)}: ${t.options.map((o) => { const key = `${t.slot}|${o.id}`, on = (ans[t.slot] ?? []).includes(o.id); return `<button class="chip${on ? ' on' : ''}${fcls('chip', key)}" data-chip="${esc(key)}">${on ? '☑' : '☐'} ${esc(o.label)}</button>`; }).join('')}</div>`).join('')
       : pieceLayout && markTasks.length ? '<div class="slotlbl">모든 위치에 조각을 놓으면 다음 질문이 나온다.</div>' : '';
     const srcs = layout === 'desktop' ? '' : p.sourceEvidenceIds.filter((id) => s.evidenceIds.includes(id)).map((id) => `<button class="src${fcls('src', id)}" data-src="${id}">${esc(shownEvidence(s, id)!.title)}</button>`).join('');
-    const left = attemptsLeft(s, puzzleId);
     let fb = '';
-    if (phase === 'solved') fb = '<div class="ok">맞춰졌다. (Enter: 닫기)</div>';
-    else if (phase === 'failed') fb = `<div class="bad">검증 실패 — 결론 기회를 모두 썼다. 이 사건은 닫혔다. 관련 단서는 ‘검증 실패(신빙성 낮음)’로 남아 최종 보고서의 핵심 근거로 쓸 수 없다. (Enter: 닫기)</div>${conflicts.length ? `<div class="warn">· ${esc(conflicts[0])}</div>` : ''}`;
-    else fb = `${conflicts.length ? `<div class="warn">${conflicts.map((c) => `· ${esc(c)}`).join('<br>')}</div>` : ''}${note ? `<div class="note">${esc(note)}</div>` : ''}${hintText ? `<div class="hint-t">힌트: ${esc(hintText)}</div>` : ''}${(s.wrongCountByPuzzle[puzzleId] ?? 0) >= 2 ? '<div class="hint-t">틀린 후보 하나를 제거했다.</div>' : ''}`;
+    fb = note ? `<div class="note">${esc(note)}</div>` : '';
     const btns = phase === 'play' ? `<button class="hold${fcls('hold', 'hold')}" data-hold>보류하고 나가기 <kbd>Esc</kbd></button><button class="submit${complete() ? '' : ' off'}${fcls('submit', 'submit')}" data-submit${complete() ? '' : ' disabled'}>결론 확정</button>` : '';
-    return `<div class="pz-q">${chips}</div><div class="pz-src">${srcs}</div><div class="pz-fb">${fb}</div><div class="pz-btns">${btns}</div>${phase === 'play' ? `<div class="pz-att">남은 기회 ${'●'.repeat(left)}${'○'.repeat(MAX_ATTEMPTS - left)} (${left}/${MAX_ATTEMPTS})</div>` : ''}`;
+    return `<div class="pz-q">${chips}</div><div class="pz-src">${srcs}</div><div class="pz-fb">${fb}</div><div class="pz-btns">${btns}</div>`;
   }
   function overlayHtml(): string {
-    if (rule) return `<div class="pz-ov"><div class="ovbox"><div class="ovt">퍼즐 규칙</div><p>${esc(RULE_TEXT)}</p><div class="ovb"><button class="foc" data-rule>알겠다 <kbd>Enter</kbd></button></div></div></div>`;
-    if (confirming) return `<div class="pz-ov"><div class="ovbox"><div class="ovt">이 결론을 확정할까요?</div><p>남은 기회 ${attemptsLeft(s, puzzleId)}/${MAX_ATTEMPTS}${attemptsLeft(s, puzzleId) === 1 ? ' — 이번이 마지막 기회다. 틀리면 이 사건은 검증에 실패한다.' : ''}</p><div class="ovb"><button class="${confirmSel === 0 ? 'foc' : ''}" data-confirm="yes">확정 <kbd>Enter</kbd></button><button class="${confirmSel === 1 ? 'foc' : ''}" data-confirm="no">취소 <kbd>Esc</kbd></button></div></div></div>`;
+    if (rule) return `<div class="pz-ov"><div class="ovbox"><div class="ovt">퍼즐 규칙</div><p>${esc(RULE_TEXT)}</p><div class="ovb"><button class="foc" data-rule>확인 <kbd>Enter</kbd></button></div></div></div>`;
+    if (confirming) return `<div class="pz-ov"><div class="ovbox"><div class="ovt">결론 확정</div><p>한 번 확정하면 바꿀 수 없다. 확정할까요?</p><div class="ovb"><button class="${confirmSel === 0 ? 'foc' : ''}" data-confirm="yes">확정 <kbd>Enter</kbd></button><button class="${confirmSel === 1 ? 'foc' : ''}" data-confirm="no">취소 <kbd>Esc</kbd></button></div></div></div>`;
     return '';
   }
   function render() {
@@ -202,17 +191,12 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   function submit() {
     confirming = false;
     const r = submitPuzzle(s, puzzleId, JSON.parse(JSON.stringify(ans)));
-    if (r.status === 'incomplete') { note = '모든 칸을 채운 뒤에 확정할 수 있다.'; conflicts = []; }
-    else if (r.status === 'wrong' || r.status === 'failed') {
-      conflicts = r.conflicts; note = r.conflicts.length ? '' : '아직 맞지 않는다. 자료를 다시 비교해 보자.';
-      sfx('onPuzzleWrong'); applyHint(); if (r.status === 'wrong') window.setTimeout(() => sfx('onHint'), 450);
-      if (r.status === 'failed') phase = 'failed';
-    } else if (r.status === 'solved') { phase = 'solved'; conflicts = []; note = ''; sfx('onPuzzleCorrect'); }
-    grabbed = null; render();
+    if (r.status === 'incomplete') { note = '모든 칸을 채운 뒤에 확정할 수 있다.'; grabbed = null; render(); return; }
+    sfx('onPuzzleConfirm'); phase = 'done'; close(); // 맞든 틀리든 같은 반응: 닫고 독백만 나온다
   }
   const close = () => {
     if (phase === 'play') savePuzzleDraft(s, puzzleId, ans); // 보류: 놓은 조각 저장, 기회·벌점 없음
-    bgmPop('puzzle'); popModal('puzzle'); box.remove(); onClose(phase === 'solved');
+    bgmPop('puzzle'); popModal('puzzle'); box.remove(); onClose(phase === 'done');
   };
   function activate() {
     const f = focusList()[fi]; if (!f) return;
@@ -239,7 +223,6 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     const t = e.target as HTMLElement;
     if (rule) { if (t.closest('[data-rule]')) { rule = false; setFlag(s, 'puzzle_rule_seen'); render(); } return; }
     if (confirming) { const c = t.closest('[data-confirm]') as HTMLElement | null; if (c) { if (c.dataset.confirm === 'yes') submit(); else { confirming = false; render(); } } return; }
-    if (phase !== 'play') { close(); return; }
     const z = t.closest('[data-zone]') as HTMLElement | null;
     if (grabbed && z && !t.closest('[data-clear]')) { if (layout === 'logic') { ans.identity = [z.dataset.zone!]; grabbed = null; render(); } else put(grabbed, z.dataset.zone!); return; }
     if (t.closest('[data-hold]')) { close(); return; }
@@ -306,10 +289,9 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
         else if (e.key === 'Escape' && !e.repeat) confirming = false;
         render(); return;
       }
-      if (phase !== 'play') { if ((e.key === 'Enter' || e.key === 'Escape') && !e.repeat) close(); return; }
       const fwd = e.key === 'ArrowRight' || e.key === 'ArrowDown', back = e.key === 'ArrowLeft' || e.key === 'ArrowUp';
       if (grabbed) {
-        const zs = layout === 'logic' ? p.table!.rows.filter((r) => !isRemoved('identity', r.id)).map((r) => ({ id: r.id, label: r.cells[0] })) : zoneList();
+        const zs = layout === 'logic' ? p.table!.rows.map((r) => ({ id: r.id, label: r.cells[0] })) : zoneList();
         const i = Math.max(0, zs.findIndex((z) => z.id === grabZone));
         if (fwd) grabZone = zs[(i + 1) % zs.length].id; else if (back) grabZone = zs[(i + zs.length - 1) % zs.length].id;
         else if (e.key === 'Enter' && !e.repeat) { if (layout === 'logic') { ans.identity = [grabZone!]; grabbed = null; render(); } else put(grabbed, grabZone!); return; }

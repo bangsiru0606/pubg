@@ -4,7 +4,7 @@ import spec from '../../art/asset-spec.json';
 import { areaTrack, bgmBase, sceneTrack, sfx, transitionSfx } from '../audio/audio';
 import { openNamePopup } from '../ui/namepopup';
 import {
-  acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, pendingPuzzles, puzzles, puzzleReady, setFlag, type GameState,
+  acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, pendingPuzzles, puzzles, puzzleReady, isPuzzleSettled, setFlag, type GameState,
 } from '../core';
 import {
   GROUND_Y, OPENING, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, showsSparkle, walkFlip, promptOf, themes,
@@ -283,13 +283,9 @@ export class ExploreScene extends Phaser.Scene {
 
   private puzzle(id: string) {
     setPrompt(null);
-    const p = puzzles.find((q) => q.id === id)!;
-    const solvedText = () => { if (p.solvedDialogue) openDialogue(this.state, p.solvedDialogue); };
-    if (this.state.solvedPuzzleIds.includes(id)) { solvedText(); return; }
-    if (this.state.failedPuzzleIds.includes(id)) { showToast('검증에 실패해 닫힌 사건이다. (수첩의 미결 사건에서 확인)'); return; }
+    if (isPuzzleSettled(this.state, id)) { openDialogue(this.state, 'mono_puzzle_settled'); return; } // 이미 정리한 사건: 맞고 틀림과 무관하게 같은 독백
     openPuzzle(this.state, id, (solved) => {
-      if (solved) { this.refresh(); solvedText(); return; }
-      if (this.state.failedPuzzleIds.includes(id)) { this.refresh(); return; } // 검증 실패: 이야기는 이어진다
+      if (solved) { this.refresh(); openDialogue(this.state, 'mono_puzzle_settled'); return; } // 맞든 틀리든 같은 독백 (결과는 알리지 않는다)
       if (id === 'P05_patient_code' && !hasFlag(this.state, 'p05_hold_seen')) { setFlag(this.state, 'p05_hold_seen'); openDialogue(this.state, 'mono_p05_hold'); return; } // P05 를 보류하면 정하늘이 나타나지 않는 까닭을 한 번 알려 준다
       if (!hasFlag(this.state, 'pending_hint_seen')) { setFlag(this.state, 'pending_hint_seen'); openDialogue(this.state, 'mono_pending_hint'); } // 처음 한 번: 미결 사건은 수첩에 남는다
     });

@@ -2,7 +2,7 @@
 //   npx tsx tools/puzzle-sim.ts          → 퍼즐마다 1만 회, 목표 5% 미만
 // 무작위 풀이: 조각은 칸(+보관함)에 균등 무작위로 놓되 모든 칸이 채워질 때까지 다시 뽑는다(빈 칸이 있으면 확정할 수 없으므로).
 // 표시 선택지는 비어 있지 않은 부분집합(단일 선택은 하나), 트리의 인물 카드·논리표 토큰은 칸마다 균등 무작위. 시도끼리는 서로 모른다(이전 오답을 학습하지 않는다).
-import { MAX_ATTEMPTS, availablePieces, isAnswerComplete, isCorrectAnswer, puzzles, quizPathBy, type GameState, type Puzzle, type PuzzleAnswer } from '../src/core';
+import { availablePieces, isAnswerComplete, isCorrectAnswer, puzzles, quizPathBy, type GameState, type Puzzle, type PuzzleAnswer } from '../src/core';
 import { applyScene, buildProgress } from '../src/explore/playthrough';
 import { rng } from './sfx/generate-sfx';
 
@@ -37,7 +37,7 @@ export function randomAnswer(p: Puzzle, s: GameState, r: () => number): PuzzleAn
   throw new Error(`${p.id}: 무작위로 완전한 답을 만들지 못했다`);
 }
 export function simulate(id: string, o: { trials?: number; attempts?: number; seed?: number } = {}) {
-  const { trials = 10000, attempts = MAX_ATTEMPTS, seed = 1234 } = o;
+  const { trials = 10000, attempts = 1, seed = 1234 } = o;
   const p = puzzles.find((q) => q.id === id)!, s = stateBeforePuzzle(id), r = rng(seed);
   let solved = 0, first = 0;
   for (let t = 0; t < trials; t++) {
@@ -49,10 +49,10 @@ export function simulate(id: string, o: { trials?: number; attempts?: number; se
 }
 
 if (process.argv[1]?.endsWith('puzzle-sim.ts')) {
-  console.log(`| 퍼즐 | 조각 수 | 첫 시도에 우연히 풀림 | ${MAX_ATTEMPTS}번 안에 우연히 풀림 (목표 5% 미만) |\n|---|---|---|---|`);
+  console.log('| 퍼즐 | 조각 수 | 한 번 확정에 우연히 맞음 (목표 5% 미만) |\n|---|---|---|');
   for (const p of puzzles) {
     const x = simulate(p.id);
-    console.log(`| ${p.id.slice(0, 3)} | ${x.pieces} | ${(x.firstTry * 100).toFixed(2)}% | ${(x.rate * 100).toFixed(2)}% (${x.solved}/${x.trials}) |`);
+    console.log(`| ${p.id.slice(0, 3)} | ${x.pieces} | ${(x.rate * 100).toFixed(2)}% (${x.solved}/${x.trials}) |`);
   }
-  console.log(`\n각 시행: 모든 칸을 채운 무작위 답을 최대 ${MAX_ATTEMPTS}번 제출.`);
+  console.log(`\n각 시행: 모든 칸을 채운 무작위 답을 한 번 제출.`);
 }

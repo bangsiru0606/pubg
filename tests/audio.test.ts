@@ -8,15 +8,15 @@ import { canPlay, loopEnvelope, loopFade, pickBgm, resolveTrack, sfxGain, sfxVar
 import { checkAudio, parseCredits } from '../tools/audio-assets';
 
 const TRACKS = ['bgm_title', 'bgm_office', 'bgm_hospital', 'bgm_interrogation', 'bgm_basement', 'bgm_confession', 'bgm_report', 'bgm_ending_light', 'bgm_ending_dark'];
-const SFX = ['knock', 'door_open', 'door_close', 'stairs', 'gate_clank', 'footstep', 'page_flip', 'evidence_get', 'statement_update', 'puzzle_correct', 'puzzle_wrong', 'hint', 'ui_move', 'ui_confirm', 'type_blip', 'broadcast_chime', 'heartbeat', 'transfer_done', 'fade_whoosh'];
+const SFX = ['knock', 'door_open', 'door_close', 'stairs', 'gate_clank', 'footstep', 'page_flip', 'evidence_get', 'statement_update', 'ui_move', 'ui_confirm', 'type_blip', 'broadcast_chime', 'heartbeat', 'transfer_done', 'fade_whoosh'];
 const src = (f: string) => readFileSync(f, 'utf8');
 const fb = audio.bgm.fallback as Record<string, string>;
 
 describe('소리 데이터 (docs/사운드_계획.md)', () => {
-  it('트랙 9곡·효과음 19종 이름이 계획서와 같다', () => {
+  it('트랙 9곡·효과음 16종 이름이 계획서와 같다', () => {
     expect(Object.keys(audio.bgm.tracks).sort()).toEqual([...TRACKS].sort());
     expect(Object.keys(audio.sfx.sounds).sort()).toEqual([...SFX].sort());
-    expect([...new Set(Object.values(audio.sfx.events))].sort()).toEqual([...SFX].sort()); // 18종 모두 이벤트에 연결됨
+    expect([...new Set(Object.values(audio.sfx.events))].sort()).toEqual([...SFX].sort()); // 16종 모두 이벤트에 연결됨
   });
   it('audio.json 참조 무결성 (구역·대사·노드·엔딩·트랙·효과음)', () => {
     const nodes = new Set<string>(); const ids = new Set(Object.keys(real.dialogues));
@@ -82,13 +82,14 @@ describe('정답·오답 누설 금지', () => {
     expect(nb.slice(save, at)).not.toMatch(/if \(r\.ok\)|r\.ok\s*\?.*sfx/);
     for (const f of ['src/ui/report.ts', 'src/ui/ending.ts']) for (const c of calls(f)) expect(c, f).toBe('onUiConfirm');
   });
-  it('퍼즐 결과음은 확인 버튼(submit) 안에서만 나고, 한 번씩만 쓴다', () => {
+  it('퍼즐 확정음은 하나뿐이고 확정 안에서만 난다 (정답음·오답음·힌트음은 없다)', () => {
     const p = src('src/ui/puzzle.ts');
-    for (const ev of ['onPuzzleCorrect', 'onPuzzleWrong']) expect(p.split(`sfx('${ev}')`).length - 1, ev).toBe(1);
+    expect(p.split("sfx('onPuzzleConfirm')").length - 1).toBe(1);
     const a = p.indexOf('function submit()'), b = p.indexOf('const close =');
-    for (const ev of ['onPuzzleCorrect', 'onPuzzleWrong', 'onHint']) { const i = p.indexOf(`sfx('${ev}')`); expect(i, ev).toBeGreaterThan(a); expect(i, ev).toBeLessThan(b); }
-    expect(p.slice(a, b)).toContain('submitPuzzle(s, puzzleId'); // submit 안에서 판정 후
-    for (const f of readdirSync('src/ui').filter((x) => x.endsWith('.ts') && x !== 'puzzle.ts')) expect(src(`src/ui/${f}`), f).not.toMatch(/onPuzzle(Correct|Wrong)/);
+    const i = p.indexOf("sfx('onPuzzleConfirm')"); expect(i).toBeGreaterThan(a); expect(i).toBeLessThan(b);
+    expect(p.slice(a, b)).toContain('submitPuzzle(s, puzzleId'); // 판정은 core, 결과는 읽지 않는다
+    expect(JSON.stringify(audio.sfx.events)).not.toMatch(/onPuzzle(Correct|Wrong)|onHint/);
+    for (const f of readdirSync('src/ui').filter((x) => x.endsWith('.ts') && x !== 'puzzle.ts')) expect(src(`src/ui/${f}`), f).not.toMatch(/onPuzzle(Correct|Wrong|Confirm)/);
   });
   it('core 는 오디오를 모른다', () => { for (const f of readdirSync('src/core')) expect(src(`src/core/${f}`), f).not.toMatch(/audio|Audio/); });
   it('코드가 부르는 모든 이벤트 이름은 audio.json events 에 있다', () => {

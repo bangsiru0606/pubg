@@ -28,15 +28,15 @@ describe('플레이 기록 (개발 전용 계산)', () => {
     observe(log, base({ now: 250, state: s, inMenu: true })); observe(log, base({ now: 500, state: s, hidden: true, inMenu: true }));
     expect(log.scenes[1].menuMs).toBe(250); expect(log.scenes[1].pausedMs).toBe(250);
   });
-  it('퍼즐: 열어 둔 시간, 오답·힌트(2·4·6회), 해결 시각', () => {
+  it('퍼즐: 열어 둔 시간, 틀리게 정리 여부, 해결 시각', () => {
     const log = emptyLog(), s = createGameState(), p = puzzles[0];
     observe(log, base({ now: 0, state: s }));
     observe(log, base({ now: 1000, state: s, openPuzzleId: p.id })); countOpen(log, null, p.id);
-    s.wrongCountByPuzzle[p.id] = 4;
+    s.wrongCountByPuzzle[p.id] = 1;
     observe(log, base({ now: 2000, state: s, openPuzzleId: p.id }));
     submitPuzzle(s, p.id, p.correctSlots);
     observe(log, base({ now: 3000, state: s }));
-    expect(log.puzzles[p.id]).toMatchObject({ first: 1000, end: 3000, openMs: 500, opens: 1, wrong: 4, hints: 2, solved: true });
+    expect(log.puzzles[p.id]).toMatchObject({ first: 1000, end: 3000, openMs: 500, opens: 1, wrong: 1, hints: 0, solved: true });
   });
   it('새 게임(씬 번호가 거꾸로 감)이면 기록을 새로 시작하고, 시작 전(started=false)에는 아무것도 쌓지 않는다', () => {
     const log = emptyLog();

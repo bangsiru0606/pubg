@@ -1,6 +1,6 @@
 // 플레이 기록 (개발 서버 전용 도구의 순수 계산 부분: DOM·저장소 없음, 테스트 대상).
 // 씬 1~7 과 퍼즐 P01~P05 의 시작·끝 시각, 수첩·메뉴에 머문 시간, 탭을 떠나 있던 시간(일시정지), 퍼즐 오답·힌트 횟수를 쌓는다.
-import { gradeOf, hasFlag, hintLevelFor, puzzles, resolveEnding, type GameState } from '../core';
+import { gradeOf, hasFlag, puzzles, resolveEnding, type GameState } from '../core';
 
 export interface SceneRec { start: number; end?: number; menuMs: number; pausedMs: number }
 export interface PuzzleRec { first: number; end?: number; openMs: number; opens: number; wrong: number; hints: number; solved: boolean }
@@ -49,7 +49,7 @@ export function observe(log: PlayLog, o: Observation): PlayLog {
     if (!r && !open && !wrong && !solved) continue;
     r ??= (log.puzzles[p.id] = { first: o.now, openMs: 0, opens: 0, wrong: 0, hints: 0, solved: false });
     if (open) { r.openMs += o.dt; r.end = o.now; }
-    r.wrong = Math.max(r.wrong, wrong); r.hints = Math.max(r.hints, hintLevelFor(wrong));
+    r.wrong = Math.max(r.wrong, wrong);
     if (solved && !r.solved) { r.solved = true; r.end = o.now; }
   }
   return log;

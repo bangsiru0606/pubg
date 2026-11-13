@@ -2,7 +2,7 @@
 // 키보드: ←→ 탭, ↑↓ 이동, Enter 실행, Esc/Tab 닫기. 마우스: 클릭.
 import {
   CONFLICT_MESSAGE, characterName, MAX_SUPPORT_SLOTS, canSaveConclusion, claims, clearConclusion, shownEvidence, findConflicts, hasFlag,
-  failedPuzzles, isClaimOpen, isVerificationFailed, isVerified, pendingPuzzles, relatedEvidenceIds, saveConclusion, type Claim, type GameState,
+  settledPuzzles, isClaimOpen, isUnsettledClue, pendingPuzzles, relatedEvidenceIds, saveConclusion, type Claim, type GameState,
 } from '../core';
 import { el, esc, root } from './hud';
 import { sfx } from '../audio/audio';
@@ -50,12 +50,11 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0, on
     const start = Math.max(0, Math.min(c - Math.floor(VISIBLE_ROWS / 2), ids.length - VISIBLE_ROWS));
     const rows = ids.slice(start, start + VISIBLE_ROWS).map((id, k) => {
       const i = start + k, e = shownEvidence(s, id)!;
-      return `<button class="row${i === c ? ' sel' : ''}" data-row="${i}"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${rel?.has(id) ? '<span class="tag">미해결 질문 관련</span>' : ''}${esc(e.title)}${isVerified(s, id) ? '' : ' <span class="unver">·미검증</span>'}</button>`;
+      return `<button class="row${i === c ? ' sel' : ''}" data-row="${i}"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${rel?.has(id) ? '<span class="tag">미해결 질문 관련</span>' : ''}${esc(e.title)}</button>`;
     }).join('');
     const e = shownEvidence(s, ids[c])!;
-    const ver = isVerified(s, e.id) ? '<span class="ver">검증됨</span>' : isVerificationFailed(s, e.id) ? '<span class="unver">검증 실패(신빙성 낮음) — 퍼즐의 결론 기회를 모두 써서 핵심 근거로 쓸 수 없다</span>' : '<span class="unver">미검증 (퍼즐을 풀어야 근거로 제출할 수 있다)</span>';
     return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(e.title)}</h3>
-      <div class="meta"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span>${ver}</div>
+      <div class="meta"><span class="tag t-${e.sourceType}">${TYPE_LABEL[e.sourceType]}</span></div>
       <div class="meta">${esc(areaName(e.acquiredSceneId))} · ${esc(e.timestamp)}${e.sourceCharacterId ? ' · ' + esc(characterName(e.sourceCharacterId)) : ''}</div>
       <p>${esc(e.description)}</p><button class="row sel" data-open="${e.id}" style="width:auto;display:inline-block">원문 다시 열기 (Enter)</button></div>`;
   }
@@ -70,13 +69,13 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0, on
   }
   /** 미결 사건: 재료가 모였는데 아직 풀지 못한 퍼즐. Enter 로 다시 연다 (층 이동은 퍼즐과 무관하다). */
   function pendingTab(): string {
-    const list = pendingPuzzles(s), failed = failedPuzzles(s);
-    const failRows = failed.map((p) => `<div class="row dis">${esc(p.title ?? p.id)} — <b>검증 실패</b> (열 수 없다)</div>`).join('');
-    if (!list.length && failed.length) return `<div class="nlist">${failRows}</div><div class="ndetail note">결론 기회를 모두 써서 검증에 실패한 사건이다. 관련 단서는 ‘검증 실패(신빙성 낮음)’로 남아 최종 보고서의 핵심 근거로 쓸 수 없다.</div>`;
+    const list = pendingPuzzles(s), done = settledPuzzles(s);
+    const failRows = done.map((p) => `<div class="row dis">${esc(p.title ?? p.id)} — <b>정리함</b></div>`).join('');
+    if (!list.length && done.length) return `<div class="nlist">${failRows}</div><div class="ndetail note">정리한 사건이다. 정리한 사건의 자료는 최종 보고서의 근거 칸에 꽂을 수 있다.</div>`;
     if (!list.length) return '<div class="nlist"></div><div class="ndetail note">지금 미결 사건은 없다. 재료가 모인 사건이 생기면 여기에 남는다.</div>';
     const c = Math.min(cur(), list.length - 1);
     const rows = list.map((p, i) => `<button class="row${i === c ? ' sel' : ''}" data-row="${i}">${esc(p.title ?? p.id)}${s.puzzleDrafts[p.id] ? ' (보류 중)' : ''}</button>`).join('') + failRows;
-    return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(list[c].title ?? '')}</h3><p>필요한 자료가 모였다. 풀지 않아도 이야기는 이어지지만, 풀어야 검증되는 단서가 있다. 결론 기회는 퍼즐마다 3번이고, 보류하면 놓은 조각이 저장된다.</p><button class="row sel" data-row="${c}" style="width:auto;display:inline-block">사건 열기 (Enter)</button></div>`;
+    return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(list[c].title ?? '')}</h3><p>필요한 자료가 모였다. 정리하지 않아도 이야기는 이어지지만, 정리하지 않은 사건의 자료는 보고서 근거로 꽂을 수 없다. 결론은 한 번만 확정할 수 있고, 보류하면 놓은 조각이 저장된다.</p><button class="row sel" data-row="${c}" style="width:auto;display:inline-block">사건 열기 (Enter)</button></div>`;
   }
   const rowsOfClaim = (c: Claim) => c.hypotheses.length + 5; // 가설들 + 지지1,2 + 반박 + 보류 + 저장
   function claimTab(c: Claim): string {
@@ -111,7 +110,7 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0, on
     return `<div class="picker"><div class="slotlbl">자료를 고른다 — ↑↓ · Enter · Esc</div>${rows}</div>`;
   }
   const pickerList = (_c: Claim) => s.evidenceIds.slice();
-  const pickBlock = (id: string) => (shownEvidence(s, id)!.sourceType === 'context' ? '맥락' : isVerificationFailed(s, id) ? '검증 실패' : !isVerified(s, id) ? '미검증' : '');
+  const pickBlock = (id: string) => (shownEvidence(s, id)!.sourceType === 'context' ? '사실을 증명하지 않음' : isUnsettledClue(s, id) ? '아직 정리하지 않은 사건' : '');
 
   function render() {
     const t = TABS[tab];
@@ -146,7 +145,7 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0, on
     if (idx === 0) { arr.splice(k, 1); picker = null; return; }
     const id = pickerList(c)[idx - 1];
     const why = pickBlock(id);
-    if (why) { msg = why === '맥락' ? '맥락 단서는 핵심 근거 슬롯에 넣을 수 없다.' : why === '검증 실패' ? '검증에 실패한(신빙성 낮은) 단서는 핵심 근거로 쓸 수 없다.' : '검증되지 않은 단서는 근거로 제출할 수 없다.'; picker = null; return; }
+    if (why) { msg = why === '사실을 증명하지 않음' ? '이 자료는 사실을 증명하지 않는다.' : '아직 정리하지 않은 사건의 자료다.'; picker = null; return; }
     for (const a of [dr.support, dr.rebuttal]) { const j = a.indexOf(id); if (j >= 0) a.splice(j, 1); }
     if (p.slot === 'support1' && !dr.support.length) dr.support.push(id); else arr[Math.min(k, arr.length)] = id;
     picker = null;

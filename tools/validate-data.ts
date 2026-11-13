@@ -127,10 +127,6 @@ for (const p of puzzles) {
     if (!p.slots.includes(t.slot)) err(`${p.id}: task 의 알 수 없는 슬롯 ${t.slot}`);
     const ids = new Set(t.options.map((o) => o.id));
     for (const c of p.correctSlots[t.slot] ?? []) if (!ids.has(c)) err(`${p.id}: ${t.slot} 선택지에 정답 ${c} 없음`);
-    for (const k of [...p.distractors, ...Object.keys(p.conflicts)]) {
-      const [slot, tok] = k.split(':');
-      if (slot === t.slot && !ids.has(tok.replace(/^!/, ''))) err(`${p.id}: ${k} 가 ${t.slot} 선택지에 없음`);
-    }
   }
   // 조각 = 단서 문장: 출처(단서·진술·대화 독백)가 있고, 정답 칸의 조각이 실제로 있다. 오답 조각(decoy)은 어느 칸의 정답에도 없다.
   const tokIds = new Set((p.tokens ?? []).map((x) => x.id));
@@ -157,19 +153,11 @@ for (const p of puzzles) {
         if (c.next && !q.nodes[c.next]) err(`${p.id}/${c.id}: next ${c.next} 없음`);
         if (!c.judge || !c.reason || c.says === undefined || !c.short || !c.quote) err(`${p.id}/${c.id}: judge·reason·says·short·quote 필요`);
         if (!evidenceById.has(c.source) && !stmtIds.has(c.source)) err(`${p.id}/${c.id}: 출처 ${c.source} 는 단서도 진술도 아님`);
-        if (!p.correctSlots.path.includes(c.id) && !c.conflict && onPath.has(nid)) err(`${p.id}/${c.id}: 정답 길의 질문에 있는 오답 선택지에는 충돌 문장이 필요하다`);
       }
     }
     let at: string | null = q.start; const walked: string[] = [];
     for (const id of p.correctSlots.path) { const c: { id: string; next?: string } | undefined = at ? q.nodes[at].choices.find((x) => x.id === id) : undefined; if (!c) { err(`${p.id}: 정답 길의 ${id} 가 길 위에 없다`); break; } walked.push(id); at = c.next ?? null; }
     if (at !== null) err(`${p.id}: 정답 길이 마지막 판단까지 가지 않는다`);
-    for (const k of p.distractors) { const id = k.replace(/^\*:/, ''); if (!ids.includes(id) || p.correctSlots.path.includes(id)) err(`${p.id}: distractors ${k} 는 정답 길 밖의 선택지여야 한다`); }
-  }
-  if (p.hintTexts.length !== 2) err(`${p.id}: hintTexts 는 2개 (1번째 오답 힌트 문장, 2번째 오답 후보 제거 안내)`);
-  const slotKeys = new Set(p.slots);
-  for (const k of [...p.distractors, ...Object.keys(p.conflicts)]) {
-    const slot = k.split(':')[0];
-    if (slot !== '*' && !slotKeys.has(slot)) err(`${p.id}: 알 수 없는 슬롯 참조 ${k}`);
   }
 }
 

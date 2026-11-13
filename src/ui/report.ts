@@ -1,16 +1,16 @@
 // 씬 7 최종 보고서: 수사 보고서 종이 한 장에 질문 하나(A~D). 위쪽 탭으로 쪽을 넘기고, 마지막 쪽에서 보고 대상을 고르고 전체 미리보기를 읽은 뒤 제출한다.
 //  - 가설은 문장 빈칸으로 고른다. 근거(2칸)와 예상 반론(1칸)은 왼쪽 단서 서랍의 카드를 끌어다 꽂는다 (클릭·키보드로도 된다).
-//  - 미검증·검증 실패·맥락 단서는 꽂히지 않고 이유만 한 줄로 보여 준다 (튕겨내는 연출 없음).
+//  - 아직 정리하지 않은 사건의 자료·사실을 증명하지 않는 자료(맥락)는 꽂히지 않고 이유만 한 줄로 보여 준다 (튕겨내는 연출 없음).
 //  - 질문마다 [작성 완료] 도장으로 결론을 저장한다 (정답 여부와 무관, 알려 주지도 않는다). 판정은 core(DeductionResolver·EndingResolver)에서만 한다.
 // 제출 전 미리보기는 고른 결론과 보고 대상을 문장으로 다시 보여 줄 뿐, 정답·해결 여부·예상 엔딩을 암시하지 않는다.
 import {
-  canSaveConclusion, josa, claims, isClaimOpen, isVerificationFailed, isVerified, relatedEvidenceIds, saveConclusion, setReportTarget, shownEvidence,
-  type Claim, type GameState, type SourceType,
+  canSaveConclusion, josa, claims, isClaimOpen, isUnsettledClue, relatedEvidenceIds, saveConclusion, setReportTarget, shownEvidence,
+  type Claim, type GameState,
 } from '../core';
 import { bgmPop, bgmPush, sceneTrack, sfx } from '../audio/audio';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
-import { TYPE_LABEL, hypsOf } from './labels';
+import { TYPE_LABEL, hypsOf, typeGroup } from './labels';
 import { openNotebook } from './notebook';
 
 const TARGETS: { id: NonNullable<GameState['reportTarget']>; label: string }[] = [
@@ -18,7 +18,7 @@ const TARGETS: { id: NonNullable<GameState['reportTarget']>; label: string }[] =
   { id: 'external', label: '외부 수사기관에도 보고한다' },
 ];
 const NAMES = ['A', 'B', 'C', 'D'];
-const FILTERS: { id: SourceType | 'all'; label: string }[] = [{ id: 'all', label: '전체' }, { id: 'physical', label: '물증' }, { id: 'record', label: '기록' }, { id: 'testimony', label: '증언' }, { id: 'context', label: '맥락' }];
+const FILTERS: { id: 'all' | 'evidence' | 'testimony'; label: string }[] = [{ id: 'all', label: '전체' }, { id: 'evidence', label: '증거' }, { id: 'testimony', label: '증언' }];
 type Slot = 's0' | 's1' | 'r0';
 interface Draft { hyp: string | null; sup: (string | undefined)[]; reb: string | undefined }
 const eq = (a: string[], b: string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
@@ -28,7 +28,7 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
   root().append(box);
   bgmPush('report', sceneTrack('report'));
   const nPages = claims.length + 1; // 질문들 + 보고 대상·제출
-  let page = 0, zone: 'paper' | 'drawer' = 'paper', pf = 0, dc = 0, filter: SourceType | 'all' = 'all';
+  let page = 0, zone: 'paper' | 'drawer' = 'paper', pf = 0, dc = 0, filter: (typeof FILTERS)[number]['id'] = 'all';
   let target: Slot | null = null, held: string | null = null;
   let dd = false, ddc = 0, confirming = false, csel = 0, keepScroll = 0;
   let msg = opts.retry ? '다시 추리하기 — 이전에 쓴 결론이 그대로 채워져 있다. 고쳐서 다시 제출할 수 있다.' : '';
@@ -48,13 +48,13 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
 
   // ---- 단서 서랍 ----
   const orderedIds = () => { const rel = s.retryClaimIds.length ? relatedEvidenceIds(s.retryClaimIds) : null; return rel ? [...s.evidenceIds.filter((x) => rel.has(x)), ...s.evidenceIds.filter((x) => !rel.has(x))] : s.evidenceIds.slice(); };
-  const listIds = () => orderedIds().filter((id) => filter === 'all' || shownEvidence(s, id)?.sourceType === filter);
+  const listIds = () => orderedIds().filter((id) => filter === 'all' || typeGroup(shownEvidence(s, id)!.sourceType) === filter);
   /** 이 카드를 핵심 근거로 꽂을 수 없는 이유 (없으면 '') */
   const why = (id: string) => {
     const e = shownEvidence(s, id)!;
-    return e.sourceType === 'context' ? '맥락 단서(배경 자료)는 핵심 근거로 꽂을 수 없다.' : isVerificationFailed(s, id) ? '검증 실패(신빙성 낮음) — 퍼즐의 결론 기회를 모두 써서 검증하지 못했다. 핵심 근거로 꽂을 수 없다.' : !isVerified(s, id) ? '검증되지 않은 단서는 꽂을 수 없다. (퍼즐을 풀어야 한다)' : '';
+    return e.sourceType === 'context' ? '이 자료는 사실을 증명하지 않는다.' : isUnsettledClue(s, id) ? '아직 정리하지 않은 사건의 자료다.' : '';
   };
-  const status = (id: string) => (shownEvidence(s, id)!.sourceType === 'context' ? '맥락' : isVerified(s, id) ? '검증' : isVerificationFailed(s, id) ? '검증 실패' : '미검증');
+  const status = (id: string) => (shownEvidence(s, id)!.sourceType !== 'context' && isUnsettledClue(s, id) ? '정리 전' : ''); // 맞고 틀림은 드러내지 않는다
 
   function place(c: Claim, slot: Slot, id: string): boolean {
     const w = why(id); if (w) { msg = w; render(); return false; }
@@ -84,10 +84,10 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
     const fil = FILTERS.map((f) => `<button class="rf${filter === f.id ? ' on' : ''}" data-filter="${f.id}">${f.label}</button>`).join('');
     const rows = ids.map((id, i) => {
       const e = shownEvidence(s, id)!, st = status(id);
-      return `<button class="dc k-${e.sourceType}${i === cur && zone === 'drawer' ? ' foc' : ''}${held === id ? ' held' : ''}${i === cur ? ' cur' : ''}" data-card="${id}"><b class="rk">${TYPE_LABEL[e.sourceType]}</b><span class="rt">${esc(e.title)}</span><em class="${st === '검증' ? 'ok' : 'no'}">${st === '검증' ? '✓' : st}</em></button>`;
+      return `<button class="dc k-${e.sourceType}${i === cur && zone === 'drawer' ? ' foc' : ''}${held === id ? ' held' : ''}${i === cur ? ' cur' : ''}" data-card="${id}"><b class="rk">${TYPE_LABEL[e.sourceType]}</b><span class="rt">${esc(e.title)}</span><em class="no">${st}</em></button>`;
     }).join('') || '<div class="slotlbl" style="padding:3px">이 유형의 단서가 없다.</div>';
     const pv = ids[cur] ? shownEvidence(s, ids[cur]) : undefined;
-    const prev = pv ? `<b>${esc(pv.title)}</b> <span class="slotlbl">${TYPE_LABEL[pv.sourceType]} · ${status(pv.id)}</span><br>${esc(pv.description)}` : '<span class="slotlbl">카드를 고르면 여기에 미리보기가 나온다.</span>';
+    const prev = pv ? `<b>${esc(pv.title)}</b> <span class="slotlbl">${TYPE_LABEL[pv.sourceType]}${status(pv.id) ? ' · ' + status(pv.id) : ''}</span><br>${esc(pv.description)}` : '<span class="slotlbl">카드를 고르면 여기에 미리보기가 나온다.</span>';
     return `<div class="rfil">${fil}</div><div class="rlist">${rows}</div><div class="rprev">${prev}</div>`;
   }
   function claimHtml(c: Claim): string {
@@ -100,7 +100,7 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
     const slot = (k: Slot, lbl: string) => { const id = slotId(d, k); return `<div class="rslot${fc(k)}${target === k ? ' tgt' : ''}" data-slot="${k}"><span class="rsl">${lbl}</span>${id ? `${cardHtml(id)}<button class="rx" data-clear="${k}" title="떼기">×</button>` : '<span class="slotlbl">(단서 카드를 꽂는다)</span>'}</div>`; };
     const st = stamped(c);
     return `${head}<div class="rstem">${esc(pre)}${blank}${esc(post)}</div>${opts}
-      <div class="rlbl">근거 — 이 결론을 받쳐 주는 단서 (2칸, 물증·기록·증언)</div><div class="rslots">${slot('s0', '근거 1')}${slot('s1', '근거 2')}</div>
+      <div class="rlbl">근거 — 이 결론을 받쳐 주는 단서 (2칸)</div><div class="rslots">${slot('s0', '근거 1')}${slot('s1', '근거 2')}</div>
       <div class="rlbl">예상 반론 — 이 결론에 나올 반론을 막아 주는 단서 (1칸, 필수)</div><div class="rslots">${slot('r0', '예상 반론')}</div>
       <div class="rbot">${st ? '<span class="rstamp">작성 완료</span>' : d.hyp && s.selectedHypothesisByClaim[c.claimId] ? '<span class="rnote">고친 내용은 도장을 다시 찍어야 저장된다.</span>' : ''}<button class="rbtn${fc('stamp')}" data-stamp>${st ? '다시 도장 찍기' : '작성 완료 도장'}</button></div>`;
   }

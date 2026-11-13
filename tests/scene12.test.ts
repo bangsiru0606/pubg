@@ -69,17 +69,15 @@ describe('씬 1·2 진행 조건', () => {
 
 describe('P01 오답 표시', () => {
   const sub = (a: object) => submitPuzzle(createGameState(), P, a as never);
-  it('틀린 판단은 처음 틀린 선택과 부딪히는 자료 이름만 충돌로 표시하고 정답은 알려주지 않는다', () => {
-    const r = sub({ path: ['c1_head', 'c2_seizure', 'c3_altar', 'c4_moved'] });
-    expect(r.status).toBe('wrong');
-    expect(r.conflicts).toHaveLength(1);
-    expect(r.conflicts[0]).toContain('찢어진 손목띠 조각'); expect(JSON.stringify(r.conflicts)).not.toContain('몸싸움');
+  it('틀린 판단도 한 번 확정하면 같은 결과(settled)이고 충돌 문장·힌트는 없다', () => {
+    const s = createGameState(), r = submitPuzzle(s, P, { path: ['c1_head', 'c2_seizure', 'c3_altar', 'c4_moved'] });
+    expect(r).toEqual({ status: 'settled' }); expect(s.failedPuzzleIds).toEqual([P]);
   });
-  it('지병을 고르면 다른 질문으로 이어지고 막다른 길 없이 그럴듯한 결론에 도착한다 — 충돌은 예비 검안 메모', () => {
+  it('지병을 고르면 다른 질문으로 이어지고 막다른 길 없이 그럴듯한 결론에 도착한다', () => {
     const p = puzzleById.get(P)!, w = quizWalk(p, ['c1_disease', 'ca1_chair', 'ca2_fall']);
     expect(w.valid && w.at === null).toBe(true);
     expect(quizConclusion(p, ['c1_disease', 'ca1_chair', 'ca2_fall'])).toContain('지병');
-    expect(sub({ path: ['c1_disease', 'ca1_chair', 'ca2_fall'] }).conflicts[0]).toContain('예비 검안 메모');
+    expect(sub({ path: ['c1_disease', 'ca1_chair', 'ca2_fall'] }).status).toBe('settled');
   });
   it('빈 칸이 있으면 확정되지 않고 기회도 줄지 않는다', () => {
     const s = createGameState();

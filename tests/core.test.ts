@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  acquireEvidence, chooseEvidencePreservation, claims, createGameState, evidenceById, evidenceList, hintLevelFor,
+  acquireEvidence, chooseEvidencePreservation, claims, createGameState, evidenceById, evidenceList, isCorrectAnswer,
   isBasementOpen, loadGame, puzzles, quizWrongPath, resolveClaim, resolveEnding, saveConclusion, saveGame, setReportTarget,
   claimById, puzzleById, solvedClaimIds, type GameState, type PuzzleAnswer,
 } from '../src/core';
@@ -165,63 +165,37 @@ describe('12.4 퍼즐', () => {
     s.flags.push('basement_key'); expect(isBasementOpen(s)).toBe(true);
     expect(isBasementOpen(createGameState())).toBe(false);
   });
-  it('1. P01 처음 쓰러진 곳을 의자로 고르면 해결되지 않는다', () => {
-    const { r } = sub('P01_scene_rebuild', { path: ['c1_head', 'c2_fight', 'c3_chair', 'c4_moved'] });
-    expect(r.status).toBe('wrong');
-    expect(r.conflicts).toHaveLength(1);
+  it('1~5. 틀린 답도 한 번 확정하면 같은 settled 이고, 풀리지 않은 채 정리된다 (결과는 돌려주지 않는다)', () => {
+    const wrongs: [string, PuzzleAnswer][] = [
+      ['P01_scene_rebuild', { path: ['c1_head', 'c2_fight', 'c3_chair', 'c4_moved'] }],
+      ['P02_night_timeline', { t2234: ['t_out'], t2241: ['t_door'], t2246: ['d_sermon'], t2251: ['t_time'] }],
+      ['P03_revision_diff', { chg_position: ['impact_injury'], chg_laceration: ['body_moved'], chg_breath: ['alive_delay'] }],
+      ['P04_approval_chain', { doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['baek_sunwoo'] }],
+      ['P05_patient_code', { ...ANSWERS.P05_patient_code, admissionMatch: ['yujin'], belongingMatch: ['yujin'], linkedSources: ['E14_belongings_diary'], identity: ['yujin'] }],
+    ];
+    for (const [id, a] of wrongs) { const { s, r } = sub(id, a); expect(r).toEqual({ status: 'settled' }); expect(s.failedPuzzleIds).toEqual([id]); expect(s.solvedPuzzleIds).toEqual([]); }
   });
-  it('2. P02 예약 방송 조각을 시간 칸에 넣으면 충돌을 표시', () => {
-    const { r } = sub('P02_night_timeline', { t2234: ['t_out'], t2241: ['t_door'], t2246: ['d_sermon'], t2251: ['t_time'] });
-    expect(r.status).toBe('wrong');
-    expect(r.conflicts.join()).toContain('예약 재생');
+  it('P05 는 일기장 하나로만 연결해도 맞지 않는다', () => {
+    expect(isCorrectAnswer(puzzleById.get('P05_patient_code')!, { ...ANSWERS.P05_patient_code, linkedSources: ['E14_belongings_diary'] })).toBe(false);
   });
-  it('3. P03 수정이 숨긴 사실을 서로 바꿔 고르면 해결되지 않는다 (의미 없는 변경은 비교 결과에 없다)', () => {
-    const { r } = sub('P03_revision_diff', { chg_position: ['impact_injury'], chg_laceration: ['body_moved'], chg_breath: ['alive_delay'] });
-    expect(r.status).toBe('wrong'); expect(r.conflicts).toHaveLength(1);
-  });
-  it('4. P04 LHJ/LHS 혼동 시 선정·승인 권한 충돌 표시', () => {
-    const { r } = sub('P04_approval_chain', { doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['baek_sunwoo'] });
-    expect(r.status).toBe('wrong');
-    expect(r.conflicts).toHaveLength(1); expect(r.conflicts.join()).toContain('작성 약자');
-  });
-  it('5. P05 나이·혈액형만 맞추고 입원번호·유품·자료 연결이 없으면 확정되지 않는다', () => {
-    const p = ANSWERS.P05_patient_code;
-    const partial = { ...p, admissionMatch: ['yujin'], belongingMatch: ['yujin'], linkedSources: ['E14_belongings_diary'], identity: ['yujin'] };
-    const { r } = sub('P05_patient_code', partial);
-    expect(r.status).toBe('wrong');
-    expect(r.conflicts).toHaveLength(1); expect(r.conflicts.join()).toContain('연결표');
-    expect(sub('P05_patient_code', { ...p, linkedSources: ['E14_belongings_diary'] }).r.status).toBe('wrong'); // 일기장 하나로만 연결해도 불가
-  });
-  it('6. 오답 1·2번째에 힌트 문장·후보 제거, 3번째 오답은 검증 실패 (src/core 규칙, tests/puzzle-rules.test.ts 에 자세히)', () => {
-    expect([0, 1, 2, 3, 4].map(hintLevelFor)).toEqual([0, 1, 2, 2, 2]);
-    const s = createGameState();
-    const wrong: PuzzleAnswer = Object.fromEntries(puzzleById.get('P03_revision_diff')!.slots.map((sl) => [sl, ['__wrong__']]));
-    expect([1, 2, 3].map(() => submitPuzzle(s, 'P03_revision_diff', wrong).status)).toEqual(['wrong', 'wrong', 'failed']);
-    expect(s.hintCountByPuzzle.P03_revision_diff).toBe(2);
-  });
-  it('빈 슬롯 제출은 오답 횟수를 올리지 않는다', () => {
+  it('빈 슬롯 제출은 정리한 것으로 치지 않는다', () => {
     const s = createGameState();
     expect(submitPuzzle(s, 'P02_night_timeline', { t2234: ['t_out'] }).status).toBe('incomplete');
-    expect(s.wrongCountByPuzzle.P02_night_timeline ?? 0).toBe(0);
+    expect(s.wrongCountByPuzzle.P02_night_timeline ?? 0).toBe(0); expect(s.failedPuzzleIds).toEqual([]);
   });
-  it('7. 퍼즐을 전부 실패해도(검증 실패) 이야기는 엔딩까지 이어진다 (엔딩 A 는 검증된 단서가 필요하다)', () => {
+  it('7. 퍼즐을 전부 틀리게 정리해도 이야기는 엔딩까지 이어진다 (엔딩 A 는 검증된 단서가 필요하다)', () => {
     const s = createGameState();
     ALL_EXCEPT_E16.forEach((id) => acquireEvidence(s, id));
     for (const p of puzzles) {
-      for (let i = 0; i < 3; i++) submitPuzzle(s, p.id, p.quiz ? { path: quizWrongPath(p) } : p.slots.reduce((a, sl) => ({ ...a, [sl]: ['__wrong__'] }), {}));
+      submitPuzzle(s, p.id, p.quiz ? { path: quizWrongPath(p) } : p.slots.reduce((a, sl) => ({ ...a, [sl]: ['__wrong__'] }), {}));
       expect(s.failedPuzzleIds).toContain(p.id);
     }
     chooseEvidencePreservation(s, true); setReportTarget(s, 'external');
     expect(resolveEnding(s).id).toBe('ending_d'); // 결론을 하나도 풀 수 없다
   });
-  it('오답은 정답을 직접 보여주지 않는다 (충돌 문구만)', () => {
-    const { r } = sub('P01_scene_rebuild', { path: ['c1_head', 'c2_fight', 'c3_altar', 'c4_self'] });
-    expect(r).not.toHaveProperty('wrongSlots');
-    expect(r.hint).not.toHaveProperty('autoFill');
-  });
-  it('이미 푼 퍼즐은 already_solved', () => {
+  it('이미 정리한 퍼즐은 already_settled', () => {
     const s = fullState();
-    expect(submitPuzzle(s, 'P01_scene_rebuild', ANSWERS.P01_scene_rebuild).status).toBe('already_solved');
+    expect(submitPuzzle(s, 'P01_scene_rebuild', ANSWERS.P01_scene_rebuild).status).toBe('already_settled');
     expect(puzzleById.size).toBe(5);
   });
 });

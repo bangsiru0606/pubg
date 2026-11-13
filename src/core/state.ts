@@ -24,7 +24,7 @@ export function acquireEvidence(s: GameState, id: string): boolean {
   if (s.evidenceIds.includes(id)) return false;
   s.evidenceIds.push(id);
   const v = verifierOf(id);
-  if (!v || s.solvedPuzzleIds.includes(v.id)) s.verifiedEvidenceIds.push(id); // 검증에 실패한 퍼즐의 단서는 얻어도 검증되지 않는다
+  if (!v || s.solvedPuzzleIds.includes(v.id)) s.verifiedEvidenceIds.push(id); // 틀리게 정리한 퍼즐의 단서는 얻어도 검증되지 않는다
   return true;
 }
 
@@ -39,9 +39,8 @@ export function shownEvidence(s: GameState, id: string): Evidence | undefined {
 }
 
 export const isVerified = (s: GameState, id: string) => s.verifiedEvidenceIds.includes(id);
-/** 검증 실패(신빙성 낮음): 이 단서를 검증해 줄 퍼즐의 결론 기회를 모두 써 버렸다. 핵심 근거로 쓸 수 없다. */
-export const failedVerifierOf = (s: GameState, id: string) => puzzles.find((p) => p.verifiedEvidenceIds.includes(id) && s.failedPuzzleIds.includes(p.id));
-export const isVerificationFailed = (s: GameState, id: string) => !isVerified(s, id) && !!failedVerifierOf(s, id);
+/** 아직 정리하지 않은 사건의 자료: 검증되지 않았고, 이 단서를 검증해 줄 퍼즐을 (맞든 틀리든) 정리하지도 않았다. 근거 칸에 꽂을 수 없다. */
+export const isUnsettledClue = (s: GameState, id: string) => !isVerified(s, id) && !puzzles.some((p) => p.verifiedEvidenceIds.includes(id) && (s.solvedPuzzleIds.includes(p.id) || s.failedPuzzleIds.includes(p.id)));
 
 /** 증거 보존 선택 (씬 6). 선택 A: E16 + evidenceSecured. 선택 B(즉시 대면): 아무것도 얻지 못한다. */
 export function chooseEvidencePreservation(s: GameState, secure: boolean) {

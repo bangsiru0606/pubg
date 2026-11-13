@@ -83,11 +83,11 @@ if (process.argv[1]?.endsWith('puzzle-evidence-table.ts')) {
   for (const pid of Object.keys(names)) {
     const p = puzzles.find((q) => q.id === pid)!, scene = PUZZLE_SCENE[pid];
     if (p.quiz) { // P01: 질문 → 선택지(정답/오답) → 근거 단서 원문 → 충돌 문장
-      lines.push(`## ${names[pid]} (씬 ${scene})`, '', `결론 기회 3번. 정답 길: ${p.correctSlots.path.join(' → ')}`, '', `정답 결론: ${quizConclusion(p, p.correctSlots.path)}`, '', '| 질문 | 선택지 (판단 — 이유) | 정답? | 출처 | 원문 인용 | 틀렸을 때 충돌 문장 |', '|---|---|---|---|---|---|');
-      for (const [nid, n] of Object.entries(p.quiz.nodes)) for (const c of n.choices) lines.push(`| ${nid} ${n.q} | ${c.judge} — ${c.reason} | ${p.correctSlots.path.includes(c.id) ? '정답 길' : '오답'} | ${c.source} | “${c.quote}” | ${c.conflict ?? ''} |`);
+      lines.push(`## ${names[pid]} (씬 ${scene})`, '', `결론 확정은 한 번. 정답 길: ${p.correctSlots.path.join(' → ')}`, '', `정답 결론: ${quizConclusion(p, p.correctSlots.path)}`, '', '| 질문 | 선택지 (판단 — 이유) | 정답? | 출처 | 원문 인용 |', '|---|---|---|---|---|');
+      for (const [nid, n] of Object.entries(p.quiz.nodes)) for (const c of n.choices) lines.push(`| ${nid} ${n.q} | ${c.judge} — ${c.reason} | ${p.correctSlots.path.includes(c.id) ? '정답 길' : '오답'} | ${c.source} | “${c.quote}” |`);
       lines.push(''); continue;
     }
-    lines.push(`## ${names[pid]} (씬 ${scene})`, '', `결론 기회 3번. 정답: ${p.slots.map((sl) => `\`${sl}\` = ${p.correctSlots[sl].join(' · ')}`).join(' / ')}`, '', '| 칸·조각 | 조각 문구 / 정답 | 출처 | 원문 인용 | 이유 |', '|---|---|---|---|---|');
+    lines.push(`## ${names[pid]} (씬 ${scene})`, '', `결론 확정은 한 번. 정답: ${p.slots.map((sl) => `\`${sl}\` = ${p.correctSlots[sl].join(' · ')}`).join(' / ')}`, '', '| 칸·조각 | 조각 문구 / 정답 | 출처 | 원문 인용 | 이유 |', '|---|---|---|---|---|');
     for (const r of res.filter((x) => x.row.puzzle === pid)) {
       const c = r.row.cites;
       lines.push(`| ${r.row.label} | ${r.row.token} | ${[...new Set(c.map((x) => (x.id.startsWith('dialogue:') ? `${x.id.split(':')[1]} (독백)` : x.id)))].join(' · ')} | ${c.map((x) => `“${x.contains}”`).join(' · ')} | ${r.row.why} |`);

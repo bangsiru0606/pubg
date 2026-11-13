@@ -23,7 +23,7 @@ const addCss = () => { const st = document.createElement('style'); st.textConten
 
 /** 씬 N 시작 지점으로 이동 (정상 플레이와 같은 상태). 개발 서버·시험 빌드에서만 장면에 붙는다 — 제출 빌드에는 이 모듈이 없다. */
 export function installJump(scene: ExploreScene & { jumpToScene?: (n: number, fail?: string[]) => void }) {
-  scene.jumpToScene = (n: number, fail?: string[]) => { // fail: 검증 실패로 닫힌 퍼즐 ID 들 (F9 "검증 실패 상태")
+  scene.jumpToScene = (n: number, fail?: string[]) => { // fail: 틀리게 정리한 퍼즐 ID 들 (F9 "틀리게 정리" 상태)
     setPrompt(null); scene.locked = false;
     if (n === 1) { scene.state = createGameState(); setPlayerName(scene.state.playerName); scene.started = false; scene.buildArea(START.area, START.x); void scene.runOpening(); return; }
     const { state, area, x } = buildProgress(n, { name: scene.state?.playerName, fail });
@@ -42,7 +42,7 @@ export function initDebug(scene: ExploreScene) {
   const close = () => { box?.remove(); box = null; };
   const open = () => {
     box = el('div', 'dbg'); box.id = 'debugmenu';
-    const jumps = [1, 2, 3, 4, 5, 6, 7].map((n) => `<button data-j="${n}">씬 ${n} 시작</button>`).join('') + '<button data-f="P03_revision_diff">씬 5 (P03 검증 실패)</button><button data-f="P05_patient_code">씬 6 (P05 검증 실패)</button>';
+    const jumps = [1, 2, 3, 4, 5, 6, 7].map((n) => `<button data-j="${n}">씬 ${n} 시작</button>`).join('') + '<button data-f="P03_revision_diff">씬 5 (P03 틀리게 정리)</button><button data-f="P05_patient_code">씬 6 (P05 틀리게 정리)</button>';
     box.innerHTML = `<div class="dbgt">디버그 메뉴 (F9) — 개발 서버 전용</div><div>${jumps}</div>
       <div><button data-a="reset">저장 초기화</button><button data-a="state">상태 보기</button><button data-a="log">플레이 기록</button><button data-a="close">닫기</button></div><pre id="dbgstate"></pre>`;
     box.addEventListener('click', (e) => {

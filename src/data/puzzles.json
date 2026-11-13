@@ -24,14 +24,6 @@
     "c4_moved"
    ]
   },
-  "distractors": [
-   "*:c2_seizure"
-  ],
-  "conflicts": {},
-  "hintTexts": [
-   "공식 설명과 현장 기록이 서로 부딪히는 곳이 없는지, 처음 판단부터 다시 견줘 보세요.",
-   "틀린 후보 하나를 제거했습니다."
-  ],
   "title": "원장실 추리 문답",
   "info": [
    "질문에 차례로 답하며 결론에 이른다",
@@ -48,7 +40,6 @@
     "chair_checked"
    ]
   },
-  "solvedDialogue": "mono_p01_solved",
   "quiz": {
    "start": "q1",
    "subject": "원장은",
@@ -74,8 +65,7 @@
        "quote": "지병으로 돌아가셨습니다",
        "short": "지병",
        "says": "지병으로 쓰러졌고,",
-       "next": "qa1",
-       "conflict": "「예비 검안 메모」의 후두부 열상 기록과 맞지 않는다."
+       "next": "qa1"
       },
       {
        "id": "c1_unknown",
@@ -85,8 +75,7 @@
        "quote": "의식없음, 미약 호흡",
        "short": "사인 미정",
        "says": "사인을 아직 정하지 못했고,",
-       "next": "qu1",
-       "conflict": "「예비 검안 메모」와(과) 「기도대 아래 혈흔」은(는) 이 판단과 맞지 않는다."
+       "next": "qu1"
       }
      ]
     },
@@ -111,8 +100,7 @@
        "quote": "지병으로 돌아가셨습니다",
        "short": "발작으로 쓰러짐",
        "says": "심정지 발작으로",
-       "next": "q3",
-       "conflict": "「찢어진 손목띠 조각」은(는) 이 설명과 맞지 않는다."
+       "next": "q3"
       },
       {
        "id": "c2_slip",
@@ -122,8 +110,7 @@
        "quote": "놋쇠 기도대 받침 아래에 닦이지 않은 혈흔이 남아 있다",
        "short": "미끄러짐",
        "says": "기도하다 미끄러져",
-       "next": "q3",
-       "conflict": "「찢어진 손목띠 조각」은(는) 원장 혼자 있었다는 전제와 맞지 않는다."
+       "next": "q3"
       },
       {
        "id": "c2_chair",
@@ -133,8 +120,7 @@
        "quote": "집무실 의자에 앉으신 채 발견됐고",
        "short": "의자에서 쓰러짐",
        "says": "의자에 앉은 채 책상에 부딪혀",
-       "next": "q3",
-       "conflict": "「기도대 아래 혈흔」은(는) 이 설명과 맞지 않는다."
+       "next": "q3"
       }
      ]
     },
@@ -159,8 +145,7 @@
        "quote": "집무실 의자에 앉으신 채 발견됐고",
        "short": "책상 의자",
        "says": "책상 의자에 쓰러지며 머리를 다쳤고,",
-       "next": "q4",
-       "conflict": "「예비 검안 메모」의 발견 위치와 맞지 않는다."
+       "next": "q4"
       },
       {
        "id": "c3_desk",
@@ -170,8 +155,7 @@
        "quote": "원장 책상 아래에서 나온 찢어진 환자 손목띠 조각",
        "short": "책상 앞 바닥",
        "says": "책상 앞 바닥에 쓰러지며 머리를 다쳤고,",
-       "next": "q4",
-       "conflict": "「기도대 아래 혈흔」은(는) 이 위치와 맞지 않는다."
+       "next": "q4"
       }
      ]
     },
@@ -194,8 +178,7 @@
        "source": "E03_preliminary_exam",
        "quote": "의식없음, 미약 호흡",
        "short": "스스로 의자로 감",
-       "says": "스스로 의자까지 가서 앉아 숨졌다.",
-       "conflict": "「예비 검안 메모」의 “의식없음” 기록과 맞지 않는다."
+       "says": "스스로 의자까지 가서 앉아 숨졌다."
       },
       {
        "id": "c4_mistake",
@@ -204,8 +187,7 @@
        "source": "baek_s_natural",
        "quote": "집무실 의자에 앉으신 채 발견됐고",
        "short": "위치 착각",
-       "says": "백선우가 발견 위치를 착각한 것일 뿐이다.",
-       "conflict": "의자 아래 바닥의 긁힌 자국({player}의 관찰)과 맞지 않는다."
+       "says": "백선우가 발견 위치를 착각한 것일 뿐이다."
       }
      ]
     },
@@ -315,17 +297,6 @@
     "t_time"
    ]
   },
-  "distractors": [
-   "*:d_prayer"
-  ],
-  "conflicts": {
-   "*:d_sermon": "예약 재생이라고 적힌 복도 방송표와 맞지 않는다.",
-   "*:d_prayer": "예약 재생이라고 적힌 복도 방송표와 맞지 않는다."
-  },
-  "hintTexts": [
-   "시각이 적힌 조각부터 놓고, 시각이 없는 조각은 앞뒤 순서로 추론해 보세요.",
-   "틀린 후보 하나를 제거했습니다."
-  ],
   "layout": "timeline",
   "title": "야간 동선 시간 배열",
   "info": [
@@ -395,9 +366,7 @@
     "broadcast_seen",
     "haneul_met"
    ]
-  },
-  "solvedDialogue": "mono_p02_solved",
-  "pieceConflict": "「{src}」은(는) 이 시각과 맞지 않는다."
+  }
  },
  {
   "id": "P03_revision_diff",
@@ -426,32 +395,6 @@
     "alive_delay"
    ]
   },
-  "distractors": [
-   "chg_position:d_witness",
-   "chg_laceration:d_drug",
-   "chg_breath:d_time"
-  ],
-  "conflicts": {
-   "chg_position:impact_injury": "비교 결과의 ‘발견 위치’ 줄은(는) ‘충돌로 인한 외상’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_position:alive_delay": "비교 결과의 ‘발견 위치’ 줄은(는) ‘발견 당시 살아 있었다(구조 지연)’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_position:d_time": "비교 결과의 ‘발견 위치’ 줄은(는) ‘사망 시각’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_position:d_drug": "비교 결과의 ‘발견 위치’ 줄은(는) ‘투여된 약물’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_position:d_witness": "비교 결과의 ‘발견 위치’ 줄은(는) ‘목격자의 신원’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_laceration:body_moved": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘원장이 옮겨졌다’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_laceration:alive_delay": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘발견 당시 살아 있었다(구조 지연)’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_laceration:d_time": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘사망 시각’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_laceration:d_drug": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘투여된 약물’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_laceration:d_witness": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘목격자의 신원’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_breath:body_moved": "비교 결과의 ‘호흡’ 줄은(는) ‘원장이 옮겨졌다’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_breath:impact_injury": "비교 결과의 ‘호흡’ 줄은(는) ‘충돌로 인한 외상’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_breath:d_time": "비교 결과의 ‘호흡’ 줄은(는) ‘사망 시각’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_breath:d_drug": "비교 결과의 ‘호흡’ 줄은(는) ‘투여된 약물’을(를) 숨기는 수정으로 보이지 않는다.",
-   "chg_breath:d_witness": "비교 결과의 ‘호흡’ 줄은(는) ‘목격자의 신원’을(를) 숨기는 수정으로 보이지 않는다."
-  },
-  "hintTexts": [
-   "바뀐 줄마다, 수정 전 기록이 말하던 사실이 무엇이었는지 생각해 보세요.",
-   "틀린 후보 하나를 제거했습니다."
-  ],
   "layout": "desktop",
   "title": "검안 기록 변조 비교",
   "info": [
@@ -564,7 +507,6 @@
     "E07_report_revision"
    ]
   },
-  "solvedDialogue": "mono_p03_solved",
   "desktop": {
    "files": [
     {
@@ -643,27 +585,6 @@
     "lee_hyejeong"
    ]
   },
-  "distractors": [
-   "*:oh_miran"
-  ],
-  "conflicts": {
-   "doc_approval:lee_hyejeong": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_approval:baek_sunwoo": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_approval:oh_miran": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_selection:lee_hanshin": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_selection:baek_sunwoo": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_selection:oh_miran": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_schedule:lee_hyejeong": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_schedule:lee_hanshin": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_schedule:oh_miran": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_transfer:lee_hanshin": "화장·환자 이송 지시의 서명과 맞지 않는다.",
-   "doc_transfer:baek_sunwoo": "화장·환자 이송 지시의 서명과 맞지 않는다.",
-   "doc_transfer:oh_miran": "화장·환자 이송 지시의 서명과 맞지 않는다."
-  },
-  "hintTexts": [
-   "영문 약자와 권한 문구를 함께 보세요.",
-   "틀린 후보 하나를 제거했습니다."
-  ],
   "layout": "tree",
   "title": "특별 치료 승인 체계",
   "info": [
@@ -779,7 +700,6 @@
     "E11_transfer_order"
    ]
   },
-  "solvedDialogue": "mono_p04_solved",
   "people": [
    {
     "id": "lee_hyejeong",
@@ -849,29 +769,6 @@
     "eunji"
    ]
   },
-  "distractors": [
-   "identity:yujin"
-  ],
-  "conflicts": {
-   "identity:yujin": "특별 치료 장부와 맞지 않는다.",
-   "identity:unknown": "특별 치료 장부와 맞지 않는다.",
-   "identity:haneul": "특별 치료 장부와 맞지 않는다.",
-   "admissionMatch:yujin": "환자번호-코드 연결표와 맞지 않는다.",
-   "admissionMatch:haneul": "환자번호-코드 연결표와 맞지 않는다.",
-   "admissionMatch:unknown": "환자번호-코드 연결표와 맞지 않는다.",
-   "linkedSources:E15_transport_manifest": "생체 보존물 운송표는 환자의 신원을 가리키지 않는다.",
-   "belongingMatch:yujin": "한유진의 진술과 맞지 않는다.",
-   "belongingMatch:haneul": "한유진의 진술과 맞지 않는다.",
-   "belongingMatch:unknown": "한유진의 진술과 맞지 않는다.",
-   "ageMatch:yujin": "특별 치료 장부와 맞지 않는다.",
-   "ageMatch:haneul": "특별 치료 장부와 맞지 않는다.",
-   "bloodMatch:haneul": "특별 치료 장부와 맞지 않는다.",
-   "bloodMatch:unknown": "특별 치료 장부와 맞지 않는다."
-  },
-  "hintTexts": [
-   "나이·혈액형만으로는 후보가 둘 남습니다. 입원번호와 유품 표식을 보세요.",
-   "틀린 후보 하나를 제거했습니다."
-  ],
   "layout": "logic",
   "title": "P-271 환자 코드 대조",
   "info": [],
@@ -1118,7 +1015,6 @@
     "E14_belongings_diary",
     "E15_transport_manifest"
    ]
-  },
-  "solvedDialogue": "mono_p05_solved"
+  }
  }
 ]

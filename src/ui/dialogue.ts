@@ -63,12 +63,12 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   function openPicker() {
     const list = s.evidenceIds.slice();
     if (!list.length) { msg = '제시할 자료가 없다.'; render(); return; }
-    picker = { cursor: 0, chosen: new Set(), list }; render();
+    react = ''; picker = { cursor: 0, chosen: new Set(), list }; render();
   }
   function confirmPicker() {
     if (!picker || !picker.chosen.size) { msg = '제시할 자료를 고른 뒤 [제시하기]를 선택한다.'; render(); return; }
     const r = presentEvidence(s, d, dialogueId, nodeId, [...picker.chosen]);
-    if (r.kind === 'ok') go(r.next); else { react = r.message; logLine(node.speaker, react, undefined); picker = null; items = [{ label: '계속', run: () => { react = ''; finishTyping(); } }]; sel = 0; render(); }
+    if (r.kind === 'ok') go(r.next); else { react = r.message; logLine(node.speaker, react, undefined); picker = null; render(); }
   }
 
   function textHtml() {

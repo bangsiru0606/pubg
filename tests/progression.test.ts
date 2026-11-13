@@ -58,3 +58,61 @@ describe('P05 를 틀리게 정리한 경로: 정하늘 등장 → 보고서', (
   });
 
 });
+
+describe('대화 진행 막힘 검사 (4차 피드백 5: 오미란 열쇠)', () => {
+  const load = async () => {
+    const core = await import('../src/core');
+    const real = (await import('../src/data/dialogue.json')).default.dialogues as never as import('../src/core').Dialogues;
+    return { ...core, real, D: real.oh_miran };
+  };
+  /** node 부터 next 를 따라가며 진입 효과를 적용한다 (선택지·제시가 필요한 곳에서 멈춘다) */
+  const run = (m: Awaited<ReturnType<typeof load>>, s: import('../src/core').GameState, from: string) => {
+    let id: string | undefined = from, last = from;
+    while (id) { const n = m.D.nodes[id]; m.enterNode(s, n); last = id; id = m.nextOf(s, n); }
+    return last;
+  };
+  it('오미란 대화를 중간에 끊었다 다시 와도 열쇠까지 간다 (재제시가 막히지 않고, 끊은 대목에서 다시 시작한다)', async () => {
+    const m = await load(), s = m.createGameState();
+    for (const id of ['E03_preliminary_exam', 'E04_wristband_fragment', 'E06_torn_sleeve', 'E11_transfer_order']) m.acquireEvidence(s, id);
+    expect(m.openingNodeOf(s, m.D, 'oh_miran')).toBe('o0');
+    expect(run(m, s, 'o0')).toBe('o1'); m.markDialogueDone(s, m.D, 'oh_miran'); // o1 에서 제시 없이 끊는다
+    expect(m.openingNodeOf(s, m.D, 'oh_miran')).toBe('o1'); // 처음(o0)이 아니라 끊은 대목
+    expect(m.presentEvidence(s, m.D, 'oh_miran', 'o1', ['E03_preliminary_exam']).kind).toBe('ok');
+    expect(run(m, s, 'o2')).toBe('o3'); m.markDialogueDone(s, m.D, 'oh_miran'); // o3 에서 또 끊는다
+    expect(m.openingNodeOf(s, m.D, 'oh_miran')).toBe('o3');
+    expect(m.presentEvidence(s, m.D, 'oh_miran', 'o3', ['E04_wristband_fragment']).kind).toBe('ok');
+    expect(run(m, s, 'o4')).toBe('o8'); m.markDialogueDone(s, m.D, 'oh_miran'); // o8 에서 끊는다
+    expect(m.openingNodeOf(s, m.D, 'oh_miran')).toBe('o8');
+    expect(m.presentEvidence(s, m.D, 'oh_miran', 'o8', ['E11_transfer_order']).kind).toBe('ok');
+    expect(run(m, s, 'o9')).toBe('o11'); expect(s.flags).toContain('basement_key'); // 열쇠
+    // 이미 맞게 낸 단서를 같은 대목에서 다시 내도 다음으로 진행한다 (영영 막히지 않는다)
+    expect(m.presentEvidence(s, m.D, 'oh_miran', 'o8', ['E11_transfer_order']).kind).toBe('ok');
+    expect(m.presentEvidence(s, m.D, 'oh_miran', 'o3', ['E04_wristband_fragment', 'E06_torn_sleeve']).kind).toBe('ok');
+  });
+  it('E04 하나만 제시해도 된다 (E06 이 없어도 열쇠까지 간다)', async () => {
+    const m = await load(), s = m.createGameState();
+    for (const id of ['E03_preliminary_exam', 'E04_wristband_fragment', 'E11_transfer_order']) m.acquireEvidence(s, id); // E06 없음
+    expect(m.presentEvidence(s, m.D, 'oh_miran', 'o1', ['E03_preliminary_exam']).kind).toBe('ok'); run(m, s, 'o2');
+    expect(m.presentEvidence(s, m.D, 'oh_miran', 'o3', ['E04_wristband_fragment']).kind).toBe('ok'); run(m, s, 'o4');
+    expect(m.presentEvidence(s, m.D, 'oh_miran', 'o8', ['E11_transfer_order']).kind).toBe('ok'); run(m, s, 'o9');
+    expect(s.flags).toContain('basement_key');
+  });
+  it('제시를 기다리는 모든 대목은 규칙의 다음 노드가 있고, 끊어도 처음부터 또는 같은 대목에서 다시 닿는다', async () => {
+    const real = (await import('../src/data/dialogue.json')).default.dialogues as never as import('../src/core').Dialogues;
+    for (const [id, d] of Object.entries(real)) for (const [nid, n] of Object.entries(d.nodes)) {
+      if (!n.present?.length) continue;
+      for (const r of n.present) expect(d.nodes[r.next], `${id}/${nid} → ${r.next}`).toBeDefined();
+      const reach = (): boolean => { const seen = new Set<string>(); let c: string | undefined = d.start; while (c && !seen.has(c)) { if (c === nid) return true; seen.add(c); c = d.nodes[c].next; } return false; };
+      expect(reach() || (d.restart ?? []).some((r) => r.node === nid), `${id}/${nid} 에 다시 닿을 수 있다`).toBe(true);
+    }
+  });
+});
+
+describe('모든 퍼즐을 틀리게 정리해도 엔딩까지 간다 (4차 피드백 1)', () => {
+  it('씬 7 까지 모든 퍼즐이 틀려도 정하늘·보고서·엔딩으로 이어진다', () => {
+    const { state: s } = buildProgress(7, { fail: puzzles.map((p) => p.id) });
+    expect(s.solvedPuzzleIds).toEqual([]); expect(s.failedPuzzleIds).toHaveLength(5);
+    expect(s.flags).toEqual(expect.arrayContaining(['flag_claim_d_open', 'haneul_confessed']));
+    expect(['ending_a', 'ending_b', 'ending_c', 'ending_d']).toContain(resolveEnding(s).id);
+  });
+});

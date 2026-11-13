@@ -37,8 +37,7 @@ export async function placeCorrect(page: Page, id: string, overrides: Record<str
   }
   for (const t of (p.tasks ?? []).filter((q) => q.kind === 'mark')) {
     if (p.layout === 'desktop') {
-      const want = t.options.find((o) => o.id === ans[t.slot][0])!.label;
-      for (let i = 0; i < 8 && (await page.locator(`#puzzle [data-cycle="${t.slot}"]`).innerText()) !== want; i++) await click(`[data-cycle="${t.slot}"]`);
+      await click(`[data-cycle="${t.slot}"]`); await click(`[data-opt="${t.slot}|${ans[t.slot][0]}"]`); // 드롭다운: 칸을 눌러 펼치고 후보를 누른다
     } else for (const o of t.options) { // 이미 표시한 선택(보류 저장분)은 건드리지 않고 다른 것만 누른다
       const sel = `#puzzle [data-chip="${t.slot}|${o.id}"]`;
       if (!(await page.locator(sel).count())) continue; // 제거된 후보

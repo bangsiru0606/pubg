@@ -12,7 +12,7 @@ describe('README (docs/이전계획.md 6.4 템플릿 순서)', () => {
   });
   it('필수 내용: 약 30분, 엔딩 4종, 조작법 키, 릴리즈 링크, 압축 해제 안내', () => {
     for (const t of ['약 30분', '엔딩 4종', '`Shift`', '`Tab`', '`Esc`', '`M`', 'releases/tag/v1.0', '압축 해제 후 `index.html` 더블클릭']) expect(readme, t).toContain(t);
-    expect(readme).toContain('TODO'); // 팀원 표는 마감 때 채운다
+    expect(readme).toContain('박혜린'); expect(readme).toContain('시루와 방실이'); // 팀 정보를 채웠다
   });
   it('출처 구간은 CREDITS.md 로 다시 쓸 수 있고, 다른 곳은 건드리지 않는다', () => {
     const md = '| 곡 | 도구 |\n|---|---|\n| bgm_title | Eleven Music |\n- bgm_hospital: ACE-Step\n';

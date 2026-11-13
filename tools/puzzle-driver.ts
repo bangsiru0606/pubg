@@ -1,40 +1,53 @@
-// 퍼즐 화면을 마우스 클릭으로 푸는 시험 도구 (e2e·스크린샷 공용): 토큰 → 칸, 표시 칩, 근거 칸 → 근거 카드, [확인]
+// 퍼즐 화면을 마우스 클릭으로 푸는 시험 도구 (e2e·스크린샷 공용): 조각·인물 카드 → 칸, 표시 칩, 바탕화면 조작, [결론 확정] → 확인 창
 import { readFileSync } from 'node:fs';
 import type { Page } from 'playwright';
 
-type Task = { slot: string; kind: 'place' | 'mark' };
-interface P { id: string; layout: string; tasks: Task[]; tokens?: { id: string; label: string }[]; boxes?: { id: string }[]; correctSlots: Record<string, string[]>; evidenceLinks?: Record<string, string[]> }
+interface Task { slot: string; kind: 'place' | 'mark'; single?: boolean; options: { id: string; label: string }[] }
+interface P { id: string; layout: string; tasks?: Task[]; tokens?: { id: string; decoy?: boolean }[]; correctSlots: Record<string, string[]> }
 const puzzles = JSON.parse(readFileSync('src/data/puzzles.json', 'utf8')) as P[];
-const evidence = JSON.parse(readFileSync('src/data/evidence.json', 'utf8')) as { id: string; title: string }[];
 export const puzzleData = (id: string) => puzzles.find((p) => p.id === id)!;
 
-/** 토큰·표시를 정답대로 놓는다 (근거는 붙이지 않는다) */
+/** 규칙 안내(처음 한 번)가 떠 있으면 닫는다 */
+export async function dismissRule(page: Page) { const b = page.locator('#puzzle [data-rule]'); if (await b.count()) { await b.first().click(); await page.waitForTimeout(80); } }
+
+/** 바탕화면(P03): 휴지통의 이전 판과 최종본을 비교 실행해 바뀐 줄을 띄운다 */
+export async function runDesktopCompare(page: Page) {
+  const click = (sel: string, opts = {}) => page.locator(`#puzzle ${sel}`).first().click(opts);
+  await page.locator('#puzzle [data-icon="trash"]').first().dblclick();
+  await click('[data-wfile="auto"]');
+  await page.locator('#puzzle [data-icon="compare"]').first().dblclick();
+  for (let i = 0; i < 3; i++) await click('[data-cmp="a"]'); // 이전 판 = 자동저장(휴지통)
+  await click('[data-cmp="b"]'); // 이후 판 = 최종본
+  await click('[data-cmp="run"]');
+}
+
+/** 조각·표시를 정답대로 놓는다 (확정은 누르지 않는다). overrides 로 칸별 다른 답을 줄 수 있다. */
 export async function placeCorrect(page: Page, id: string, overrides: Record<string, string[]> = {}) {
   const p = puzzleData(id), ans = { ...p.correctSlots, ...overrides };
   const click = (sel: string) => page.locator(`#puzzle ${sel}`).first().click();
-  if (p.layout === 'timeline') {
-    for (const [box, toks] of Object.entries(ans)) { await click(`[data-token="${toks[0]}"]`); await click(`[data-zone="${box}"]`); }
-  } else {
-    for (const t of p.tasks) {
-      if (t.kind === 'place') { await click(`[data-token="${t.slot}"]`); await click(`[data-zone="${ans[t.slot][0]}"]`); }
-      else for (const o of ans[t.slot]) await click(`[data-chip="${t.slot}|${o}"]`);
+  await dismissRule(page);
+  const markSlots = new Set((p.tasks ?? []).filter((t) => t.kind === 'mark').map((t) => t.slot));
+  if (p.layout === 'desktop') await runDesktopCompare(page);
+  for (const [slot, ids] of Object.entries(ans)) {
+    if (markSlots.has(slot)) continue;
+    if (p.layout === 'plan' || p.layout === 'timeline') for (const t of ids) { await click(`[data-piece="${t}"]`); await click(`.zone[data-zone="${slot}"]`); }
+    else if (p.layout === 'tree') { await click(`[data-person="${ids[0]}"]`); await click(`.zone[data-zone="${slot}"]`); }
+    else if (p.layout === 'logic') { await click('[data-token="identity"]'); await click(`[data-zone="${ids[0]}"]`); }
+  }
+  for (const t of (p.tasks ?? []).filter((q) => q.kind === 'mark')) {
+    if (p.layout === 'desktop') {
+      const want = t.options.find((o) => o.id === ans[t.slot][0])!.label;
+      for (let i = 0; i < 8 && (await page.locator(`#puzzle [data-cycle="${t.slot}"]`).innerText()) !== want; i++) await click(`[data-cycle="${t.slot}"]`);
+    } else for (const o of t.options) { // 이미 표시한 선택(보류 저장분)은 건드리지 않고 다른 것만 누른다
+      const sel = `#puzzle [data-chip="${t.slot}|${o.id}"]`;
+      if (!(await page.locator(sel).count())) continue; // 제거된 후보
+      const on = (await page.locator(sel).first().getAttribute('class'))?.includes(' on') ?? false;
+      if (on !== ans[t.slot].includes(o.id)) await page.locator(sel).first().click();
     }
   }
 }
-/** 진술 카드는 같은 화자의 진술이 여럿이라 이름만으로 고를 수 없다: 문장 일부로 고른다 */
-const STATEMENT_SNIPPET: Record<string, string> = { baek_s_natural: '집무실 의자에 앉으신 채', choi_s_thud: '쿵 하고 둔탁한', han_s_bracelet: '노란 실팔찌', chae_s_return: '밤에 나갔다가 돌아왔어요', han_o_chair: '길게 긁혀 있다', chae_s_time: '10시 51분', chae_s_out: '10시 34분이에요' };
-/** 그 칸에 근거 카드를 붙인다. 단서는 제목으로, 진술(STATEMENT_SNIPPET 에 있는 ID)은 문장 일부로 고른다. */
-export async function attachLink(page: Page, slot: string, cardId: string) {
-  await page.locator(`#puzzle [data-link="${slot}"]`).first().click();
-  const snippet = STATEMENT_SNIPPET[cardId];
-  if (snippet) { await page.locator('#puzzle .lplist .lrow', { hasText: snippet }).first().click(); return; }
-  const title = evidence.find((e) => e.id === cardId)?.title;
-  if (!title) throw new Error(`근거 카드 이름을 모른다: ${cardId}`);
-  await page.locator('#puzzle .lplist').getByText(title, { exact: true }).first().click(); // 목록 줄의 이름 칸(.lt)을 누른다
+/** [결론 확정] → 확인 창의 [확정] */
+export async function confirm(page: Page) {
+  await page.locator('#puzzle [data-submit]').click(); await page.waitForSelector('#puzzle [data-confirm="yes"]');
+  await page.locator('#puzzle [data-confirm="yes"]').click(); await page.waitForTimeout(80);
 }
-/** 정답 근거(허용 목록의 첫 번째)를 모든 근거 칸에 붙인다. links 로 칸별 다른 카드를 줄 수 있다. */
-export async function attachCorrectLinks(page: Page, id: string, links: Record<string, string> = {}) {
-  const p = puzzleData(id);
-  for (const [slot, allowed] of Object.entries(p.evidenceLinks ?? {})) await attachLink(page, slot, links[slot] ?? allowed[0]);
-}
-export async function submit(page: Page) { await page.locator('#puzzle [data-submit]').click(); }

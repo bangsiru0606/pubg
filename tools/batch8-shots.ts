@@ -14,7 +14,6 @@ const wait = (ms: number) => page.waitForTimeout(ms);
 const shot = (n: string) => page.screenshot({ path: `${OUT}/b8_${n}.png` });
 const load = async () => { await page.goto(pathToFileURL(resolve('.tmp/e2e/index.html')).href); await page.waitForFunction(() => (window as any).__cw?.scene?.player); await page.waitForSelector('#title'); await cw('cw.quick()'); await cw("cw.state.flags.push('trigger_fired:floor1:baek')"); await wait(300); };
 const at = async (area: string, x: number) => { await cw(`cw.scene.go('${area}', ${x})`); await wait(900); await cw(`cw.scene.teleportX(${x})`); await wait(400); };
-const examine = async (area: string, x: number, selector = '#viewer') => { await at(area, x); await page.keyboard.press('Enter'); await page.waitForSelector(selector); await wait(500); };
 
 await load();
 // 내려가는 계단 (stairs_down_v2)

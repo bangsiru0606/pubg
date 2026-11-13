@@ -6,7 +6,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { launch } from './browser';
-import { attachCorrectLinks, attachLink } from './puzzle-driver';
+import { confirm, dismissRule, placeCorrect, runDesktopCompare } from './puzzle-driver';
 
 execSync('npx vite build --mode e2e', { stdio: 'inherit' });
 const url = pathToFileURL(resolve('.tmp/e2e/index.html')).href;
@@ -32,7 +32,6 @@ const wait = (ms: number) => page.waitForTimeout(ms);
 const confirmPick = async () => { for (let i = 0; i < 20 && !(await page.locator('#dialogue .opt.sel').innerText()).includes('제시하기'); i++) await press('ArrowDown'); await press('Enter'); }; // 선택기: [제시하기] 행에서 Enter
 const click = (sel: string) => page.locator(sel).first().click();
 /** 퍼즐 오답 문장(줄 단위): 한 번에 하나만 나와야 한다 */
-const noteText = async () => (await page.locator('#puzzle .note').innerText()).trim();
 const warnLines = async () => (await page.locator('#puzzle .warn').innerText()).split('\n').map((l) => l.trim()).filter(Boolean);
 const shot = async (name: string) => { if (SHOT) await page.screenshot({ path: `docs/screenshots/${name}.png` }); };
 // 화면 텍스트에 내부 ID(영문 snake_case, E01 같은 단서 코드, 플래그 이름)가 나오면 안 된다
@@ -379,48 +378,42 @@ await page.waitForSelector('#puzzle', { timeout: 3000 });
 check(true, '[P01] 세 자료와 의자 관찰이 모이면 평면도가 자동으로 열린다');
 await noIds('[P01] 초기 화면');
 await shot('stage4_p01_start');
-
-// P01 오답: 마우스 (클릭 배치 + 드래그 배치)
-await click('#puzzle [data-token="impactPosition"]'); await click('#puzzle [data-zone="desk_side"]');
-const tk = await page.locator('#puzzle [data-token="finalPosition"]').first().boundingBox();
-const zn = await page.locator('#puzzle [data-zone="desk_chair"]').first().boundingBox();
-await page.mouse.move(tk!.x + tk!.width / 2, tk!.y + tk!.height / 2);
-await page.mouse.down();
-await page.mouse.move(zn!.x + zn!.width / 2, zn!.y + zn!.height / 2, { steps: 8 });
-await page.mouse.up();
-await wait(100);
-check((await page.locator('#puzzle [data-zone="desk_chair"] [data-token="finalPosition"]').count()) === 1, '[P01] 마우스 드래그로 토큰 배치');
-await click('#puzzle [data-chip="movedObjects|body"]'); await click('#puzzle [data-chip="movedObjects|chair"]');
-await click('#puzzle [data-submit]');
-await wait(60);
-check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .warn').count()) === 0 && (await page.locator('#puzzle .lnk.need').count()) === 3, '[P01] 근거를 붙이지 않은 칸이 있으면 안내 하나 + 근거 칸 강조(오답 아님)');
-check(await cw<boolean>("!cw.state.wrongCountByPuzzle.P01_scene_rebuild && !cw.state.hintCountByPuzzle.P01_scene_rebuild"), '[P01] 근거 빈 칸은 오답 횟수·힌트를 올리지 않는다');
-await attachCorrectLinks(page, 'P01_scene_rebuild'); // 근거는 맞게 붙였지만 토큰(충돌 직후=책상 옆)이 틀리다
-await click('#puzzle [data-submit]'); await wait(60);
-const warn = await warnLines();
-check(warn.length === 1 && warn[0].includes('기도대 아래 혈흔과 맞지 않는다'), '[P01] 오답: 충돌 문장은 하나, 어느 자료와 맞지 않는지 이름으로 말한다');
-check(!warn.join().includes('기도대 옆 바닥') && !warn.join().includes('책상 의자'), '[P01] 오답 표시에 정답을 알려주지 않는다');
-check(await cw<boolean>("cw.state.wrongCountByPuzzle.P01_scene_rebuild === 1"), '[P01] 오답 1회 기록');
+check((await page.locator('#puzzle .pz-ov').count()) === 1 && (await page.locator('#puzzle .pz-ov').innerText()).includes('세 번까지 확정할 수 있다') && (await page.locator('#puzzle .pz-ov').innerText()).includes('보류하고 나가도 된다'), '[P01] 처음 열릴 때 규칙 안내 한 번: 결론은 세 번까지, 확신이 없으면 보류');
+await dismissRule(page);
+check((await page.locator('#puzzle [data-piece]').count()) === 6 && (await page.locator('#puzzle [data-link]').count()) === 0 && !(await page.locator('#puzzle').innerText()).includes('근거 붙이기'), '[P01] 조각 6개(단서 문장 4 + 오답 조각 2), 근거 붙이기 UI 는 없다');
+check((await page.locator('#puzzle .pc i').first().innerText()).startsWith('‹'), '[P01] 조각마다 출처(단서·진술 이름)가 보인다');
+check((await page.locator('#puzzle [data-submit][disabled]').count()) === 1 && (await page.locator('#puzzle [data-hold]').isVisible()), '[P01] 모든 칸이 채워지기 전에는 [결론 확정]을 누를 수 없고, [보류하고 나가기]가 눈에 띈다');
+check((await page.locator('#puzzle').innerText()).includes('남은 기회') && (await page.locator('#puzzle .pz-att').innerText()).includes('3/3'), '[P01] 남은 결론 기회 3/3 표시');
+// 마우스 드래그: 혈흔 조각을 책상 의자 칸으로 (오답 배치)
+{ const a1 = await page.locator('#puzzle [data-piece="p_blood"]').first().boundingBox(); const b1 = await page.locator('#puzzle .zone[data-zone="desk_chair"]').first().boundingBox();
+  await page.mouse.move(a1!.x + a1!.width / 2, a1!.y + a1!.height / 2); await page.mouse.down();
+  await page.mouse.move(b1!.x + b1!.width / 2, b1!.y + b1!.height / 2, { steps: 8 }); await page.mouse.up(); await wait(100); }
+check((await page.locator('#puzzle .zone[data-zone="desk_chair"] [data-piece="p_blood"]').count()) === 1, '[P01] 마우스 드래그로 조각을 칸에 놓는다');
+await placeCorrect(page, 'P01_scene_rebuild', { altar_floor: ['p_baek', 'p_drag'], desk_chair: ['p_blood', 'p_exam'] }); // 두 칸의 조각을 서로 바꿔 놓는다
+check((await page.locator('#puzzle [data-chip]').count()) === 4 && (await page.locator('#puzzle [data-submit]:not([disabled])').count()) === 1, '[P01] 모든 위치에 조각을 놓으면 “무엇이 옮겨졌나?”가 나오고 확정할 수 있다');
+await page.locator('#puzzle [data-submit]').click();
+check((await page.locator('#puzzle .pz-ov').innerText()).includes('이 결론을 확정할까요?') && (await page.locator('#puzzle .pz-ov').innerText()).includes('남은 기회 3/3'), '[P01] 확정 전에 확인 창: 이 결론을 확정할까요? 남은 기회 3/3');
+await page.locator('#puzzle [data-confirm="no"]').click();
+check(await cw<boolean>('!cw.state.wrongCountByPuzzle.P01_scene_rebuild'), '[P01] 확인 창에서 취소하면 기회가 줄지 않는다');
+await confirm(page);
+{ const warn = await warnLines();
+  check(warn.length === 1 && warn[0].includes('백선우의 진술') && !warn.join().includes('기도대 옆 바닥') && !warn.join().includes('책상 의자'), '[P01] 1번째 오답: 충돌 문장 하나(자료 이름만, 정답 위치 없음)'); }
+check((await page.locator('#puzzle .hint-t').innerText()).includes('힌트') && (await page.locator('#puzzle .pz-att').innerText()).includes('2/3') && await cw<boolean>('cw.state.wrongCountByPuzzle.P01_scene_rebuild === 1'), '[P01] 1번째 오답: 힌트 문장 + 남은 기회 2/3');
 await noIds('[P01] 오답 화면');
-await shot('stage4_p01');
-await click('#puzzle [data-src]');
-await page.waitForSelector('#viewer'); await closeViewer();
-check(true, '[P01] 퍼즐 중 원문 자료를 다시 열 수 있다');
-
-// P01 정답: 키보드 (토큰 선택 → 방향키 → Enter)
+// 보류하고 나가기: 놓은 조각과 남은 기회가 저장되고 벌점이 없다
+await page.locator('#puzzle [data-hold]').click(); await page.waitForSelector('#dialogue');
+check((await page.locator('#dialogue .text').innerText()).length >= 0 && await cw<boolean>("!!cw.state.puzzleDrafts.P01_scene_rebuild && cw.state.wrongCountByPuzzle.P01_scene_rebuild === 1"), '[P01] 보류: 놓은 조각 저장, 기회는 그대로(2/3)');
+await wait(2200); check((await page.locator('#dialogue .text').innerText()).includes('미결 사건'), '[미결 사건] 보류하고 나가면 처음 한 번 독백으로 알려 준다');
+await mash();
+await cw("cw.ui.puzzle('P01_scene_rebuild')"); await page.waitForSelector('#puzzle'); await wait(200);
+check((await page.locator('#puzzle .zone[data-zone="desk_chair"] [data-piece="p_blood"]').count()) === 1 && (await page.locator('#puzzle .pz-att').innerText()).includes('2/3'), '[P01] 다시 열면 놓은 조각과 남은 기회(2/3)가 그대로다');
+// 정답: 키보드 (조각 선택 → Enter 로 잡기 → 방향키로 칸 → Enter 로 놓기) 후 나머지는 마우스
 await page.mouse.move(5, 5);
-for (let i = 0; i < 12 && (await page.locator('#puzzle .tk.foc[data-token="impactPosition"]').count()) === 0; i++) await press('ArrowLeft'); // 첫 토큰으로 포커스
-await press('Enter'); await press('ArrowLeft'); await press('Enter'); // 충돌 직후 → 기도대 옆 바닥
-await press('ArrowRight'); await press('Enter'); await press('Enter'); // 보고서 당시 토큰: 잡았다 그대로 놓기
-check((await page.locator('#puzzle [data-zone="altar_floor"] [data-token="impactPosition"]').count()) === 1, '[P01] 키보드로 토큰을 위치에 놓는다');
-await attachLink(page, 'finalPosition', 'E02_altar_blood'); // 토큰은 정답이지만 근거가 틀리다
-await click('#puzzle [data-submit]'); await wait(100);
-check(!(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P01_scene_rebuild')")) && (await warnLines()).length === 1 && (await warnLines())[0].includes('내용을 말해 주지 않는다'), '[P01] 정답 토큰 + 틀린 근거 = 오답 (붙인 자료의 이름을 말한다)');
-await attachCorrectLinks(page, 'P01_scene_rebuild');
-await click('#puzzle [data-submit]'); await wait(100);
-check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P01_scene_rebuild') && cw.state.flags.includes('flag_scene_rebuilt')"), '[P01] 정답 토큰 + 정답 근거 → 해결, 현장 재구성 플래그');
-check(await cw<boolean>("cw.state.verifiedEvidenceIds.includes('E02_altar_blood') && cw.state.verifiedEvidenceIds.includes('E03_preliminary_exam')"), '[P01] E02·E03 검증됨');
-await press('Enter');
+await placeCorrect(page, 'P01_scene_rebuild');
+await confirm(page);
+check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P01_scene_rebuild') && cw.state.flags.includes('flag_scene_rebuilt') && cw.state.flags.includes('puzzle_done:P01_scene_rebuild')"), '[P01] 정답 → 해결 (puzzle_done 플래그)');
+check(await cw<boolean>("cw.state.verifiedEvidenceIds.includes('E02_altar_blood') && cw.state.verifiedEvidenceIds.includes('E03_preliminary_exam')"), '[P01] 해결 → E02·E03 검증');
+await press('Enter'); await cw("cw.openDialogue('mono_p01_solved')"); // (시험 훅으로 연 퍼즐이라 해결 독백은 직접 연다)
 await page.waitForSelector('#dialogue');
 await wait(60); await press('Enter');
 const mid = await page.locator('#dialogue .text').innerText();
@@ -457,7 +450,6 @@ const until = async (text: string) => {
   }
   return false;
 };
-const focusOn = async (sel: string) => { for (let i = 0; i < 40 && (await page.locator(sel).count()) === 0; i++) await press('ArrowRight'); };
 const focusOnRow = async (name: string) => {
   for (let i = 0; i < 16; i++) {
     if ((await page.locator('#notebook .row.sel').first().innerText()).includes(name)) return;
@@ -536,7 +528,30 @@ await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('예약 재생'), '[씬 3] 방송표: 예약 재생');
 await mash();
 check(await cw<boolean>("cw.state.statements.choi_s_prayer.stage === 'contradiction'"), '[씬 3] 최옥자 진술이 예약 방송 반증과 연결(모순)');
-check((await page.locator('#puzzle').count()) === 0, '[씬 3] 방송표만으로는 P02 가 열리지 않는다 (간호사실의 출입 기록 E05 가 필요하다)');
+await page.waitForSelector('#puzzle', { timeout: 3000 });
+check(true, '[P02] 2층 진술(최옥자·한유진·채소연) + 정하늘 대면 + 방송표가 모이면 E05 없이도 자동 개방');
+await noIds('[P02] 초기 화면');
+await dismissRule(page);
+check((await page.locator('#puzzle [data-piece]').count()) === 6 && (await page.locator('#puzzle .zone.tl').count()) === 4, '[P02] 조각 6개(진술·기록 4 + 오답 조각 2)와 시간 칸 4개');
+// 오답: 예약 방송 조각을 22:46 칸에 (나머지는 정답)
+await placeCorrect(page, 'P02_night_timeline', { t2246: ['d_sermon'] });
+await confirm(page);
+check((await warnLines()).length === 1 && (await warnLines())[0].includes('방송표와 맞지 않는다'), '[P02] 방송 조각을 시간 칸에 넣으면 충돌 문장 하나 (복도 방송표와 맞지 않는다)');
+check(await cw<boolean>('cw.state.wrongCountByPuzzle.P02_night_timeline === 1'), '[P02] 오답 1회 기록');
+await noIds('[P02] 오답 화면');
+await shot('stage5_p02');
+// 정답: 키보드 (충돌음 조각을 22:46 칸에 → 방송 조각은 놓지 않은 조각으로 돌아간다)
+await page.mouse.move(5, 5);
+await click('#puzzle [data-piece="d_sermon"]'); await click('#puzzle [data-zone="t2246"]'); // 방송 조각을 되돌리는 대신 충돌음 조각으로 밀어낸다
+await click('#puzzle [data-piece="t_thud"]'); await click('#puzzle [data-zone="t2246"]');
+check((await page.locator('#puzzle .pz-side [data-piece="d_sermon"]').count()) === 1, '[P02] 방송 조각은 밀려나 “놓지 않은 조각”으로 돌아간다');
+await confirm(page);
+check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P02_night_timeline')"), '[P02] 정답 배열 → 해결');
+await press('Enter');
+await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
+const p2 = await page.locator('#dialogue .text').innerText();
+check(p2.includes('정하늘이 원장실에 있었다') && !/계획|살인|의도/.test(p2), '[P02] 결과 문구는 “정하늘이 원장실에 있었다”까지만');
+await mash();
 
 // ---- 씬 4: 3층 ----
 await teleport(1350); await wait(60); await press('Enter');
@@ -563,30 +578,33 @@ check(await cw<boolean>("cw.state.evidenceIds.includes('E07_report_revision') &&
 await page.waitForSelector('#puzzle', { timeout: 3000 });
 check(true, '[P03] E03 + E07 이 있으면 자동 개방');
 await noIds('[P03] 초기 화면');
-await click('#puzzle [data-chip="marked|position_changed"]'); await click('#puzzle [data-chip="marked|laceration_deleted"]'); await click('#puzzle [data-chip="marked|spelling_fix"]');
-await click('#puzzle [data-submit]'); await wait(60);
-check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) >= 1, '[P03] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
-// 근거 고르기 목록: 가진 카드가 많아도 줄바꿈 + 최대 높이 + 스크롤이고, 선택한 줄이 항상 보인다
-await click('#puzzle [data-link="marked"]'); await wait(100);
-for (let i = 0; i < 16; i++) await press('ArrowDown');
-await wait(150);
-const pk = await page.evaluate(`(() => {
-  var list = document.querySelector('#puzzle .lplist'), lb = list.getBoundingClientRect(), sel = document.querySelector('#puzzle .lrow.sel').getBoundingClientRect(), pickBox = document.querySelector('#puzzle .lpick').getBoundingClientRect(), box = document.querySelector('#puzzle').getBoundingClientRect();
-  return { n: document.querySelectorAll('#puzzle .lrow').length, scrolls: list.scrollHeight > list.clientHeight, selVisible: sel.top >= lb.top - 4 && sel.bottom <= lb.bottom + 4, inside: pickBox.bottom <= box.bottom + 1 && pickBox.right <= box.right + 1 };
-})()`) as { n: number; scrolls: boolean; selVisible: boolean; inside: boolean };
-check(pk.n >= 15 && pk.scrolls && pk.inside, `[근거 목록] 가진 카드 ${pk.n - 1}장 전부 나오고, 목록은 화면 안에서 스크롤된다`);
-check(pk.selVisible, '[근거 목록] 선택한 줄이 항상 보이는 영역 안에 있다 (자동 스크롤)');
-await press('Escape'); await wait(100);
-check((await page.locator('#puzzle .lpick').count()) === 0 && (await page.locator('#puzzle').count()) === 1, '[근거 목록] Esc 는 목록만 닫고 퍼즐은 그대로');
-await attachCorrectLinks(page, 'P03_revision_diff');
-await click('#puzzle [data-submit]'); await wait(60);
-check((await warnLines()).length === 1 && (await warnLines())[0].includes('띄어쓰기') && !(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P03_revision_diff')")), '[P03] 띄어쓰기 항목을 고르면 정답으로 인정하지 않고 충돌 문장 하나');
+await dismissRule(page);
+check((await page.locator('#puzzle .desk').count()) === 1 && (await page.locator('#puzzle [data-icon]').count()) === 4 && (await page.locator('#puzzle .taskbar').count()) === 1, '[P03] 부원장 PC 바탕화면: 파일 2 · 휴지통 · 문서 비교 아이콘 + 작업 표시줄');
+check((await page.locator('#puzzle .win').count()) === 0, '[P03] 처음에는 열린 창이 없다 (더블클릭으로 연다)');
+await page.locator('#puzzle [data-icon="file:final"]').dblclick();
+check((await page.locator('#puzzle .win').innerText()).includes('발견 위치: 책상 의자') && !(await page.locator('#puzzle .win').innerText()).includes('기도대 옆 바닥'), '[P03] 더블클릭으로 검안기록_최종.txt 를 연다 (최종본: 책상 의자)');
+{ const tb = await page.locator('#puzzle .wtitle').first().boundingBox(); const x0 = (await page.locator('#puzzle .win').first().boundingBox())!.x;
+  await page.mouse.move(tb!.x + 20, tb!.y + 3); await page.mouse.down(); await page.mouse.move(tb!.x + 70, tb!.y + 10, { steps: 6 }); await page.mouse.up();
+  await wait(150); check((await page.locator('#puzzle .win').first().boundingBox())!.x > x0 + 20, '[P03] 창은 제목줄을 끌어 이동할 수 있다'); }
+await page.locator('#puzzle [data-wclose]').first().click();
+check((await page.locator('#puzzle .win').count()) === 0, '[P03] 창은 × 로 닫을 수 있다');
+await page.locator('#puzzle [data-icon="trash"]').dblclick();
+check((await page.locator('#puzzle .win').innerText()).includes('검안기록_자동저장.txt'), '[P03] 휴지통에 자동 저장된 이전 판이 있다');
+await page.locator('#puzzle [data-wfile="auto"]').click();
+check((await page.locator('#puzzle .win').last().innerText()).includes('발견 위치: 기도대 옆 바닥'), '[P03] 이전 판: 발견 위치 기도대 옆 바닥');
+await page.locator('#puzzle [data-icon="file:log"]').dblclick();
+check((await page.locator('#puzzle .win').last().innerText()).includes('BSW_ADMIN'), '[P03] 수정이력.log: 수정 계정 BSW_ADMIN');
+await runDesktopCompare(page);
+check((await page.locator('#puzzle .diff').count()) === 3 && !/띄어쓰기|문장 위치|표기/.test(await page.locator('#puzzle .wcmp').innerText()), '[P03] 문서 비교: 바뀐 줄은 의미 있는 3줄뿐 (띄어쓰기·문장 위치·시각 표기 변경은 없다)');
+await noIds('[P03] 비교 화면');
+await shot('stage5_p03_compare');
+// 오답: 발견 위치 줄이 숨긴 사실을 “사망 시각”으로
+await placeCorrect(page, 'P03_revision_diff', { chg_position: ['d_time'] });
+await confirm(page);
+check((await warnLines()).length === 1 && (await warnLines())[0].includes('발견 위치') && !(await warnLines())[0].includes('옮겨'), '[P03] 오답: 충돌 문장 하나 (비교 줄 이름만, 정답은 말하지 않는다)');
 await noIds('[P03] 오답 화면');
-await shot('stage5_p03');
-await page.mouse.move(5, 5);
-await focusOn('#puzzle .chip.foc[data-chip="marked|spelling_fix"]'); await press('Enter'); // 해제
-await focusOn('#puzzle .chip.foc[data-chip="marked|breathing_changed"]'); await press('Enter');
-await click('#puzzle [data-submit]'); await wait(100);
+await placeCorrect(page, 'P03_revision_diff');
+await confirm(page);
 check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P03_revision_diff') && cw.state.verifiedEvidenceIds.includes('E07_report_revision')"), '[P03] 정답(키보드) → E07 검증');
 await press('Enter'); await page.waitForSelector('#dialogue'); await mash();
 await talkTo(150);
@@ -619,40 +637,6 @@ await page.waitForSelector('#viewer'); await press('Enter'); await wait(150); //
 await page.waitForSelector('#viewer'); // 이어서 원장실 출입 기록 (E05, 기획서대로 3층 간호사실)
 check((await docText()).includes('22:41 / 청소용 마스터키 사용'), '[씬 4] 간호사실 출입 기록(E05) 원문: 22:41 마스터키 사용');
 await closeViewer();
-await page.waitForSelector('#puzzle', { timeout: 3000 });
-check(true, '[P02] 간호사실 E05 를 얻으면 (최옥자·한유진·채소연 대화 + 방송표 + E05) 자동 개방');
-await noIds('[P02] 초기 화면');
-
-// P02 오답: 방송 카드를 사람 동선(22:46)에 넣는다
-const put = async (card: string, slot: string) => { await click(`#puzzle [data-token="${card}"]`); await click(`#puzzle [data-zone="${slot}"]`); };
-await put('key_lost', 't2234'); await put('door_open', 't2241'); await put('sermon', 't2246');
-const rc = await page.locator('#puzzle [data-token="return_room"]').first().boundingBox();
-const z51 = await page.locator('#puzzle [data-zone="t2251"]').first().boundingBox();
-await page.mouse.move(rc!.x + rc!.width / 2, rc!.y + rc!.height / 2); await page.mouse.down();
-await page.mouse.move(z51!.x + z51!.width / 2, z51!.y + z51!.height / 2, { steps: 8 }); await page.mouse.up();
-await wait(100);
-await click('#puzzle [data-submit]'); await wait(60);
-check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) === 4, '[P02] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
-check(await cw<boolean>('!cw.state.wrongCountByPuzzle.P02_night_timeline'), '[P02] 오답 횟수는 그대로');
-await attachLink(page, 't2234', 'chae_s_out'); await attachLink(page, 't2241', 'E05_access_log'); await attachLink(page, 't2246', 'choi_s_thud'); await attachLink(page, 't2251', 'chae_s_time');
-await click('#puzzle [data-submit]'); await wait(60);
-check((await warnLines()).length === 1 && (await warnLines())[0].includes('방송표와 맞지 않는다'), '[P02] 방송을 사람 동선에 넣으면 충돌 문장 하나 (복도 방송표와 맞지 않는다)');
-check(await cw<boolean>('cw.state.wrongCountByPuzzle.P02_night_timeline === 1'), '[P02] 오답 1회 기록');
-await noIds('[P02] 오답 화면');
-await shot('stage5_p02');
-// P02 정답: 키보드 (충돌음 카드를 22:46 칸에 → 방송 카드는 바깥으로 밀려난다)
-await page.mouse.move(5, 5);
-for (let i = 0; i < 12 && (await page.locator('#puzzle .tk.foc[data-token="thud"]').count()) === 0; i++) await press('ArrowLeft');
-await press('Enter'); await press('ArrowRight', 3); await press('Enter');
-check((await page.locator('#puzzle .zone.outside [data-token="sermon"]').count()) === 1, '[P02] 방송 카드는 “타임라인 바깥”으로 돌아간다');
-await click('#puzzle [data-submit]'); await wait(100);
-check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P02_night_timeline')"), '[P02] 정답 배열 + 근거 → 해결');
-await press('Enter');
-await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
-const p2 = await page.locator('#dialogue .text').innerText();
-check(p2.includes('정하늘이 원장실에 있었다') && !/계획|살인|의도/.test(p2), '[P02] 결과 문구는 “정하늘이 원장실에 있었다”까지만');
-await mash();
-
 check(await cw<boolean>("cw.state.evidenceIds.includes('E09_sedative_gap') && cw.state.verifiedEvidenceIds.includes('E05_access_log') && cw.state.verifiedEvidenceIds.includes('E06_torn_sleeve')"), '[씬 4] 재고표: E09·E05 (P02 를 이미 풀었으므로 E05 즉시 검증, E06 도 검증)');
 await exitRoom('floor3');
 
@@ -666,27 +650,21 @@ await closeViewer();
 await page.waitForSelector('#puzzle', { timeout: 3000 });
 check(true, '[P04] E10 + E11 → 자동 개방');
 await noIds('[P04] 초기 화면');
-const dragTo = async (token: string, zone: string) => {
-  const a = await page.locator(`#puzzle [data-token="${token}"]`).first().boundingBox();
-  const b = await page.locator(`#puzzle [data-zone="${zone}"]`).first().boundingBox();
-  await page.mouse.move(a!.x + a!.width / 2, a!.y + a!.height / 2); await page.mouse.down();
-  await page.mouse.move(b!.x + b!.width / 2, b!.y + b!.height / 2, { steps: 8 }); await page.mouse.up(); await wait(80);
-};
-await dragTo('doc_selection', 'lee_hanshin'); await dragTo('doc_approval', 'lee_hyejeong');
-await dragTo('doc_schedule', 'baek_sunwoo'); await dragTo('doc_transfer', 'baek_sunwoo');
-await click('#puzzle [data-submit]'); await wait(60);
-check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) >= 1, '[P04] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
-await attachCorrectLinks(page, 'P04_approval_chain');
-await click('#puzzle [data-submit]'); await wait(60);
+await dismissRule(page);
+check((await page.locator('#puzzle .zone.node').count()) === 4 && (await page.locator('#puzzle [data-person]').count()) === 4 && (await page.locator('#puzzle .form').count()) === 4, '[P04] 승인 체계 트리: 최종 승인 + 선정·시술 진행·이송 지시 칸(서식 문구) + 인물 카드 4장(오답 카드 1)');
+check((await page.locator('#puzzle').innerText()).includes('이혜정 · 이사') && !(await page.locator('#puzzle').innerText()).includes('교주'), '[P04] 인물 카드는 이름 · 직함만 (교주 표기 없음)');
+await placeCorrect(page, 'P04_approval_chain', { doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'] });
+await confirm(page);
 check((await warnLines()).length === 1 && (await warnLines())[0].includes('작성 약자와 맞지 않는다'), '[P04] LHJ/LHS 를 혼동하면 충돌 문장 하나 (위조 동의서 묶음의 작성 약자와 맞지 않는다)');
+check(await cw<boolean>("cw.state.wrongCountByPuzzle.P04_approval_chain === 1"), '[P04] 오답 1회 기록');
 await noIds('[P04] 오답 화면');
 await shot('stage5_p04');
-await page.mouse.move(5, 5);
-for (let i = 0; i < 12 && (await page.locator('#puzzle .tk.foc[data-token="doc_selection"]').count()) === 0; i++) await press('ArrowLeft');
-await press('Enter'); await press('ArrowLeft'); await press('Enter'); // 선정표 → 이혜정
-await press('ArrowRight'); await press('Enter'); await press('ArrowRight'); await press('Enter'); // 승인표 → 이한신
-await press('ArrowRight', 2); await press('Enter'); await press('ArrowRight'); await press('Enter'); // 이송 지시서 → 이혜정 (백선우 칸에서 한 칸 뒤로 돌아 이혜정)
-await click('#puzzle [data-submit]'); await wait(100);
+// 2번째 오답: 틀린 후보(오답 인물 카드) 하나가 사라진다
+await confirm(page);
+check((await page.locator('#puzzle [data-person="oh_miran"]').count()) === 0 && (await page.locator('#puzzle .pz-att').innerText()).includes('1/3'), '[P04] 2번째 오답: 충돌 문장 + 틀린 후보(오미란 카드) 제거, 남은 기회 1/3');
+// 정답
+await placeCorrect(page, 'P04_approval_chain');
+await confirm(page);
 check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P04_approval_chain') && cw.state.verifiedEvidenceIds.includes('E10_consent_forms')"), '[P04] 정답(키보드) → E10·E11 검증');
 await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); await press('Enter');
 check((await page.locator('#dialogue .text').innerText()).includes('선정은 이혜정, 승인은 이한신, 실행은 백선우'), '[P04] 중간 결론: 선정·승인·실행');
@@ -746,35 +724,23 @@ check((await docText()).includes('노란 실팔찌') && (await docText()).includ
 await closeViewer();
 await page.waitForSelector('#puzzle', { timeout: 3000 });
 check(true, '[P05] 장부·연결표·보관함·운송표가 모이면 자동 개방');
-check((await page.locator('#puzzle').innerText()).includes('한유진의 진술') && (await page.locator('#puzzle').innerText()).includes('노란 실팔찌'), '[P05] 한유진 진술(ID)로 유품과 대조');
+check((await page.locator('#puzzle').innerText()).includes('한유진의 진술') && (await page.locator('#puzzle').innerText()).includes('P-271'), '[P05] 후보 표와 한유진 진술(ID)로 대조');
+await dismissRule(page);
 await noIds('[P05] 초기 화면');
 await shot('stage6_p05_start');
-
-// P05 오답: 후보 표에서 한유진을 고른다 (혈액형은 같다)
-for (const k of ['ageMatch|eunji', 'ageMatch|unknown', 'bloodMatch|eunji', 'bloodMatch|yujin', 'admissionMatch|eunji', 'belongingMatch|eunji',
-  'linkedSources|E12_ledger', 'linkedSources|E13_identity_map', 'linkedSources|E14_belongings_diary', 'linkedSources|han_s_bracelet']) await click(`#puzzle [data-chip="${k}"]`);
-const tk5 = await page.locator('#puzzle [data-token="identity"]').first().boundingBox();
-const row5 = await page.locator('#puzzle tr[data-zone="yujin"]').first().boundingBox();
-await page.mouse.move(tk5!.x + tk5!.width / 2, tk5!.y + tk5!.height / 2); await page.mouse.down();
-await page.mouse.move(row5!.x + 30, row5!.y + row5!.height / 2, { steps: 8 }); await page.mouse.up(); await wait(100);
-await click('#puzzle [data-submit]'); await wait(60);
-check((await noteText()) === '근거를 붙이지 않은 칸이 있다.' && (await page.locator('#puzzle .lnk.need').count()) >= 1, '[P05] 근거를 붙이지 않으면 안내 하나 + 근거 칸 강조 (오답 아님)');
-await attachCorrectLinks(page, 'P05_patient_code');
-await click('#puzzle [data-submit]'); await wait(60);
-check((await warnLines()).length === 1 && (await warnLines())[0].includes('특별 치료 장부와 맞지 않는다'), '[P05] 오답: 충돌 문장 하나, 자료 이름으로 (특별 치료 장부와 맞지 않는다)');
+// 오답: 신원을 한유진으로 (나이·혈액형은 맞게)
+await placeCorrect(page, 'P05_patient_code', { identity: ['yujin'], admissionMatch: ['yujin'], belongingMatch: ['yujin'] });
+await confirm(page);
+check((await warnLines()).length === 1 && (await warnLines())[0].includes('연결표'), '[P05] 오답: 충돌 문장 하나, 자료 이름으로 (환자번호-코드 연결표와 맞지 않는다)');
 check(!(await page.locator('#puzzle .warn').innerText()).includes('박은지'), '[P05] 오답 표시에 정답 이름이 없다');
+check((await page.locator('#puzzle .pfb, #puzzle .pz-fb').first().evaluate((e) => e.scrollHeight <= e.clientHeight + 24)), '[P05] 안내·힌트가 잘리지 않는다');
 await noIds('[P05] 오답 화면');
 await shot('stage6_p05');
-// 일기장만으로는 확정할 수 없다: 연결 자료를 일기장(보관함)만 남기면 오답
-await click('#puzzle [data-chip="linkedSources|E12_ledger"]'); await click('#puzzle [data-chip="linkedSources|E13_identity_map"]'); await click('#puzzle [data-chip="linkedSources|han_s_bracelet"]');
-await page.mouse.move(5, 5);
-for (let i = 0; i < 40 && (await page.locator('#puzzle .tk.foc[data-token="identity"]').count()) === 0; i++) await press('ArrowLeft');
-await press('Enter'); await press('ArrowLeft'); await press('Enter'); // 후보 행 → 박은지
-await focusOn('#puzzle .submit.foc'); await press('Enter'); await wait(100);
-check(await cw<boolean>("!cw.state.solvedPuzzleIds.includes('P05_patient_code')"), '[P05] 정답 후보라도 일기장(유품)만 연결하면 확정되지 않는다');
-await click('#puzzle [data-chip="linkedSources|E12_ledger"]'); await click('#puzzle [data-chip="linkedSources|E13_identity_map"]'); await click('#puzzle [data-chip="linkedSources|han_s_bracelet"]');
-await page.mouse.move(5, 5);
-await focusOn('#puzzle .submit.foc'); await press('Enter'); await wait(100);
+// 정답: 토큰을 떼고 다시 놓고, 선택을 고친다
+await page.locator('#puzzle [data-token="identity"]').first().click();
+await page.evaluate(() => { document.querySelectorAll<HTMLElement>('#puzzle .chip.on').forEach((c) => c.click()); });
+await placeCorrect(page, 'P05_patient_code');
+await confirm(page);
 check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P05_patient_code') && cw.state.verifiedEvidenceIds.includes('E12_ledger') && cw.state.verifiedEvidenceIds.includes('E15_transport_manifest') && cw.state.flags.includes('flag_claim_d_open')"), '[P05] 해결 → E12~E15 검증, 질문 D 개방');
 await press('Enter'); await page.waitForSelector('#dialogue'); await wait(60); await press('Enter'); await press('Enter'); // P05 결과 독백
 
@@ -1024,10 +990,23 @@ const pt = await page.locator('#notebook').innerText();
 check(pt.includes('미결 사건') && pt.includes('사건 열기'), '[미결 사건] 재료가 모인 퍼즐이 수첩 "미결 사건" 탭에 남는다');
 await press('Enter'); await page.waitForSelector('#puzzle', { timeout: 3000 });
 check(true, '[미결 사건] Enter 로 사건(퍼즐)을 다시 연다');
-await press('Escape'); await page.waitForSelector('#dialogue'); // 처음 한 번 독백
+await dismissRule(page); await press('Escape'); await page.waitForSelector('#dialogue'); // 처음 한 번 독백
 await wait(2200); // 타이핑이 끝난 뒤
 check((await page.locator('#dialogue .text').innerText()).includes('미결 사건'), '[미결 사건] 풀지 않고 닫으면 처음 한 번 독백으로 알려 준다');
 await mash();
+// 검증 실패: 결론 기회 3번을 모두 쓰면 퍼즐이 닫히고 관련 단서는 검증 실패(신빙성 낮음)로 남는다
+await cw("cw.ui.puzzle('P01_scene_rebuild')"); await page.waitForSelector('#puzzle'); await dismissRule(page);
+for (let i = 1; i <= 3; i++) {
+  await placeCorrect(page, 'P01_scene_rebuild', { altar_floor: ['p_baek', 'p_drag'], desk_chair: ['p_blood', 'p_exam'] });
+  await confirm(page); await wait(150);
+}
+check((await page.locator('#puzzle .bad').innerText()).includes('검증 실패') && await cw<boolean>("cw.state.failedPuzzleIds.includes('P01_scene_rebuild') && cw.state.flags.includes('puzzle_failed:P01_scene_rebuild')"), '[검증 실패] 3번째 오답: 검증 실패로 닫힌다 (퍼즐 화면에 이유 표시)');
+check((await page.locator('#puzzle [data-submit]').count()) === 0, '[검증 실패] 다시 확정할 수 없다');
+await press('Enter'); await page.waitForFunction(() => !document.querySelector('#puzzle'));
+check(await cw<boolean>("cw.state.verifiedEvidenceIds.every((id) => id !== 'E02_altar_blood')"), '[검증 실패] 관련 단서(E02·E03)는 검증되지 않는다');
+await press('Tab'); await page.waitForSelector('#notebook'); await press('ArrowLeft'); await wait(150);
+check((await page.locator('#notebook .row.dis').first().innerText()).includes('검증 실패') && (await page.locator('#notebook button.row', { hasText: '현장 위치 재구성' }).count()) === 0, '[검증 실패] 수첩 “미결 사건” 탭에 “검증 실패”로 표시되고 열 수 없다');
+await press('Tab');
 
 await browser.close();
 check(errors.length === 0, `콘솔 오류 0 ${errors.join(' | ')}`);

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "test": "vitest run",
+    "test": "node tools/run-vitest.mjs",
     "validate": "tsx tools/validate-data.ts",
     "assets": "tsx tools/normalize-assets.ts",
     "readme:credits": "tsx tools/readme-credits.ts",

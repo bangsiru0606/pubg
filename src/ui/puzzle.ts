@@ -15,8 +15,9 @@ import { el, esc, root } from './hud';
 import { bgmPop, bgmPush, puzzleTrack, sfx } from '../audio/audio';
 import { popModal, pushModal } from './input';
 import { openViewer } from './viewer';
+import { openNotebook } from './notebook';
 
-type Focus = { kind: 'piece' | 'person' | 'chip' | 'cycle' | 'icon' | 'cmp' | 'src' | 'submit' | 'hold' | 'choice' | 'back'; id: string };
+type Focus = { kind: 'piece' | 'person' | 'chip' | 'cycle' | 'icon' | 'cmp' | 'src' | 'submit' | 'hold' | 'choice' | 'back' | 'clues'; id: string };
 const TRAY = 'tray';
 export const RULE_TEXT = '사건 재구성은 단서가 사라지기 전에 해야 한다. 결론은 한 번만 확정할 수 있다.';
 
@@ -64,7 +65,10 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     ans[slot] = single ? (i >= 0 ? [] : [id]) : i >= 0 ? a.filter((x) => x !== id) : [...a, id];
     note = ''; render();
   }
-  const cycle = (slot: string) => { const t = tasks.find((q) => q.slot === slot)!; const ops = t.options; const cur = ops.findIndex((o) => o.id === (ans[slot] ?? [])[0]); ans[slot] = cur + 1 >= ops.length ? [] : [ops[cur + 1].id]; note = ''; render(); };
+  // 드롭다운 (P03): 칸을 누르면 그 칸 바로 아래에 후보 목록이 펼쳐진다. ↑↓ Enter 로도 고른다.
+  let ddSlot: string | null = null, ddi = 0;
+  const openDd = (slot: string) => { if (ddSlot === slot) { ddSlot = null; render(); return; } const t = tasks.find((q) => q.slot === slot)!; ddSlot = slot; ddi = Math.max(0, t.options.findIndex((o) => o.id === (ans[slot] ?? [])[0])); render(); };
+  const pickDd = (slot: string, id: string) => { ans[slot] = [id]; ddSlot = null; note = ''; render(); };
   const placeSlotsFilled = () => p.slots.filter((sl) => !markTasks.some((t) => t.slot === sl)).every((sl) => !!ans[sl]?.length);
   const complete = () => isAnswerComplete(p, ans);
 
@@ -91,7 +95,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     if (pieceLayout) out.push(...pieces().map((t) => ({ kind: 'piece' as const, id: t.id })));
     if (layout === 'tree') out.push(...people.map((q) => ({ kind: 'person' as const, id: q.id })));
     if (layout === 'logic') out.push(...placeTasks.map((t) => ({ kind: 'person' as const, id: t.slot })));
-    if (isQuiz) { const w = quizWalk(p, qpath()); if (w.at) out.push(...p.quiz!.nodes[w.at].choices.map((c) => ({ kind: 'choice' as const, id: c.id }))); if (qpath().length) out.push({ kind: 'back', id: 'back' }); }
+    if (isQuiz) { const w = quizWalk(p, qpath()); if (w.at) out.push(...p.quiz!.nodes[w.at].choices.map((c) => ({ kind: 'choice' as const, id: c.id }))); if (qpath().length) out.push({ kind: 'back', id: 'back' }); out.push({ kind: 'clues', id: 'clues' }); }
     if (layout === 'desktop') {
       out.push(...deskFiles().filter((f) => !f.inTrash).map((f) => ({ kind: 'icon' as const, id: `file:${f.id}` })), { kind: 'icon', id: 'trash' }, { kind: 'icon', id: 'compare' });
       if (wins.some((w) => w.kind === 'compare')) out.push({ kind: 'cmp', id: 'a' }, { kind: 'cmp', id: 'b' }, { kind: 'cmp', id: 'run' });
@@ -112,8 +116,8 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   function mainHtml(): string {
     if (layout === 'quiz') {
       const w = quizWalk(p, qpath()), q = p.quiz!;
-      if (!w.at) return `<div class="qq">마지막 판단까지 이르렀다. 지나온 판단을 한 문장으로 정리하면:</div><div class="qconc">${esc(quizConclusion(p, qpath()))}</div><div class="slotlbl">확신이 없으면 이전 질문으로 돌아가 다시 고를 수 있다. [결론 확정]을 누르면 확인 창이 뜬다.</div>`;
-      return `<div class="qq">질문 ${w.chosen.length + 1}. ${esc(q.nodes[w.at].q)}</div>${q.nodes[w.at].choices.map((c) => `<button class="qc${fcls('choice', c.id)}" data-choice="${esc(c.id)}"><b>${esc(c.judge)}</b><span>${esc(c.reason)}<i>‹${esc(sourceName(s, { source: c.source, srcName: c.srcName }))}›</i></span></button>`).join('')}`;
+      if (!w.at) return `<div class="slotlbl">지나온 판단을 한 문장으로 정리하면:</div><div class="qconc">${esc(quizConclusion(p, qpath()))}</div><div class="slotlbl">확신이 없으면 이전 질문으로 돌아가 다시 고를 수 있다. [결론 확정]은 한 번만 누를 수 있다.</div>`;
+      return q.nodes[w.at].choices.map((c) => `<button class="qc${fcls('choice', c.id)}" data-choice="${esc(c.id)}"><b>${esc(c.judge)}</b></button>`).join('');
     }
     if (layout === 'plan') {
       return `<div class="pz-grid">${(p.zones ?? []).map((z) => `<div class="zone" data-zone="${z.id}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span class="zl">${esc(z.label)}</span>${pieces().filter((t) => zoneOf(t.id) === z.id).map(pcHtml).join('')}</div>`).join('')}</div>`;
@@ -159,10 +163,10 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     return `<div class="desk"><div class="dicons">${iconHtml}</div>${winHtml}<div class="taskbar"><span class="start">시작</span><span class="tclock">23:52</span></div></div>`;
   }
   function sideHtml(): string {
-    if (layout === 'quiz') { const ch = quizWalk(p, qpath()).chosen; return `<div class="slotlbl">지나온 판단 (누르면 그 질문으로 돌아간다)</div>${ch.map((c, i) => `<button class="qt" data-trail="${i}">${i + 1}. ${esc(c.short)}</button>`).join('') || '<div class="slotlbl">(아직 없다)</div>'}${ch.length ? `<button class="qb${fcls('back', 'back')}" data-back>← 이전 질문으로 <kbd>Bksp</kbd></button>` : ''}`; }
+    if (layout === 'quiz') { const ch = quizWalk(p, qpath()).chosen; return `<div class="slotlbl">지나온 판단 (누르면 그 질문으로 돌아간다)</div>${ch.map((c, i) => `<button class="qt" data-trail="${i}">${i + 1}. ${esc(c.short)}</button>`).join('') || '<div class="slotlbl">(아직 없다)</div>'}${ch.length ? `<button class="qb${fcls('back', 'back')}" data-back>← 이전 질문으로 <kbd>Bksp</kbd></button>` : ''}<button class="qb${fcls('clues', 'clues')}" data-clues>단서 보기 <kbd>Tab</kbd></button>`; }
     if (pieceLayout) { const u = unplaced(); return `<div class="slotlbl">단서 조각 — 놓지 않은 조각</div>${u.map(pcHtml).join('') || '<div class="slotlbl">모두 놓았다</div>'}`; }
     if (layout === 'tree') return `<div class="slotlbl">인물 카드 (같은 카드를 여러 칸에 놓을 수 있다)</div>${people.map((q) => personHtml(q)).join('')}`;
-    if (layout === 'desktop') return markTasks.map((t) => { const cur = t.options.find((o) => o.id === (ans[t.slot] ?? [])[0]); return `<div class="ctask"><div class="slotlbl">${esc(t.label)}</div><button class="cyc${fcls('cycle', t.slot)}" data-cycle="${t.slot}">${cur ? esc(cur.label) : '(눌러서 고른다)'}</button></div>`; }).join('');
+    if (layout === 'desktop') return markTasks.map((t) => { const cur = t.options.find((o) => o.id === (ans[t.slot] ?? [])[0]), open = ddSlot === t.slot; return `<div class="ctask"><div class="slotlbl">${esc(t.label)}</div><button class="cyc${fcls('cycle', t.slot)}" data-cycle="${t.slot}">${cur ? esc(cur.label) : '(눌러서 고른다)'} ▾</button>${open ? `<div class="ddl">${t.options.map((o, i) => `<button class="ddo${i === ddi ? ' foc' : ''}${cur?.id === o.id ? ' on' : ''}" data-opt="${t.slot}|${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>` : ''}</div>`; }).join('');
     return '';
   }
   function bottomHtml(): string {
@@ -171,9 +175,11 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
       : pieceLayout && markTasks.length ? '<div class="slotlbl">모든 위치에 조각을 놓으면 다음 질문이 나온다.</div>' : '';
     const srcs = layout === 'desktop' ? '' : p.sourceEvidenceIds.filter((id) => s.evidenceIds.includes(id)).map((id) => `<button class="src${fcls('src', id)}" data-src="${id}">${esc(shownEvidence(s, id)!.title)}</button>`).join('');
     let fb = '';
+    const think = layout === 'quiz' ? (() => { const w = quizWalk(p, qpath()); return `<div class="qthink">(${esc(w.at ? p.quiz!.nodes[w.at].q : '여기까지 정리하면 이렇게 된다… 이대로 확정해도 될까.')})</div>`; })() : '';
     fb = note ? `<div class="note">${esc(note)}</div>` : '';
     const btns = phase === 'play' ? `<button class="hold${fcls('hold', 'hold')}" data-hold>보류하고 나가기 <kbd>Esc</kbd></button><button class="submit${complete() ? '' : ' off'}${fcls('submit', 'submit')}" data-submit${complete() ? '' : ' disabled'}>결론 확정</button>` : '';
-    return `<div class="pz-q">${chips}</div><div class="pz-src">${srcs}</div><div class="pz-fb">${fb}</div><div class="pz-btns">${btns}</div>`;
+    const dinfo = layout === 'desktop' ? `<div class="pz-info">${(p.info ?? []).map((l) => `<div>· ${esc(l)}</div>`).join('')}</div>` : '';
+    return `${think}${dinfo}<div class="pz-q">${chips}</div><div class="pz-src">${srcs}</div><div class="pz-fb">${fb}</div><div class="pz-btns">${btns}</div>`;
   }
   function overlayHtml(): string {
     if (rule) return `<div class="pz-ov"><div class="ovbox"><div class="ovt">퍼즐 규칙</div><p>${esc(RULE_TEXT)}</p><div class="ovb"><button class="foc" data-rule>확인 <kbd>Enter</kbd></button></div></div></div>`;
@@ -182,9 +188,10 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   }
   function render() {
     box.className = `modal puzzle lay-${layout}`;
-    box.innerHTML = `<div class="ptitle">${esc(p.title ?? '')}<span class="psub">${esc((p.info ?? []).join(' · '))}</span></div>
+    box.innerHTML = `<div class="ptitle">${esc(p.title ?? '')}<span class="psub">${layout === 'desktop' ? '' : esc((p.info ?? []).join(' · '))}</span></div>
       <div class="pz-main">${mainHtml()}</div><div class="pz-side">${sideHtml()}</div><div class="pz-bottom">${bottomHtml()}</div>
-      <div class="foot">${grabbed ? '←→ 위치 선택 · Enter 놓기 · Esc 취소' : isQuiz ? '↑↓ 선택 · Enter 고르기 · Backspace 이전 질문 · Esc 보류하고 나가기' : '←→ 선택 · Enter 잡기/표시/열기 · Esc 보류하고 나가기 · 마우스: 드래그·클릭'}</div>${overlayHtml()}`;
+      <div class="foot">${grabbed ? '←→ 위치 선택 · Enter 놓기 · Esc 취소' : isQuiz ? '↑↓ 선택 · Enter 고르기 · Backspace 이전 질문 · Tab 단서 보기 · Esc 보류하고 나가기' : '←→ 선택 · Enter 잡기/표시/열기 · Esc 보류하고 나가기 · 마우스: 드래그·클릭'}</div>${overlayHtml()}`;
+    box.querySelector('.ddo.foc')?.scrollIntoView({ block: 'nearest' }); // 열린 드롭다운에서 고른 항목이 보이게
   }
 
   // ---- 동작 ----
@@ -203,14 +210,17 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     if (f.kind === 'piece' || f.kind === 'person') { grabbed = f.id; grabZone = layout === 'logic' ? p.table!.rows[0].id : zoneList()[0]?.id ?? null; render(); }
     else if (f.kind === 'choice') choose(f.id);
     else if (f.kind === 'back') goBack();
+    else if (f.kind === 'clues') showClues();
     else if (f.kind === 'chip') { const [slot, id] = f.id.split('|'); toggleChip(slot, id, !!tasks.find((t) => t.slot === slot)?.single); }
-    else if (f.kind === 'cycle') cycle(f.id);
+    else if (f.kind === 'cycle') openDd(f.id);
     else if (f.kind === 'icon') { if (f.id === 'trash') openWin('trash', 'trash'); else if (f.id === 'compare') openWin('compare', 'cmp'); else openWin('file', f.id.slice(5)); }
     else if (f.kind === 'cmp') cmpAction(f.id);
     else if (f.kind === 'src') openViewer(s, f.id);
     else if (f.kind === 'hold') close();
     else if (complete()) { confirming = true; confirmSel = 0; render(); }
   }
+  /** 가진 단서를 다시 확인한다 (수첩). 닫으면 문답으로 돌아온다 */
+  function showClues() { openNotebook(s, () => render(), 0); }
   function cmpAction(k: string) {
     const n = cmpFiles().length;
     if (k === 'a') cmpA = (cmpA + 1) % Math.max(n, 1); else if (k === 'b') cmpB = (cmpB + 1) % Math.max(n, 1);
@@ -231,8 +241,11 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     const ch = t.closest('[data-choice]') as HTMLElement | null; if (ch) { choose(ch.dataset.choice!); return; }
     const tr = t.closest('[data-trail]') as HTMLElement | null; if (tr) { goBack(+tr.dataset.trail!); return; }
     if (t.closest('[data-back]')) { goBack(); return; }
+    if (t.closest('[data-clues]')) { showClues(); return; }
     const chip = t.closest('[data-chip]') as HTMLElement | null; if (chip) { const [slot, id] = chip.dataset.chip!.split('|'); toggleChip(slot, id, !!tasks.find((q) => q.slot === slot)?.single); return; }
-    const cyc = t.closest('[data-cycle]') as HTMLElement | null; if (cyc) { cycle(cyc.dataset.cycle!); return; }
+    const opt = t.closest('[data-opt]') as HTMLElement | null; if (opt) { const [slot, id] = opt.dataset.opt!.split('|'); pickDd(slot, id); return; }
+    const cyc = t.closest('[data-cycle]') as HTMLElement | null; if (cyc) { openDd(cyc.dataset.cycle!); return; }
+    if (ddSlot) { ddSlot = null; render(); }
     const src = t.closest('[data-src]') as HTMLElement | null; if (src) { openViewer(s, src.dataset.src!); return; }
     const cm = t.closest('[data-cmp]') as HTMLElement | null; if (cm) { cmpAction(cm.dataset.cmp!); return; }
     const wc = t.closest('[data-wclose]') as HTMLElement | null; if (wc) { wins = wins.filter((w) => w.id !== wc.dataset.wclose); render(); return; }
@@ -290,6 +303,12 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
         render(); return;
       }
       const fwd = e.key === 'ArrowRight' || e.key === 'ArrowDown', back = e.key === 'ArrowLeft' || e.key === 'ArrowUp';
+      if (ddSlot) { // 열린 드롭다운: ↑↓ 고르기 · Enter 정하기 · Esc 닫기
+        const ops = tasks.find((q) => q.slot === ddSlot)!.options;
+        if (e.key === 'ArrowDown') ddi = (ddi + 1) % ops.length; else if (e.key === 'ArrowUp') ddi = (ddi + ops.length - 1) % ops.length;
+        else if (e.key === 'Enter' && !e.repeat) { pickDd(ddSlot, ops[ddi].id); return; } else if (e.key === 'Escape' && !e.repeat) ddSlot = null;
+        render(); return;
+      }
       if (grabbed) {
         const zs = layout === 'logic' ? p.table!.rows.map((r) => ({ id: r.id, label: r.cells[0] })) : zoneList();
         const i = Math.max(0, zs.findIndex((z) => z.id === grabZone));
@@ -301,6 +320,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
         return;
       }
       if (isQuiz && e.key === 'Backspace' && !e.repeat) { goBack(); return; }
+      if (isQuiz && e.key === 'Tab' && !e.repeat) { showClues(); return; }
       if (e.key === 'Escape' && !e.repeat) { if (wins.length) { wins.sort((a, b) => b.z - a.z); wins.shift(); render(); } else close(); return; }
       const n = focusList().length;
       if (fwd) fi = (fi + 1) % n; else if (back) fi = (fi + n - 1) % n;

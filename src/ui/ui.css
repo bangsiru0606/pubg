@@ -303,9 +303,9 @@
 .puzzle .form i { display: block; font-style: normal; font-size: 6px; color: var(--text-dim); }
 .puzzle .pz-q { font-size: 8px; }
 .puzzle .qq { color: var(--gold); font-size: 9px; font-weight: 700; margin-bottom: 3px; line-height: 1.25; }
-.puzzle .qc { display: block; width: 100%; box-sizing: border-box; text-align: left; margin: 0 0 2px; padding: 1px 4px; font-size: 7px; line-height: 1.2; cursor: pointer; color: var(--ink); background: linear-gradient(180deg, #d8c8a0, #bfae86); border: 1px solid var(--paper-edge); }
+.puzzle .qc { display: block; width: 100%; box-sizing: border-box; text-align: left; margin: 0 0 4px; padding: 4px 6px; font-size: 9px; line-height: 1.2; cursor: pointer; color: var(--ink); background: linear-gradient(180deg, #d8c8a0, #bfae86); border: 1px solid var(--paper-edge); }
 .puzzle .qc:hover, .puzzle .qc.foc { background: linear-gradient(180deg, #ecdcae, #d6c28a); border-color: var(--gold); outline: 1px solid var(--gold); }
-.puzzle .qc b { display: block; font-size: 8px; }
+.puzzle .qc b { display: block; font-size: 9px; }
 .puzzle .qc span { display: block; color: #4b3d22; } .puzzle .qc i { font-style: normal; font-size: 6px; color: #6e5d40; margin-left: 3px; }
 .puzzle .qconc { background: linear-gradient(180deg, #ddcea8, var(--paper-2)); color: var(--ink); padding: 4px 6px; font-size: 9px; font-weight: 700; line-height: 1.35; margin-bottom: 3px; border: 1px solid var(--paper-edge); }
 .puzzle .qt { display: block; width: 100%; text-align: left; margin-bottom: 1px; padding: 0 3px; font-size: 7px; cursor: pointer; background: rgba(0,0,0,.35); border: 1px solid var(--wood-line); color: var(--text); }
@@ -435,3 +435,10 @@
 .report .rovb button { font-size: 9px; padding: 1px 10px; cursor: pointer; background: #3b2a1c; border: 1px solid var(--brass-d); color: var(--text); }
 .report .rovb button.foc { background: linear-gradient(180deg, #c4a052, #86672b); color: #1c1308; font-weight: 700; outline: none; }
 .report .rovb kbd { font: inherit; font-size: 7px; opacity: .8; margin-left: 3px; }
+
+.puzzle .qthink { margin: 0 0 3px; padding: 3px 6px; font-size: 8px; font-style: italic; line-height: 1.3; color: #e8e0cc; background: rgba(8, 10, 14, .86); border: 1px solid var(--brass-d); }
+.puzzle .pz-info { font-size: 7px; line-height: 1.35; color: #d9cfb4; margin-bottom: 2px; }
+.puzzle .ddl { margin-top: 1px; border: 1px solid var(--brass-d); background: #15110c; }
+.puzzle .ddo { display: block; width: 100%; text-align: left; padding: 1px 3px; font-size: 7px; cursor: pointer; background: transparent; border: 0; color: var(--text); }
+.puzzle .ddo:hover, .puzzle .ddo.foc { background: #3c3018; color: #fff; outline: 1px solid var(--gold); } .puzzle .ddo.on { color: var(--gold); }
+.puzzle.lay-desktop .pz-info { margin-top: 7px; }

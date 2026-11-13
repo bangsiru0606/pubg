@@ -4,6 +4,7 @@
 //  - 칸을 자동으로 채우거나 정답 쪽으로 끌어당기는 힌트는 없다. 모든 칸을 채우지 않으면 확정할 수 없고(incomplete) 기회도 줄지 않는다.
 //  - 보류하고 나가면 놓은 조각이 그대로 저장되고 기회는 줄지 않는다.
 import { characterName, evidenceById, puzzleById } from './data';
+import { fixJosa } from './josa';
 import { isVerified, setFlag } from './state';
 import type { GameState, Puzzle, PuzzlePiece, QuizChoice } from './types';
 
@@ -39,7 +40,7 @@ export function quizWalk(p: Puzzle, ids: string[] = []): { chosen: QuizChoice[];
 /** 정답이 아닌 길 하나 (각 질문에서 정답 선택지가 아닌 첫 선택지) — F9·시험용 */
 export const quizWrongPath = (p: Puzzle) => quizPathBy(p, (cs) => cs.find((c) => !p.correctSlots.path.includes(c.id)) ?? cs[0]);
 /** 지나온 판단을 한 문장 결론으로 */
-export const quizConclusion = (p: Puzzle, ids: string[]) => [p.quiz!.subject, ...quizWalk(p, ids).chosen.map((c) => c.says)].join(' ');
+export const quizConclusion = (p: Puzzle, ids: string[]) => [p.quiz!.subject, ...quizWalk(p, ids).chosen.map((c) => c.says)].filter(Boolean).join(' ');
 /** 어느 길로든 마지막 판단까지 가는 답 (pick 이 각 질문의 선택지를 고른다) — F9·시험·무작위 시뮬레이션용 */
 export function quizPathBy(p: Puzzle, pick: (choices: QuizChoice[]) => QuizChoice): string[] {
   const out: string[] = []; let at: string | null = p.quiz!.start;
@@ -73,7 +74,7 @@ export function availablePieces(s: GameState, p: Puzzle): PuzzlePiece[] {
 
 /** 충돌 문장들 (슬롯 순서). 화면에는 첫 번째 하나만 보여 준다. */
 function conflictsOf(s: GameState, p: Puzzle, a: PuzzleAnswer): string[] {
-  if (p.quiz) { const ok = p.correctSlots.path; const c = quizWalk(p, a.path).chosen.find((x) => !ok.includes(x.id) && x.conflict); return c ? [c.conflict!] : []; } // 처음 틀린 판단과 부딪히는 자료 하나
+  if (p.quiz) { const ok = p.correctSlots.path; const c = quizWalk(p, a.path).chosen.find((x) => !ok.includes(x.id) && x.conflict); return c ? [fixJosa(c.conflict!)] : []; } // 처음 틀린 판단과 부딪히는 자료 하나
   const out: string[] = [];
   const add = (m?: string) => { if (m && !out.includes(m)) out.push(m); };
   const piece = (id: string) => p.tokens?.find((t) => t.id === id);
@@ -91,7 +92,7 @@ function conflictsOf(s: GameState, p: Puzzle, a: PuzzleAnswer): string[] {
       const m = p.conflicts[`${slot}:!${t}`];
       if (m && a[slot]?.length && !a[slot].includes(t)) add(m);
     }
-  return out;
+  return out.map(fixJosa);
 }
 
 export const slotLabelOf = (p: Puzzle, slot: string) => p.tasks?.find((t) => t.slot === slot)?.label ?? p.boxes?.find((b) => b.id === slot)?.label ?? p.zones?.find((z) => z.id === slot)?.label ?? slot;

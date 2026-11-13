@@ -5,6 +5,7 @@ export * from './state';
 export * from './deduction';
 export * from './ending';
 export * from './puzzle';
+export * from './josa';
 export * from './save';
 export * from './pending';
 export * from './dialogue';

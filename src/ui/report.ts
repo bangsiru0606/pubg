@@ -4,7 +4,7 @@
 //  - 질문마다 [작성 완료] 도장으로 결론을 저장한다 (정답 여부와 무관, 알려 주지도 않는다). 판정은 core(DeductionResolver·EndingResolver)에서만 한다.
 // 제출 전 미리보기는 고른 결론과 보고 대상을 문장으로 다시 보여 줄 뿐, 정답·해결 여부·예상 엔딩을 암시하지 않는다.
 import {
-  canSaveConclusion, claims, isClaimOpen, isVerificationFailed, isVerified, relatedEvidenceIds, saveConclusion, setReportTarget, shownEvidence,
+  canSaveConclusion, josa, claims, isClaimOpen, isVerificationFailed, isVerified, relatedEvidenceIds, saveConclusion, setReportTarget, shownEvidence,
   type Claim, type GameState, type SourceType,
 } from '../core';
 import { bgmPop, bgmPush, sceneTrack, sfx } from '../audio/audio';
@@ -30,7 +30,7 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
   const nPages = claims.length + 1; // 질문들 + 보고 대상·제출
   let page = 0, zone: 'paper' | 'drawer' = 'paper', pf = 0, dc = 0, filter: SourceType | 'all' = 'all';
   let target: Slot | null = null, held: string | null = null;
-  let dd = false, ddc = 0, confirming = false, csel = 0;
+  let dd = false, ddc = 0, confirming = false, csel = 0, keepScroll = 0;
   let msg = opts.retry ? '다시 추리하기 — 이전에 쓴 결론이 그대로 채워져 있다. 고쳐서 다시 제출할 수 있다.' : '';
   const drafts: Record<string, Draft> = {};
 
@@ -108,8 +108,10 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
   function previewHtml(): string {
     return claims.map((c, i) => {
       if (!isClaimOpen(s, c)) return `<p><b>질문 ${NAMES[i]}.</b> ${esc(c.question)} — (쓰지 않았다)</p>`;
-      const d = draftOf(c), sup = supOf(d).map((id) => `「${esc(titleOf(id))}」`).join('와(과) ') || '(근거 없음)';
-      return `<p><b>질문 ${NAMES[i]}.</b> ${esc(c.question)}<br>${d.hyp ? `${esc(sentence(c, d.hyp))} 근거는 ${sup}이다. 예상되는 반론은 ${d.reb ? `「${esc(titleOf(d.reb))}」(으)로 막는다.` : '(아직 없다).'}` : '(결론을 고르지 않았다)'}${stamped(c) ? '' : ' <span class="rnote">· 도장 전</span>'}</p>`;
+      const d = draftOf(c), t = (id: string) => `「${titleOf(id)}」`, ids = supOf(d);
+      const sup = ids.length === 2 ? `${t(ids[0])}${josa(t(ids[0]), '와/과')} ${t(ids[1])}` : ids.length ? t(ids[0]) : '(근거 없음)';
+      const reb = d.reb ? `${t(d.reb)}${josa(t(d.reb), '으로/로')} 막는다.` : '(아직 없다).';
+      return `<p><b>질문 ${NAMES[i]}.</b> ${esc(c.question)}<br>${d.hyp ? esc(`${sentence(c, d.hyp)} 근거는 ${sup}이다. 예상되는 반론은 ${reb}`) : '(결론을 고르지 않았다)'}${stamped(c) ? '' : ' <span class="rnote">· 도장 전</span>'}</p>`;
     }).join('');
   }
   function submitHtml(): string {
@@ -117,7 +119,7 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
     const tg = TARGETS.map((t, k) => `<button class="rtg${s.reportTarget === t.id ? ' on' : ''}${fc(`tg${k}`)}" data-tg="${t.id}">${s.reportTarget === t.id ? '◉' : '○'} ${esc(t.label)}</button>`).join('');
     const miss = missing(), need = miss.length ? `아직 도장을 찍지 않은 질문: ${miss.map((c) => NAMES[claims.indexOf(c)]).join(', ')}` : !s.reportTarget ? '보고 대상을 고른다.' : '';
     return `<div class="rq">보고 대상과 제출</div><div class="rlbl">보고 대상</div><div class="rtgs">${tg}</div>
-      <div class="rlbl">보고서 미리보기</div><div class="rprevfull">${previewHtml()}</div>
+      <div class="rlbl">보고서 미리보기<span class="rmore"></span></div><div class="rprevfull">${previewHtml()}</div>
       <div class="rbot">${need ? `<span class="rnote">${esc(need)}</span>` : ''}<button class="rbtn${fc('submit')}${canSubmit() ? '' : ' off'}" data-submit>제출한다</button></div>`;
   }
   function render() {
@@ -127,8 +129,10 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
     const foot = zone === 'drawer' ? '↑↓ 카드 · ←→ 유형 · Enter 꽂기 · Esc 돌아가기' : '←→ 쪽 넘기기 · ↑↓ 이동 · Enter 선택(칸에서는 서랍 열기) · Del 카드 떼기 · Tab 수첩';
     box.innerHTML = `<div class="rtop"><span class="rh">최종 보고서</span><div class="rtabs">${tabs}</div></div>
       <div class="rdrawer"><div class="rdt">단서 서랍</div>${drawerHtml()}</div>
-      <div class="rpaper">${c ? claimHtml(c) : submitHtml()}</div><div class="rmsg">${esc(msg)}</div><div class="foot">${foot}</div>${ov}`;
+      <div class="rpaper${c ? '' : ' sub'}">${c ? claimHtml(c) : submitHtml()}</div><div class="rmsg">${esc(msg)}</div><div class="foot">${foot}</div>${ov}`;
     box.querySelector('.rlist .cur')?.scrollIntoView({ block: 'nearest' });
+    const pv = box.querySelector('.rprevfull') as HTMLElement | null, more = box.querySelector('.rmore');
+    if (pv && more) { pv.tabIndex = -1; pv.scrollTop = keepScroll; if (pv.scrollHeight > pv.clientHeight + 2) more.textContent = ' — 더 있다: 마우스 휠 · PageUp/PageDown 으로 넘긴다'; }
   }
 
   // ---- 동작 ----
@@ -230,6 +234,8 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
         else return;
         render(); return;
       }
+      const pvEl = box.querySelector('.rprevfull') as HTMLElement | null;
+      if (pvEl && (e.key === 'PageDown' || e.key === 'PageUp')) { pvEl.scrollTop += (e.key === 'PageDown' ? 1 : -1) * Math.max(20, pvEl.clientHeight - 12); keepScroll = pvEl.scrollTop; return; } // 제출 쪽 미리보기 넘기기
       const n = itemsOf().length;
       if (e.key === 'ArrowRight') { goPage(page + 1); return; }
       if (e.key === 'ArrowLeft') { goPage(page - 1); return; }

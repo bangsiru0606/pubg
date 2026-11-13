@@ -4,6 +4,7 @@ import puzzlesJson from '../data/puzzles.json';
 import endingsJson from '../data/endings.json';
 import conflictsJson from '../data/conflicts.json';
 import charactersJson from '../data/characters.json';
+import { fixJosa } from './josa';
 import type { Claim, Ending, EndingLine, EndingLineKey, Evidence, Puzzle } from './types';
 
 // 형식은 `npm run validate` 가 검사한다.
@@ -27,7 +28,7 @@ export const normalizeName = (raw: string) => Array.from(raw.trim()).slice(0, NA
 export const getPlayerName = () => playerName;
 export const setPlayerName = (n: string) => { playerName = n; };
 /** 대사 속 {player} 토큰을 플레이어 이름으로 바꾼다 (화면에 그리는 단계에서 치환) */
-export const fmtName = (text: string) => text.split('{player}').join(playerName);
+export const fmtName = (text: string) => fixJosa(text.split('{player}').join(playerName)); // 데이터의 “은(는)”·“(으)로” 표기는 앞 글자에 맞는 조사로 고쳐 낸다
 export const characterName = (id: string) => (id === 'han_jisu' ? playerName : characters.find((c) => c.id === id)?.name ?? '');
 /** 화면에 쓰는 이름표: 직함이 있으면 이름 뒤에 붙인다 (이혜정 → "이혜정 이사") */
 export const characterLabel = (id: string) => { const t = characters.find((c) => c.id === id)?.title; return t ? `${characterName(id)} ${t}` : characterName(id); };

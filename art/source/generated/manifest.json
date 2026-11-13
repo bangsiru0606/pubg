@@ -1950,5 +1950,23 @@
       "generated/props/prayer_corner.png"
     ],
     "prompt": "Use case: stylized-concept\nAsset type: small pixel-art game prop for a hospital patient-room wall\nInput images: Image 1 is the authority for thick dark outline, limited muted palette, coarse pixel clusters, and aged frame treatment; Image 2 is the authority for the small-prop scale, coarse pixel density, restrained shading, and worn hospital colors.\nPrimary request: Create one small round analog wall clock, seen straight-on from the front as a wall-mounted prop. It has a worn off-white dial, a thick dark charcoal-brown rim, simple dark hour and minute hands, and evenly spaced tick marks only.\nComposition/framing: Center the clock on a 1024x1024 square canvas; keep it clearly smaller than the reference props, occupying about 42% of the canvas width and height, with generous empty space around it. Perfect circular silhouette, no perspective tilt.\nStyle/medium: exact coarse low-detail pixel art matching the references; same large pixel-block size, thick dark outline, limited number of flat shade steps, muted low-saturation hospital palette. No smoothing, no antialiasing, no high-detail rendering.\nScene/backdrop: every background pixel must be a single uniform pure chroma green #00FF00.\nConstraints: no numbers, no letters, no words, no logo, no signature, no watermark; tick marks only; no wall, no floor, no cast shadow, no glow; no green or lime colors anywhere in the clock itself; no extra objects."
+  },
+  {
+    "file": "illust/newspaper_desk_v2.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "illust",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "Resources/Art/Office/desk.png",
+      "Resources/Art/Office/item_letter.png",
+      "Resources/Art/Office/hat.png",
+      "Resources/Art/Office/calendar.png",
+      "generated/illust/ev_newspaper.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: isolated illustrated game prop for a desk close-up\nInput images: Image 1 (desk.png) is the authority for semi-realistic hand-drawn style, overhead viewpoint, dark ink-like outlines, warm amber light from the upper left, muted colors, and shadow direction. Images 2-4 (item_letter.png, hat.png, calendar.png) are authorities for painterly desk-prop rendering and restrained detail. Image 5 (ev_newspaper.png) is the layout reference: retain its hospital-building photo box in the upper-right part of the visible newspaper face.\nPrimary request: One newspaper physically folded in half and lying flat, viewed from directly above. It must read unmistakably as a compact folded newspaper, not an open full broadsheet: a wide low rectangle with two stacked paper layers visible along the lower and right edges, one strong horizontal center fold, and only the upper half/front face exposed. Slightly yellowed paper, clear fold crease, mildly worn corners.\nContent: on the visible front face, one rectangular photo box in the upper-right area showing a muted hospital-building silhouette. Article blocks use only soft blurred horizontal strokes.\nStyle/medium: semi-realistic hand-painted illustration matching the desk and its props; dark expressive contour lines, subdued warm colors, painterly shading and paper texture. Absolutely not pixel art, voxel art, or hard pixel blocks.\nComposition/framing: centered single folded newspaper, fully visible with generous margins on a 1024x1024 square canvas. Same direct overhead perspective as desk.png. Same warm upper-left light, with a tight soft shadow falling down-right.\nScene/backdrop: every pixel outside the folded newspaper and its tight attached shadow is perfectly uniform pure chroma green #00FF00.\nConstraints: no readable text, letters, words, numbers, logos, signatures, or watermark; blurred horizontal article lines only; no green or lime on the paper; no desk surface or extra props; do not depict an unfolded full newspaper."
   }
 ]

@@ -89,8 +89,11 @@
      "speaker": "baek_sunwoo",
      "text": "오늘 새벽 원장님께서 지병으로 돌아가셨습니다. 처리할 일이 많아 면회는 다음주로 미뤄 주십시오.",
      "source": "new",
-     "next": "b1b",
-     "portrait": "baek_neutral"
+     "next": "b2",
+     "portrait": "baek_neutral",
+     "statement": {
+      "id": "baek_s_natural"
+     }
     },
     "b2": {
      "speaker": "han_jisu",
@@ -132,17 +135,6 @@
       ]
      },
      "voice": "inner"
-    },
-    "b1b": {
-     "speaker": "baek_sunwoo",
-     "text": "원장님은 집무실 의자에 앉으신 채 발견됐습니다.",
-     "source": "new",
-     "portrait": "baek_neutral",
-     "next": "b2",
-     "statement": {
-      "id": "baek_s_natural",
-      "text": "오늘 새벽 원장님께서 지병으로 돌아가셨습니다. 처리할 일이 많아 면회는 다음주로 미뤄 주십시오. 원장님은 집무실 의자에 앉으신 채 발견됐습니다."
-     }
     }
    }
   },
@@ -236,7 +228,7 @@
     },
     "c1": {
      "speaker": "choi_okja",
-     "text": "원장님은 밤새 기도하셨어요. 스피커로 목소리가 들렸으니까.",
+     "text": "원장님이 밤새 기도하시는 걸 들었어요. 스피커로 목소리가 들렸으니까.",
      "source": "spec",
      "statement": {
       "id": "choi_s_prayer"
@@ -346,7 +338,7 @@
    "nodes": {
     "s0": {
      "speaker": "han_jisu",
-     "text": "소연 씨, 어젯밤 같은 병실이었다고 들었어요. 기억나는 대로 말해 줄래요?",
+     "text": "어젯밤에 혹시 특별한 일은 없었어요?",
      "source": "new",
      "portrait": "player_question",
      "next": "s0b"
@@ -439,7 +431,7 @@
     },
     "s0b": {
      "speaker": "chae_soyeon",
-     "text": "어젯밤 이 병실엔 저랑 하늘 언니 둘뿐이었어요.",
+     "text": "어젯밤 이 병실엔 저랑 하늘 언니 둘뿐이었는데요…",
      "source": "new",
      "portrait": "chae_worried",
      "next": "s1"
@@ -594,7 +586,8 @@
        "baek_refused"
       ]
      },
-     "portrait": "baek_cold"
+     "portrait": "baek_cold",
+     "next": "k5b"
     },
     "k6": {
      "speaker": "han_jisu",
@@ -613,6 +606,13 @@
       ]
      },
      "portrait": "baek_tense"
+    },
+    "k5b": {
+     "speaker": "han_jisu",
+     "text": "컴퓨터를 조사해 봐야겠어.",
+     "source": "new",
+     "portrait": "player_neutral",
+     "voice": "inner"
     }
    },
    "restart": [
@@ -667,7 +667,7 @@
     },
     "o3": {
      "speaker": "oh_miran",
-     "text": "…제가 잘못 적었습니다.",
+     "text": "…제가 잘못 적었습니다. 하지만 그때 아무도 없던 건 맞습니다.",
      "source": "spec",
      "present": [
       {

@@ -91,12 +91,10 @@
 .ndetail .row:hover { background: rgba(120,84,24,.14); }
 .ndetail .row.sel { background: var(--c-sel); color: var(--ink); border-left-color: var(--stamp); font-weight: 700; }
 .row.dis { color: #77705f; } .ndetail .row.dis { color: #8a7b5c; }
-/* 단서 유형 태그: 모양(■ 물증 / ≡ 기록 / “ 증언 / ◇ 맥락)과 색을 함께 쓴다 */
+/* 단서 분류 표시는 두 가지뿐이다(5차 피드백): 증거(물증·기록·맥락 자료) = ■ 갈색 모서리 각진 모양, 증언 = “ 보라 둥근 모양. 수첩·보고서 서랍·카드·제시 목록이 모두 같은 기호·색·모양을 쓴다 */
 .tag { display: inline-block; font-size: 8px; padding: 0 4px; margin-right: 3px; border-radius: 2px; background: #3b3328; color: #e5dcc4; border: 1px solid rgba(0,0,0,.4); }
-.t-physical { background: #6b4a26; border-radius: 0; } .t-physical::before { content: '■ '; }
-.t-record { background: #2f4a5c; border-radius: 0 6px 0 6px; } .t-record::before { content: '≡ '; }
+.t-physical, .t-record, .t-context { background: #6b4a26; border-radius: 0; } .t-physical::before, .t-record::before, .t-context::before { content: '■ '; }
 .t-testimony { background: #55406b; border-radius: 6px; } .t-testimony::before { content: '“ '; }
-.t-context { background: #4a4a46; border-style: dashed; border-color: #aaa; } .t-context::before { content: '◇ '; }
 .ver { color: #9fd49a; } .unver { color: #e0b070; }
 .ndetail .ver { color: var(--c-good); } .ndetail .unver { color: var(--c-warn); }
 .ndetail h3 { margin: 0 0 2px; font-size: 11px; color: var(--c-gold); border-bottom: 1px solid rgba(90,70,40,.5); }
@@ -286,6 +284,7 @@
 .puzzle .zone:hover, .puzzle .zone.pick { background: rgba(216,200,160,.24); }
 .puzzle .zone.pick { outline: 1px solid var(--gold); }
 .puzzle .zone.tl { top: 0; height: 100%; }
+.puzzle .zone.tl.other { border-style: dotted; background: rgba(120,120,140,.12); }
 .puzzle .zl { display: block; color: #e3d6b4; font-weight: 700; margin-bottom: 1px; }
 .puzzle .pc { display: block; box-sizing: border-box; margin: 1px 0; padding: 1px 3px; font-size: 7px; line-height: 1.2; cursor: grab; touch-action: none; white-space: normal; color: var(--ink);
   background: var(--grain), linear-gradient(180deg, #ddcea8, var(--paper-2)); border: 1px solid var(--paper-edge); box-shadow: 0 1px 2px rgba(0,0,0,.6); }
@@ -385,7 +384,7 @@
 .report .rf.on { background: linear-gradient(180deg, #e2cf94, #c9ae62); color: var(--ink); font-weight: 700; }
 .report .rlist { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #86672b transparent; }
 .report .dc { display: flex; align-items: center; gap: 2px; width: 100%; box-sizing: border-box; text-align: left; font-size: 7px; line-height: 1.15; padding: 1px 2px; margin-bottom: 1px; cursor: grab; touch-action: none; color: var(--ink); background: linear-gradient(180deg, #ddcea8, #cbb98c); border: 1px solid var(--paper-edge); border-left-width: 3px; }
-.report .dc.k-physical { border-left-color: #8a5a2c; } .report .dc.k-record { border-left-color: #3f6f9a; } .report .dc.k-testimony { border-left-color: #6a8a3c; } .report .dc.k-context { border-left-color: #888; opacity: .7; }
+.report .dc.k-physical, .report .dc.k-record, .report .dc.k-context { border-left-color: #8a5a2c; } .report .dc.k-testimony { border-left-color: #6a4a8a; }
 .report .dc.cur { background: linear-gradient(180deg, #ecdcae, #d6c28a); } .report .dc.foc, .report .dc.held { outline: 1px solid var(--gold); background: linear-gradient(180deg, #f2e4b4, #dcc680); }
 .report .dc .rt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .report .dc em { font-style: normal; font-size: 6px; white-space: nowrap; } .report .dc em.ok { color: #2f6b2c; } .report .dc em.no { color: #9a2a1e; }
@@ -407,9 +406,10 @@
 .report .rsl { display: block; font-size: 6px; color: #6e5d40; }
 .report .rcard { display: flex; align-items: center; gap: 2px; font-size: 8px; font-weight: 700; padding: 1px 3px 1px 8px; position: relative; background: #fbf4dd; border: 1px solid var(--paper-edge); box-shadow: 1px 1px 2px rgba(0,0,0,.35); }
 .report .rcard .pin { position: absolute; left: 1px; top: 2px; width: 5px; height: 5px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #e86a5a, #9a2a1e); }
-.report .rcard.k-physical { border: 3px solid #fff; border-bottom-width: 5px; box-shadow: 1px 1px 3px rgba(0,0,0,.5); }
-.report .rcard.k-record { border-top-right-radius: 7px; background: linear-gradient(180deg, #fffdf2, #efe6c6); }
-.report .rcard.k-testimony { background: repeating-linear-gradient(180deg, #fbf4dd 0 5px, #e4dbbb 5px 6px); }
+.report .rcard.k-physical, .report .rcard.k-record, .report .rcard.k-context { border: 3px solid #fff; border-bottom-width: 5px; box-shadow: 1px 1px 3px rgba(0,0,0,.5); border-radius: 0; }
+.report .rcard.k-testimony { border-radius: 6px; background: repeating-linear-gradient(180deg, #fbf4dd 0 5px, #e4dbbb 5px 6px); }
+.report .k-physical .rk::before, .report .k-record .rk::before, .report .k-context .rk::before { content: '■ '; } .report .k-testimony .rk::before { content: '“ '; }
+.report .k-physical .rk, .report .k-record .rk, .report .k-context .rk { background: #6b4a26; } .report .k-testimony .rk { background: #55406b; }
 .report .rcard .rt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .report .rcard.ghost { position: absolute; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; max-width: 120px; padding-left: 4px; }
 .report .rx { position: absolute; right: 1px; top: 0; font-size: 8px; line-height: 8px; padding: 0 2px; cursor: pointer; background: rgba(154,42,30,.9); color: #fff; border: 0; }
@@ -442,3 +442,11 @@
 .puzzle .ddo { display: block; width: 100%; text-align: left; padding: 1px 3px; font-size: 7px; cursor: pointer; background: transparent; border: 0; color: var(--text); }
 .puzzle .ddo:hover, .puzzle .ddo.foc { background: #3c3018; color: #fff; outline: 1px solid var(--gold); } .puzzle .ddo.on { color: var(--gold); }
 .puzzle.lay-desktop .pz-info { margin-top: 7px; }
+.puzzle.lay-desktop .win { width: 112px; }
+.puzzle.lay-desktop .pz-side { overflow: visible; }
+.puzzle.lay-desktop .ctask { position: relative; }
+.puzzle.lay-desktop .ddl { position: absolute; left: 0; right: 0; z-index: 40; box-shadow: 0 2px 6px rgba(0,0,0,.7); }
+.puzzle .wdoc .ln { cursor: pointer; padding: 0 1px; border-left: 2px solid transparent; }
+.puzzle .wdoc .ln:hover, .puzzle .wdoc .ln.foc { background: #fff2b8; outline: 1px solid var(--gold); }
+.puzzle .wdoc .ln.mk { background: #ffe27a; border-left-color: #c0392b; }
+.puzzle .wdoc .ln .mkb { float: right; font-size: 5px; background: #c0392b; color: #fff; padding: 0 2px; margin-left: 2px; }

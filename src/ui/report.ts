@@ -48,7 +48,9 @@ export function openReport(s: GameState, onSubmit: () => void, opts: { retry?: b
 
   // ---- 단서 서랍 ----
   const orderedIds = () => { const rel = s.retryClaimIds.length ? relatedEvidenceIds(s.retryClaimIds) : null; return rel ? [...s.evidenceIds.filter((x) => rel.has(x)), ...s.evidenceIds.filter((x) => !rel.has(x))] : s.evidenceIds.slice(); };
-  const listIds = () => orderedIds().filter((id) => filter === 'all' || typeGroup(shownEvidence(s, id)!.sourceType) === filter);
+  // 이 질문의 칸에 꽂은 카드는 서랍에서 빠진다(칸에서 빼면 다시 나타난다). 질문마다 따로라 질문 A 에 쓴 카드도 질문 B 서랍에는 보인다.
+  const usedHere = () => { const q = pageClaim(); if (!q) return new Set<string>(); const d = draftOf(q); return new Set([...d.sup, d.reb].filter(Boolean) as string[]); };
+  const listIds = () => { const used = usedHere(); return orderedIds().filter((id) => !used.has(id) && (filter === 'all' || typeGroup(shownEvidence(s, id)!.sourceType) === filter)); };
   /** 이 카드를 핵심 근거로 꽂을 수 없는 이유 (없으면 '') */
   const why = (id: string) => {
     const e = shownEvidence(s, id)!;

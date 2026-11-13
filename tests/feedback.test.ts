@@ -16,7 +16,7 @@ describe('대사 표시 방식 (voice)', () => {
   });
   it('주인공 생각 노드와 노크 소리 묘사의 분류', () => {
     const inner = nodes.filter((q) => q.x.voice === 'inner').map((q) => q.key).filter((k) => !/^(mono_|closeup_)/.test(k)).sort();
-    expect(inner).toEqual(['baek_lobby:b6', 'eunho_message:a1', 'eunho_message:b4', 'eunho_message:bc', 'eunho_message:m2']);
+    expect(inner).toEqual(['baek_lobby:b6', 'baek_office:k5b', 'eunho_message:a1', 'eunho_message:b4', 'eunho_message:bc', 'eunho_message:m2']);
     expect(D.intro_knock.nodes.k1.voice).toBe('action');
   });
   it('voice 가 inner·action·message 말고는 없고, 텍스트에 괄호를 직접 쓰지 않는다 (화면이 감싼다)', () => {

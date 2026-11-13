@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import real from '../src/data/dialogue.json';
 import {
-  acquireEvidence, condMet, isCorrectAnswer, createGameState, enterNode, getNode, hasFlag, isBasementOpen, presentEvidence, puzzles, shownEvidence,
+  acquireEvidence, condMet, isAnswerComplete, isCorrectAnswer, createGameState, enterNode, getNode, hasFlag, isBasementOpen, presentEvidence, puzzles, shownEvidence,
   startNodeOf, type Dialogues, type GameState,
 } from '../src/core';
 import { submitPuzzle } from './helpers';
@@ -88,7 +88,7 @@ describe('씬 4 관계자 구역', () => {
   it('P03 열림 조건 E03 + E07, 해결하면 E07 검증, 수정이 숨긴 사실을 잘못 고르면 정답이 아니다', () => {
     expect(P('P03_revision_diff').openWhen!.evidence).toEqual(['E03_preliminary_exam', 'E07_report_revision']);
     const s = createGameState(); acquireEvidence(s, 'E03_preliminary_exam'); acquireEvidence(s, 'E07_report_revision');
-    const bad = submitPuzzle(s, 'P03_revision_diff', { chg_position: ['d_time'], chg_laceration: ['impact_injury'], chg_breath: ['alive_delay'] });
+    const bad = submitPuzzle(s, 'P03_revision_diff', { marks: ['1', '2', '3'], fact_1: ['d_time'], fact_2: ['impact_injury'], fact_3: ['alive_delay'] });
     expect(bad.status).toBe('settled'); expect(s.failedPuzzleIds).toEqual(['P03_revision_diff']); expect(s.verifiedEvidenceIds).not.toContain('E07_report_revision');
     const s2 = createGameState(); acquireEvidence(s2, 'E03_preliminary_exam'); acquireEvidence(s2, 'E07_report_revision');
     expect(submitPuzzle(s2, 'P03_revision_diff', P('P03_revision_diff').correctSlots).status).toBe('settled');
@@ -155,14 +155,15 @@ describe('씬 4 관계자 구역', () => {
 });
 
 describe('P02 시간 배열', () => {
-  it('예약 방송 조각을 시간 칸에 넣으면 충돌, 놓지 않으면 정답 (조각 6개 중 오답 조각 2개)', () => {
+  it('방송·기도 조각은 시간 칸이 아니라 "시간표에 들어가지 않는 자료" 칸이 정답이다 (조각 6개)', () => {
     const p = P('P02_night_timeline');
     const s = createGameState();
-    const r = submitPuzzle(s, p.id, { t2234: ['t_out'], t2241: ['t_door'], t2246: ['d_sermon'], t2251: ['t_time'] });
+    const r = submitPuzzle(s, p.id, { t2234: ['t_out'], t2241: ['t_door'], t2246: ['d_sermon'], t2251: ['t_time'], excluded: ['d_prayer', 't_thud'] });
     expect(r.status).toBe('settled'); expect(s.failedPuzzleIds).toEqual([p.id]);
     expect(p.tokens).toHaveLength(6);
-    expect(Object.values(p.correctSlots).flat()).not.toContain('d_sermon');
+    expect(p.slots).toContain('excluded'); expect([...p.correctSlots.excluded].sort()).toEqual(['d_prayer', 'd_sermon']);
     expect(isCorrectAnswer(p, p.correctSlots)).toBe(true);
+    expect(isAnswerComplete(p, { t2234: ['t_out'], t2241: ['t_door'], t2246: ['t_thud'], t2251: ['t_time'] })).toBe(false); // 모든 조각을 놓아야 확정할 수 있다
     expect(hasFlag(s, 'flag_night_timeline')).toBe(true);
   });
   it('정리 독백은 맞고 틀림과 무관하게 하나뿐이고 결과·내용을 말하지 않는다', () => {
@@ -189,16 +190,18 @@ describe('5단계 보완', () => {
     expect(JSON.stringify(p.tasks)).not.toContain('BSW_ADMIN');
     expect(isCorrectAnswer(p, { ...p.correctSlots, doc_transfer: ['baek_sunwoo'] })).toBe(false);
   });
-  it('P03: 바탕화면 파일은 E03·E07 원문을 참조하고, 비교 결과에는 의미 있는 변경 3줄만 있다 (띄어쓰기·문장 위치·시각 표기 변경 없음)', () => {
+  it('P03: 바탕화면 파일은 E03·E07 원문을 참조하고, 바뀐 줄은 의미 있는 3줄뿐이다 (띄어쓰기·문장 위치·시각 표기 변경 없음). 문서 비교 프로그램은 없다', () => {
     const p = P('P03_revision_diff'), d = p.desktop!;
     expect(d.files.filter((f) => f.evidenceId).map((f) => f.evidenceId)).toEqual(['E07_report_revision', 'E03_preliminary_exam']);
     expect(d.files.find((f) => f.inTrash)!.evidenceId).toBe('E03_preliminary_exam'); // 이전 판은 휴지통
     const e03 = shownEvidence(createGameState(), 'E03_preliminary_exam')!.body!;
     const fin = d.files.find((f) => f.id === 'final')!.lines!;
     expect(fin).toHaveLength(e03.length);
-    const changed = fin.map((l, i) => [e03[i], l]).filter(([a, b]) => a !== b);
-    expect(changed).toEqual(d.diffs.map((x) => [x.before, x.after])); // 바뀐 줄은 diffs 와 정확히 같다
-    expect(d.diffs.map((x) => x.id)).toEqual(['position', 'laceration', 'breath']);
+    const changedIdx = fin.map((l, i) => (e03[i] !== l ? String(i) : '')).filter(Boolean);
+    expect(changedIdx).toEqual(p.correctSlots.marks); expect(changedIdx).toEqual(['1', '2', '3']); // 바뀐 줄 = 정답 표시 줄
+    expect(JSON.stringify(p)).not.toMatch(/compareName|문서 비교|diffs/); expect(d.files.filter((f) => f.markable).map((f) => f.id)).toEqual(['final']);
+    expect(p.info!.join(' ')).not.toMatch(/휴지통|수정 이력|바뀐 줄/); // 탐색 방법을 알려 주지 않는다
+    expect(isCorrectAnswer(p, { ...p.correctSlots, marks: ['0', '1', '2', '3'], fact_0: ['d_time'] })).toBe(false); // 바뀌지 않은 줄을 표시하면 오답
     expect(fin[fin.length - 1]).toBe(e03[e03.length - 1]); // 머리 기호·문장 위치 그대로
   });
   it('E01 원문 끝에 봉투 정보(입원번호 EW-0827)가 있고 새 문장으로 표시된다', () => {

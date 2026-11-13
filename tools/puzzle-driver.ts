@@ -10,15 +10,11 @@ export const puzzleData = (id: string) => puzzles.find((p) => p.id === id)!;
 /** 규칙 안내(처음 한 번)가 떠 있으면 닫는다 */
 export async function dismissRule(page: Page) { const b = page.locator('#puzzle [data-rule]'); if (await b.count()) { await b.first().click(); await page.waitForTimeout(80); } }
 
-/** 바탕화면(P03): 휴지통의 이전 판과 최종본을 비교 실행해 바뀐 줄을 띄운다 */
-export async function runDesktopCompare(page: Page) {
-  const click = (sel: string, opts = {}) => page.locator(`#puzzle ${sel}`).first().click(opts);
+/** 바탕화면(P03): 최종본과 휴지통의 이전 판을 두 창으로 나란히 연다 */
+export async function openDesktopWindows(page: Page) {
+  await page.locator('#puzzle [data-icon="file:final"]').first().dblclick();
   await page.locator('#puzzle [data-icon="trash"]').first().dblclick();
-  await click('[data-wfile="auto"]');
-  await page.locator('#puzzle [data-icon="compare"]').first().dblclick();
-  for (let i = 0; i < 3; i++) await click('[data-cmp="a"]'); // 이전 판 = 자동저장(휴지통)
-  await click('[data-cmp="b"]'); // 이후 판 = 최종본
-  await click('[data-cmp="run"]');
+  await page.locator('#puzzle [data-wfile="auto"]').first().click();
 }
 
 /** 조각·표시를 정답대로 놓는다 (확정은 누르지 않는다). overrides 로 칸별 다른 답을 줄 수 있다. */
@@ -28,7 +24,12 @@ export async function placeCorrect(page: Page, id: string, overrides: Record<str
   await dismissRule(page);
   if (p.layout === 'quiz') { while (await page.locator('#puzzle [data-back]').count()) await click('[data-back]'); for (const c of ans.path) await click(`[data-choice="${c}"]`); return; } // 추리 문답: 길을 따라 선택지를 고른다
   const markSlots = new Set((p.tasks ?? []).filter((t) => t.kind === 'mark').map((t) => t.slot));
-  if (p.layout === 'desktop') await runDesktopCompare(page);
+  if (p.layout === 'desktop') { // 창을 열고, 바뀐 줄을 클릭해 표시한 뒤 줄마다 숨기려 한 사실을 고른다
+    await openDesktopWindows(page);
+    for (const m of ans.marks) await click(`[data-line="${m}"]`);
+    for (const m of ans.marks) { await click(`[data-cycle="fact_${m}"]`); await click(`[data-opt="fact_${m}|${ans[`fact_${m}`][0]}"]`); }
+    return;
+  }
   for (const [slot, ids] of Object.entries(ans)) {
     if (markSlots.has(slot)) continue;
     if (p.layout === 'plan' || p.layout === 'timeline') for (const t of ids) { await click(`[data-piece="${t}"]`); await click(`.zone[data-zone="${slot}"]`); }
@@ -36,11 +37,9 @@ export async function placeCorrect(page: Page, id: string, overrides: Record<str
     else if (p.layout === 'logic') { await click('[data-token="identity"]'); await click(`[data-zone="${ids[0]}"]`); }
   }
   for (const t of (p.tasks ?? []).filter((q) => q.kind === 'mark')) {
-    if (p.layout === 'desktop') {
-      await click(`[data-cycle="${t.slot}"]`); await click(`[data-opt="${t.slot}|${ans[t.slot][0]}"]`); // 드롭다운: 칸을 눌러 펼치고 후보를 누른다
-    } else for (const o of t.options) { // 이미 표시한 선택(보류 저장분)은 건드리지 않고 다른 것만 누른다
+    for (const o of t.options) { // 이미 표시한 선택(보류 저장분)은 건드리지 않고 다른 것만 누른다
       const sel = `#puzzle [data-chip="${t.slot}|${o.id}"]`;
-      if (!(await page.locator(sel).count())) continue; // 제거된 후보
+      if (!(await page.locator(sel).count())) continue;
       const on = (await page.locator(sel).first().getAttribute('class'))?.includes(' on') ?? false;
       if (on !== ans[t.slot].includes(o.id)) await page.locator(sel).first().click();
     }

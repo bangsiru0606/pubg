@@ -17,14 +17,27 @@ export function stateBeforePuzzle(id: string): GameState {
 export function randomAnswer(p: Puzzle, s: GameState, r: () => number): PuzzleAnswer {
   const pick = <T,>(xs: T[]) => xs[Math.floor(r() * xs.length)];
   if (p.quiz) return { path: quizPathBy(p, pick) }; // 추리 문답: 질문마다 선택지를 균등 무작위로 고른다
+  if (p.layout === 'desktop') { // P03: 최종본의 줄을 무작위로 표시하고, 표시한 줄마다 무작위 사실을 고른다
+    const a: PuzzleAnswer = {}, n = p.desktop!.files.find((f) => f.markable)!.lines!.length;
+    do { a.marks = Array.from({ length: n }, (_, i) => String(i)).filter(() => r() < 0.5); } while (!a.marks.length);
+    for (const m of a.marks) a[`fact_${m}`] = [pick(p.desktop!.factOptions).id];
+    return a;
+  }
+  if (p.layout === 'timeline' && p.boxes?.some((b) => b.other)) { // 모든 조각을 놓는 완전한 배치 중 균등 무작위: 조각을 섞어 앞쪽은 시간표 밖 칸, 나머지는 시간 칸에 하나씩
+    const ids = availablePieces(s, p).map((x) => x.id), times = p.boxes.filter((b) => !b.other), out = p.boxes.find((b) => b.other)!;
+    for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+    const a: PuzzleAnswer = { [out.id]: ids.slice(0, ids.length - times.length) };
+    times.forEach((b, i) => { a[b.id] = [ids[ids.length - times.length + i]]; });
+    return a;
+  }
   for (let tries = 0; tries < 1000; tries++) {
     const a: PuzzleAnswer = {};
     if (p.layout === 'plan' || p.layout === 'timeline') {
-      const zones = [...(p.layout === 'plan' ? (p.zones ?? []).map((z) => z.id) : (p.boxes ?? []).map((b) => b.id)), 'tray'];
+      const zones: string[] = [...(p.layout === 'plan' ? (p.zones ?? []).map((z) => z.id) : (p.boxes ?? []).map((b) => b.id)), 'tray'];
       for (const t of availablePieces(s, p)) {
         const z = pick(zones);
         if (z === 'tray') continue;
-        if (p.layout === 'timeline') a[z] = [t.id]; else a[z] = [...(a[z] ?? []), t.id]; // 시간 칸은 한 칸에 하나 (나중에 놓은 조각이 대신 들어간다)
+        if (p.layout === 'timeline' && !p.boxes?.find((b) => b.id === z)?.other) a[z] = [t.id]; else a[z] = [...(a[z] ?? []), t.id]; // 시간 칸은 한 칸에 하나 (나중에 놓은 조각이 대신 들어간다)
       }
     }
     for (const t of p.tasks ?? []) {

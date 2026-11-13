@@ -37,9 +37,19 @@ export function quizPathBy(p: Puzzle, pick: (choices: QuizChoice[]) => QuizChoic
   return out;
 }
 
+/** 칸을 모두 채운, 정답이 아닌 답 하나 (F9·시험용) */
+export function wrongAnswerOf(p: Puzzle): PuzzleAnswer {
+  if (p.quiz) return { path: quizWrongPath(p) };
+  if (p.layout === 'desktop') return { marks: ['0'], fact_0: ['__wrong__'] }; // 바뀌지 않은 줄을 표시
+  if (p.layout === 'timeline') return { ...Object.fromEntries(p.slots.map((sl) => [sl, ['__wrong__']])), excluded: (p.tokens ?? []).map((t) => t.id) }; // 모든 조각을 "시간표 밖" 칸에 놓는다
+  return Object.fromEntries(p.slots.map((sl) => [sl, ['__wrong__']]));
+}
+
 /** 모든 칸이 채워졌는가 (확정 버튼을 누를 수 있는 조건). 추리 문답은 마지막 판단까지 답해야 한다. */
 export function isAnswerComplete(p: Puzzle, a: PuzzleAnswer): boolean {
   if (p.quiz) { const w = quizWalk(p, a.path); return w.valid && w.at === null && w.chosen.length > 0; }
+  if (p.layout === 'desktop') return !!a.marks?.length && a.marks.every((m) => !!a[`fact_${m}`]?.length); // 표시한 줄마다 숨기려 한 사실을 골라야 한다
+  if (p.layout === 'timeline') return p.slots.every((slot) => !!a[slot]?.length) && (p.tokens ?? []).every((t) => Object.values(a).some((v) => v?.includes(t.id))); // 모든 조각을 어딘가에 놓아야 한다
   return p.slots.every((slot) => !!a[slot]?.length);
 }
 

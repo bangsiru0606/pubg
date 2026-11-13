@@ -116,11 +116,12 @@
        "id": "c2_chair",
        "judge": "의자에 앉은 채 쓰러지며 책상에 부딪혔다",
        "reason": "집무실 의자에 앉은 채 발견됐다고 한다.",
-       "source": "baek_s_natural",
-       "quote": "집무실 의자에 앉으신 채 발견됐습니다",
+       "source": "dialogue:closeup_newspaper:m",
+       "quote": "이 원장은 집무실 의자에 앉은 채 발견됐다",
        "short": "의자에서 쓰러짐",
        "says": "의자에 앉은 채 책상에 부딪혀",
-       "next": "q3"
+       "next": "q3",
+       "srcName": "신문 기사"
       }
      ]
     },
@@ -140,12 +141,13 @@
       {
        "id": "c3_chair",
        "judge": "책상 의자",
-       "reason": "백선우는 의자에 앉은 채 발견됐다고 했다.",
-       "source": "baek_s_natural",
-       "quote": "집무실 의자에 앉으신 채 발견됐습니다",
+       "reason": "신문 기사는 원장이 의자에 앉은 채 발견됐다고 전한다.",
+       "source": "dialogue:closeup_newspaper:m",
+       "quote": "이 원장은 집무실 의자에 앉은 채 발견됐다",
        "short": "책상 의자",
        "says": "책상 의자에 쓰러지며 머리를 다쳤고,",
-       "next": "q4"
+       "next": "q4",
+       "srcName": "신문 기사"
       },
       {
        "id": "c3_desk",
@@ -183,11 +185,12 @@
       {
        "id": "c4_mistake",
        "judge": "백선우가 발견 위치를 착각했다",
-       "reason": "예비 검안과 백선우의 진술이 가리키는 위치가 다르다.",
-       "source": "baek_s_natural",
-       "quote": "집무실 의자에 앉으신 채 발견됐습니다",
+       "reason": "예비 검안과 신문 기사가 가리키는 위치가 다르다.",
+       "source": "dialogue:closeup_newspaper:m",
+       "quote": "이 원장은 집무실 의자에 앉은 채 발견됐다",
        "short": "위치 착각",
-       "says": "백선우가 발견 위치를 착각한 것일 뿐이다."
+       "says": "백선우가 발견 위치를 착각한 것일 뿐이다.",
+       "srcName": "신문 기사"
       }
      ]
     },
@@ -197,12 +200,13 @@
       {
        "id": "ca1_chair",
        "judge": "책상 의자",
-       "reason": "백선우는 의자에 앉은 채 발견됐다고 했다.",
-       "source": "baek_s_natural",
-       "quote": "집무실 의자에 앉으신 채 발견됐습니다",
+       "reason": "신문 기사는 원장이 의자에 앉은 채 발견됐다고 전한다.",
+       "source": "dialogue:closeup_newspaper:m",
+       "quote": "이 원장은 집무실 의자에 앉은 채 발견됐다",
        "short": "책상 의자",
        "says": "책상 의자에서 숨졌으며,",
-       "next": "qa2"
+       "next": "qa2",
+       "srcName": "신문 기사"
       },
       {
        "id": "ca1_altar",
@@ -245,11 +249,12 @@
       {
        "id": "cu1_chair",
        "judge": "책상 의자",
-       "reason": "백선우는 의자에 앉은 채 발견됐다고 했다.",
-       "source": "baek_s_natural",
-       "quote": "집무실 의자에 앉으신 채 발견됐습니다",
+       "reason": "신문 기사는 원장이 의자에 앉은 채 발견됐다고 전한다.",
+       "source": "dialogue:closeup_newspaper:m",
+       "quote": "이 원장은 집무실 의자에 앉은 채 발견됐다",
        "short": "책상 의자",
-       "says": "처음부터 책상 의자에 있었다."
+       "says": "처음부터 책상 의자에 있었다.",
+       "srcName": "신문 기사"
       },
       {
        "id": "cu1_altar",
@@ -281,7 +286,8 @@
    "t2234",
    "t2241",
    "t2246",
-   "t2251"
+   "t2251",
+   "excluded"
   ],
   "correctSlots": {
    "t2234": [
@@ -295,14 +301,18 @@
    ],
    "t2251": [
     "t_time"
+   ],
+   "excluded": [
+    "d_sermon",
+    "d_prayer"
    ]
   },
   "layout": "timeline",
   "title": "야간 동선 시간 배열",
   "info": [
-   "진술·기록 조각을 시간 칸에 놓는다",
-   "시각이 적히지 않은 조각은 앞뒤 순서로 추론한다",
-   "사람의 동선이 아닌 조각은 놓지 않는다"
+   "그날 밤 실제로 일어난 일을 시각 순서대로 놓는다",
+   "시간표에 들어가지 않는 자료는 아래 칸에 둔다",
+   "시각이 적히지 않은 조각은 앞뒤 순서로 추론한다"
   ],
   "tokens": [
    {
@@ -330,14 +340,12 @@
     "label": "‘기도 설교’ 칸에는 ‘예약 재생’이라고만 적혀 있다",
     "source": "dialogue:mono_broadcast:m",
     "srcName": "복도 방송표",
-    "need": "broadcast_seen",
-    "decoy": true
+    "need": "broadcast_seen"
    },
    {
     "id": "d_prayer",
-    "label": "원장님은 밤새 기도하셨어요. 스피커로 목소리가 들렸으니까",
-    "source": "choi_s_prayer",
-    "decoy": true
+    "label": "원장님이 밤새 기도하시는 걸 들었어요. 스피커로 목소리가 들렸으니까",
+    "source": "choi_s_prayer"
    }
   ],
   "boxes": [
@@ -356,6 +364,11 @@
    {
     "id": "t2251",
     "label": "22:51"
+   },
+   {
+    "id": "excluded",
+    "label": "이 시간표에 들어가지 않는 자료",
+    "other": true
    }
   ],
   "openWhen": {
@@ -380,18 +393,24 @@
    "E07_report_revision"
   ],
   "slots": [
-   "chg_position",
-   "chg_laceration",
-   "chg_breath"
+   "marks",
+   "fact_1",
+   "fact_2",
+   "fact_3"
   ],
   "correctSlots": {
-   "chg_position": [
+   "marks": [
+    "1",
+    "2",
+    "3"
+   ],
+   "fact_1": [
     "body_moved"
    ],
-   "chg_laceration": [
+   "fact_2": [
     "impact_injury"
    ],
-   "chg_breath": [
+   "fact_3": [
     "alive_delay"
    ]
   },
@@ -399,107 +418,8 @@
   "title": "검안 기록 변조 비교",
   "info": [
    "바탕화면의 파일을 더블클릭해 연다",
-   "휴지통과 수정 이력도 살펴본다",
-   "“문서 비교”로 두 판의 바뀐 줄을 찾는다",
-   "바뀐 줄마다 그 수정이 숨기려 한 사실을 고른다"
-  ],
-  "tasks": [
-   {
-    "slot": "chg_position",
-    "label": "‘발견 위치’ 줄의 수정이 숨기려 한 사실",
-    "kind": "mark",
-    "single": true,
-    "options": [
-     {
-      "id": "body_moved",
-      "label": "원장이 옮겨졌다"
-     },
-     {
-      "id": "impact_injury",
-      "label": "충돌로 인한 외상"
-     },
-     {
-      "id": "alive_delay",
-      "label": "발견 당시 살아 있었다(구조 지연)"
-     },
-     {
-      "id": "d_time",
-      "label": "사망 시각"
-     },
-     {
-      "id": "d_drug",
-      "label": "투여된 약물"
-     },
-     {
-      "id": "d_witness",
-      "label": "목격자의 신원"
-     }
-    ]
-   },
-   {
-    "slot": "chg_laceration",
-    "label": "‘후두부 열상’ 줄의 수정이 숨기려 한 사실",
-    "kind": "mark",
-    "single": true,
-    "options": [
-     {
-      "id": "body_moved",
-      "label": "원장이 옮겨졌다"
-     },
-     {
-      "id": "impact_injury",
-      "label": "충돌로 인한 외상"
-     },
-     {
-      "id": "alive_delay",
-      "label": "발견 당시 살아 있었다(구조 지연)"
-     },
-     {
-      "id": "d_time",
-      "label": "사망 시각"
-     },
-     {
-      "id": "d_drug",
-      "label": "투여된 약물"
-     },
-     {
-      "id": "d_witness",
-      "label": "목격자의 신원"
-     }
-    ]
-   },
-   {
-    "slot": "chg_breath",
-    "label": "‘호흡’ 줄의 수정이 숨기려 한 사실",
-    "kind": "mark",
-    "single": true,
-    "options": [
-     {
-      "id": "body_moved",
-      "label": "원장이 옮겨졌다"
-     },
-     {
-      "id": "impact_injury",
-      "label": "충돌로 인한 외상"
-     },
-     {
-      "id": "alive_delay",
-      "label": "발견 당시 살아 있었다(구조 지연)"
-     },
-     {
-      "id": "d_time",
-      "label": "사망 시각"
-     },
-     {
-      "id": "d_drug",
-      "label": "투여된 약물"
-     },
-     {
-      "id": "d_witness",
-      "label": "목격자의 신원"
-     }
-    ]
-   }
+   "창의 제목줄을 끌어 옮길 수 있다",
+   "줄을 클릭하면 표시가 켜지고, 다시 클릭하면 꺼진다"
   ],
   "openWhen": {
    "evidence": [
@@ -518,7 +438,8 @@
       "기존 심장 질환에 의한 급성 심정지 추정",
       "의식없음, 발견 당시 사망",
       "※ 부원장 재검토 요청"
-     ]
+     ],
+     "markable": true
     },
     {
      "id": "log",
@@ -533,22 +454,30 @@
     }
    ],
    "trashName": "휴지통",
-   "compareName": "문서 비교",
-   "diffs": [
+   "factOptions": [
     {
-     "id": "position",
-     "before": "발견 위치: 기도대 옆 바닥",
-     "after": "발견 위치: 책상 의자"
+     "id": "body_moved",
+     "label": "원장이 옮겨졌다"
     },
     {
-     "id": "laceration",
-     "before": "후두부 열상 및 출혈 흔적",
-     "after": "기존 심장 질환에 의한 급성 심정지 추정"
+     "id": "impact_injury",
+     "label": "충돌로 인한 외상"
     },
     {
-     "id": "breath",
-     "before": "의식없음, 미약 호흡",
-     "after": "의식없음, 발견 당시 사망"
+     "id": "alive_delay",
+     "label": "발견 당시 살아 있었다(구조 지연)"
+    },
+    {
+     "id": "d_time",
+     "label": "사망 시각"
+    },
+    {
+     "id": "d_drug",
+     "label": "투여된 약물"
+    },
+    {
+     "id": "d_witness",
+     "label": "목격자의 신원"
     }
    ]
   }

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
-  acquireEvidence, availablePieces, createGameState, isAnswerComplete, isCorrectAnswer, isPuzzleSettled, isUnsettledClue,
+  acquireEvidence, availablePieces, wrongAnswerOf, createGameState, isAnswerComplete, isCorrectAnswer, isPuzzleSettled, isUnsettledClue,
   pendingPuzzles, puzzleById, puzzleDraftOf, puzzles, savePuzzleDraft, setFlag, settledPuzzles, submitPuzzle, unverifiedClues, type GameState, type PuzzleAnswer,
 } from '../src/core';
 import { applyScene, buildProgress, failPuzzle } from '../src/explore/playthrough';
 import { simulate, stateBeforePuzzle } from '../tools/puzzle-sim';
 
 const P = (id: string) => puzzleById.get(id)!;
-const wrongAnswer = (id: string): PuzzleAnswer => Object.fromEntries(P(id).slots.map((sl) => [sl, ['__wrong__']]));
+const wrongAnswer = (id: string): PuzzleAnswer => wrongAnswerOf(P(id));
 
 describe('퍼즐 규칙 (이전계획 11.16 / 기획서 4.6): 한 번만 확정, 결과 비공개', () => {
   it('결과에는 맞고 틀림이 담기지 않는다 — 맞든 틀리든 같은 settled', () => {

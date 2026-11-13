@@ -4,7 +4,7 @@ import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { launch } from './browser';
-import { dismissRule, runDesktopCompare } from './puzzle-driver';
+import { dismissRule, openDesktopWindows } from './puzzle-driver';
 
 const PRE = process.env.PREFIX ? `${process.env.PREFIX}_` : '';
 if (!process.env.NOBUILD) execSync('npx vite build --mode e2e', { stdio: 'ignore' });
@@ -35,13 +35,9 @@ if (want('p01')) {
 if (want('p03')) {
   await jump(4); await openPuzzle('P03_revision_diff', 4); await dismissRule(page);
   await shot('P03_start');
-  await page.locator('#puzzle [data-icon="file:final"]').dblclick(); await wait(200);
-  await page.locator('#puzzle [data-icon="trash"]').dblclick(); await wait(200);
-  await page.locator('#puzzle [data-wfile="auto"]').click(); await wait(200);
-  await page.locator('#puzzle [data-icon="compare"]').dblclick(); await wait(200);
-  await shot('P03_windows');
-  await runDesktopCompare(page); await wait(200); await shot('P03_result');
-  const cyc = page.locator('#puzzle [data-cycle="chg_position"]'); await cyc.click(); await wait(250); await shot('P03_dropdown');
+  await openDesktopWindows(page); await wait(200); await shot('P03_windows');
+  await page.locator('#puzzle .win .ln').nth(1).click(); await page.locator('#puzzle .win .ln').nth(2).click(); await wait(150); await shot('P03_marked');
+  await page.locator('#puzzle [data-cycle="fact_1"]').click(); await wait(250); await shot('P03_dropdown');
 }
 if (want('stairs')) { // 올라가는 계단·내려가는 계단 (1층 오른쪽 끝 / 2층 왼쪽 끝 / 2층 오른쪽 끝)
   for (const [area, x, name] of [['floor1', 1600, 'stairs_floor1_up'], ['floor2', 60, 'stairs_floor2_down'], ['floor2', 1330, 'stairs_floor2_up']] as const) {

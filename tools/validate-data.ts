@@ -141,7 +141,7 @@ for (const p of puzzles) {
     if (!tasksOf(p).some((tk) => tk.slot === slot) && !tokIds.has(c)) err(`${p.id}: ${slot} 정답 ${c} 가 조각에 없다`);
   if (p.layout === 'tree') for (const slot of p.slots) for (const c of p.correctSlots[slot]) if (!peopleIds.has(c)) err(`${p.id}: ${slot} 정답 인물 ${c} 없다`);
   for (const t of p.tokens ?? []) if (t.decoy) for (const slot of p.slots) if (p.correctSlots[slot].includes(t.id)) err(`${p.id}: 오답 조각 ${t.id} 가 ${slot} 의 정답에 있다`);
-  if ((p.tokens ?? []).length && !(p.tokens ?? []).some((t) => t.decoy)) err(`${p.id}: 오답 조각이 하나도 없다`);
+  if ((p.tokens ?? []).length && !(p.tokens ?? []).some((t) => t.decoy) && !(p.correctSlots.excluded ?? []).length) err(`${p.id}: 오답 조각이 하나도 없다`);
   if (p.quiz) { // 추리 문답: 길이 이어지고, 정답 길이 끝까지 가며, 선택지마다 출처·인용·한 줄 결론 조각이 있다
     const q = p.quiz, ids = Object.values(q.nodes).flatMap((n) => n.choices.map((c) => c.id));
     dup(ids, `${p.id} quiz choice`);
@@ -152,7 +152,7 @@ for (const p of puzzles) {
       for (const c of n.choices) {
         if (c.next && !q.nodes[c.next]) err(`${p.id}/${c.id}: next ${c.next} 없음`);
         if (!c.judge || !c.reason || c.says === undefined || !c.short || !c.quote) err(`${p.id}/${c.id}: judge·reason·says·short·quote 필요`);
-        if (!evidenceById.has(c.source) && !stmtIds.has(c.source)) err(`${p.id}/${c.id}: 출처 ${c.source} 는 단서도 진술도 아님`);
+        if (!evidenceById.has(c.source) && !stmtIds.has(c.source) && !c.source.startsWith('dialogue:')) err(`${p.id}/${c.id}: 출처 ${c.source} 는 단서도 진술도 아님`);
       }
     }
     let at: string | null = q.start; const walked: string[] = [];

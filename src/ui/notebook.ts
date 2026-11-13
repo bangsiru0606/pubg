@@ -13,7 +13,7 @@ import { openViewer } from './viewer';
 type Tab = { id: string; label: string };
 const TABS: Tab[] = [{ id: 'evidence', label: '단서' }, { id: 'statements', label: '진술' },
   ...claims.map((c, i) => ({ id: c.claimId, label: `질문 ${'ABCD'[i]}` })), { id: 'pending', label: '미결 사건' }]; // 새 탭은 맨 뒤에 둔다 (앞 탭의 번호 유지)
-const STAGE_LABEL = { unconfirmed: '“ 미확인', contradiction: '≠ 모순', revised: '✎ 수정' } as const; // 색만이 아니라 기호로도 구분
+const STAGE_LABEL = { unconfirmed: '○ 미확인', contradiction: '≠ 모순', revised: '✎ 수정' } as const; // 색만이 아니라 기호로도 구분
 
 interface Draft { hyp: string | null; support: string[]; rebuttal: string[] }
 const VISIBLE_ROWS = 14;
@@ -61,7 +61,7 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0, on
   function statementsTab(): string {
     const list = Object.entries(s.statements);
     if (!list.length) return '<div class="nlist"></div><div class="ndetail note">기록된 진술이 없다.</div>';
-    const rows = list.map(([, st], i) => `<button class="row${i === Math.min(cur(), list.length - 1) ? ' sel' : ''}" data-row="${i}">${esc(characterName(st.speaker))}${st.speaker === 'han_jisu' ? ' 관찰' : ''} <span class="tag">${st.speaker === 'han_jisu' ? '관찰' : STAGE_LABEL[st.stage]}</span></button>`).join('');
+    const rows = list.map(([, st], i) => `<button class="row${i === Math.min(cur(), list.length - 1) ? ' sel' : ''}" data-row="${i}"><span class="tag t-testimony">증언</span>${esc(characterName(st.speaker))}${st.speaker === 'han_jisu' ? ' 관찰' : ''} <span class="tag">${st.speaker === 'han_jisu' ? '관찰' : STAGE_LABEL[st.stage]}</span></button>`).join('');
     const [, st] = list[Math.min(cur(), list.length - 1)];
     const body = st.stage === 'revised' ? `<s class="st-revised">${esc(st.text)}</s><br><b>${esc(st.revisedText ?? '')}</b>`
       : `<span class="st-${st.stage}">${st.stage === 'unconfirmed' ? '“' + esc(st.text) + '”' : esc(st.text)}</span>`;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   acquireEvidence, chooseEvidencePreservation, claims, createGameState, evidenceById, evidenceList, isCorrectAnswer,
-  isBasementOpen, loadGame, puzzles, quizWrongPath, resolveClaim, resolveEnding, saveConclusion, saveGame, setReportTarget,
+  isBasementOpen, loadGame, puzzles, wrongAnswerOf, resolveClaim, resolveEnding, saveConclusion, saveGame, setReportTarget,
   claimById, puzzleById, solvedClaimIds, type GameState, type PuzzleAnswer,
 } from '../src/core';
 import { submitPuzzle } from './helpers';
@@ -178,8 +178,8 @@ describe('12.4 퍼즐', () => {
   it('1~5. 틀린 답도 한 번 확정하면 같은 settled 이고, 풀리지 않은 채 정리된다 (결과는 돌려주지 않는다)', () => {
     const wrongs: [string, PuzzleAnswer][] = [
       ['P01_scene_rebuild', { path: ['c1_head', 'c2_fight', 'c3_chair', 'c4_moved'] }],
-      ['P02_night_timeline', { t2234: ['t_out'], t2241: ['t_door'], t2246: ['d_sermon'], t2251: ['t_time'] }],
-      ['P03_revision_diff', { chg_position: ['impact_injury'], chg_laceration: ['body_moved'], chg_breath: ['alive_delay'] }],
+      ['P02_night_timeline', { t2234: ['t_out'], t2241: ['t_door'], t2246: ['d_sermon'], t2251: ['t_time'], excluded: ['d_prayer', 't_thud'] }],
+      ['P03_revision_diff', { marks: ['1', '2', '3'], fact_1: ['impact_injury'], fact_2: ['body_moved'], fact_3: ['alive_delay'] }],
       ['P04_approval_chain', { doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['baek_sunwoo'] }],
       ['P05_patient_code', { ...ANSWERS.P05_patient_code, admissionMatch: ['yujin'], belongingMatch: ['yujin'], linkedSources: ['E14_belongings_diary'], identity: ['yujin'] }],
     ];
@@ -197,7 +197,7 @@ describe('12.4 퍼즐', () => {
     const s = createGameState();
     ALL_EXCEPT_E16.forEach((id) => acquireEvidence(s, id));
     for (const p of puzzles) {
-      submitPuzzle(s, p.id, p.quiz ? { path: quizWrongPath(p) } : p.slots.reduce((a, sl) => ({ ...a, [sl]: ['__wrong__'] }), {}));
+      submitPuzzle(s, p.id, wrongAnswerOf(p));
       expect(s.failedPuzzleIds).toContain(p.id);
     }
     chooseEvidencePreservation(s, true); setReportTarget(s, 'external');

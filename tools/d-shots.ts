@@ -51,7 +51,7 @@ await page.locator('#report [data-filter="record"]').click(); await wait(100); a
 await page.locator('#report [data-stamp]').click(); await wait(150); await shot('report_stamped');
 await cw(`(() => { const G = { claim_b: [['E04_wristband_fragment', 'E08_miran_revised'], ['E05_access_log']], claim_c: [['E07_report_revision', 'E08_miran_revised'], ['E06_torn_sleeve']], claim_d: [['E12_ledger', 'E14_belongings_diary'], ['E15_transport_manifest']] }; for (const [id, [sup, reb]] of Object.entries(G)) cw.saveConclusion(cw.state, id, cw.claims.find((x) => x.claimId === id).hypotheses.find((h) => h.isCorrect).id, sup, reb); })()`);
 await key('Tab'); await key('Escape'); await wait(200); // 수첩을 열었다 닫으면 보고서가 저장된 결론을 다시 읽는다
-await page.locator('#report [data-pg="4"]').click(); await wait(200); await shot2('report_submit_page');
+await page.locator('#report [data-pg="4"]').click(); await wait(200); await shot2('report_submit_page'); await page.locator('#report .rprevfull').evaluate((e) => { (e as HTMLElement).scrollTop = 9999; }); await wait(150); await shot2('report_submit_scrolled');
 await page.locator('#report [data-tg="external"]').click(); await wait(150);
 await page.locator('#report [data-submit]').click(); await wait(200); console.log('MSG', await page.locator('#report .rmsg').innerText()); await shot('report_confirm');
 await page.locator('#report [data-cf="yes"]').click(); await page.waitForSelector('#ending'); await wait(400);

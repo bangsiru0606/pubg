@@ -185,7 +185,7 @@
    "nodes": {
     "m": {
      "speaker": "han_jisu",
-     "text": "원장은 처음부터 의자에 있었던 게 아니다. 누군가 시신을 옮겼다. 누가, 왜 그랬는지는 아직 알 수 없다.",
+     "text": "원장은 처음부터 의자에 있었던 게 아니다. 누군가 원장을 옮겼다. 누가, 왜 그랬는지는 아직 알 수 없다.",
      "source": "new",
      "portrait": "player_neutral",
      "voice": "inner"

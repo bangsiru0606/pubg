@@ -105,7 +105,7 @@ describe('원장실 의자 조사 → P01 이동 대상 근거', () => {
     expect(isExamined(chair(), s)).toBe(true); expect(showsSparkle(chair(), s)).toBe(false);
     expect(hasFlag(s, 'chair_checked')).toBe(true);
   });
-  it('의자 끌린 자국 선택지의 근거는 의자 관찰 카드, 마지막 판단은 시신과 의자를 옮겼다', () => {
+  it('의자 끌린 자국 선택지의 근거는 의자 관찰 카드, 마지막 판단은 원장과 의자를 옮겼다', () => {
     const p = puzzles.find((q) => q.id === 'P01_scene_rebuild')!;
     expect(p.quiz!.nodes.q4.choices.find((x) => x.id === 'c4_moved')!.source).toBe('han_o_chair');
     expect(p.correctSlots.path.at(-1)).toBe('c4_moved');

@@ -155,7 +155,7 @@ for (const p of puzzles) {
       if (n.choices.length < 2) err(`${p.id}/${nid}: 선택지가 둘 이상 있어야 한다`);
       for (const c of n.choices) {
         if (c.next && !q.nodes[c.next]) err(`${p.id}/${c.id}: next ${c.next} 없음`);
-        if (!c.judge || !c.reason || !c.says || !c.short || !c.quote) err(`${p.id}/${c.id}: judge·reason·says·short·quote 필요`);
+        if (!c.judge || !c.reason || c.says === undefined || !c.short || !c.quote) err(`${p.id}/${c.id}: judge·reason·says·short·quote 필요`);
         if (!evidenceById.has(c.source) && !stmtIds.has(c.source)) err(`${p.id}/${c.id}: 출처 ${c.source} 는 단서도 진술도 아님`);
         if (!p.correctSlots.path.includes(c.id) && !c.conflict && onPath.has(nid)) err(`${p.id}/${c.id}: 정답 길의 질문에 있는 오답 선택지에는 충돌 문장이 필요하다`);
       }

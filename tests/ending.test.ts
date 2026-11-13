@@ -39,6 +39,13 @@ function expected(mask: number, secured: boolean, external: boolean): string {
 }
 
 describe('엔딩 64조합 (해결 16 × 보존 2 × 보고 2)', () => {
+  it('엔딩별 개수는 A 1 / B 7 / C 12 / D 44 (직접 센다)', () => {
+    const count: Record<string, number> = { ending_a: 0, ending_b: 0, ending_c: 0, ending_d: 0 };
+    let total = 0;
+    for (let mask = 0; mask < 16; mask++) for (const secured of [false, true]) for (const external of [false, true]) { count[resolveEnding(build(mask, secured, external)).id]++; total++; }
+    expect(total).toBe(64);
+    expect(count).toEqual({ ending_a: 1, ending_b: 7, ending_c: 12, ending_d: 44 });
+  });
   const tally: Record<string, number> = {};
   for (let mask = 0; mask < 16; mask++) for (const secured of [false, true]) for (const external of [false, true]) {
     it(`solved=${mask.toString(2).padStart(4, '0')} secured=${secured} external=${external}`, () => {

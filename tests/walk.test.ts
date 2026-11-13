@@ -18,3 +18,13 @@ describe('걷는 방향과 몸 방향', () => {
     expect(flipFor('eunho', true)).toBe(false);
   });
 });
+
+describe('걷기·대기 그림 크기 (4차 피드백 7: 걷기 쪼그라듦)', () => {
+  it('머리가 내려가는 프레임(walk_1·walk_3)을 뺀 걷기 프레임의 몸 높이는 대기 그림과 2px 이내', async () => {
+    const { measure } = await import('../tools/walk-measure');
+    for (const id of ['player', 'eunho', 'baek', 'haneul']) {
+      const idle = (await measure(`public/assets/${id}_idle_0.png`))!;
+      for (const f of ['walk_0', 'walk_pass', 'walk_2']) { const m = (await measure(`public/assets/${id}_${f}.png`))!; expect(Math.abs(m.h - idle.h), `${id}/${f} 몸 높이 ${m.h} vs 대기 ${idle.h}`).toBeLessThanOrEqual(2); }
+    }
+  });
+});

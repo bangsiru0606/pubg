@@ -320,14 +320,6 @@
       "chromaKey": true
     },
     {
-      "id": "stairs_up",
-      "src": "generated/props/stairs_up.png",
-      "outline": true,
-      "despill": "full",
-      "height": 90,
-      "chromaKey": true
-    },
-    {
       "id": "stairs_down",
       "src": "generated/props/stairs_down_v2.png",
       "outline": true,
@@ -534,6 +526,15 @@
       "height": 36,
       "chromaKey": true,
       "draft": true
+    },
+    {
+      "id": "wall_clock",
+      "src": "generated/props/wall_clock.png",
+      "outline": true,
+      "despill": "full",
+      "height": 26,
+      "chromaKey": true,
+      "draft": true
     }
   ],
   "illust": [
@@ -562,7 +563,8 @@
     "backgrounds/lobby_floor.png",
     "props/stairs_down_v2.png",
     "props/newspaper_desk.png",
-    "props/stairs_down.png"
+    "props/stairs_down.png",
+    "props/stairs_up.png"
   ],
   "pending": [],
   "illustExclude": [

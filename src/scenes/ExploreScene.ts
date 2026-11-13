@@ -250,7 +250,8 @@ export class ExploreScene extends Phaser.Scene {
     const ids = [...(it.evidenceId ? [it.evidenceId] : []), ...(it.evidenceIds ?? [])];
     const have = ids.length > 0 && ids.every((id) => this.state.evidenceIds.includes(id));
     // 맥락 문서(docId): 독백이 있으면 독백 → 문서. 이미 본 문서는 문서만 다시 연다. 단서가 아니라 수첩에 들어가지 않는다.
-    const afterDialogue = (got: string[]) => { if (it.docId) openDocument(it.docId, () => { if (it.doneFlag) setFlag(this.state, it.doneFlag); this.showDocs(got); }); else this.showDocs(got); };
+    const thought = () => !!it.thoughtId && !hasFlag(this.state, `thought_seen:${it.thoughtId}`);
+    const afterDialogue = (got: string[]) => { if (it.docId) openDocument(it.docId, () => { if (it.doneFlag) setFlag(this.state, it.doneFlag); if (thought()) { setFlag(this.state, `thought_seen:${it.thoughtId}`); openDialogue(this.state, it.thoughtId!, () => this.showDocs(got)); } else this.showDocs(got); }); else this.showDocs(got); }; // 문서를 읽은 뒤 한 번, 수상히 여기는 독백
     if (it.dialogueId && !have && !(it.docId && it.doneFlag && hasFlag(this.state, it.doneFlag))) { openDialogue(this.state, it.dialogueId, afterDialogue); return; }
     if (it.docId) { afterDialogue([]); return; }
     const fresh = ids.filter((id) => acquireEvidence(this.state, id));

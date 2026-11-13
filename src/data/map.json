@@ -153,7 +153,7 @@
      "kind": "stairs",
      "requires": "evidence:E04_wristband_fragment",
      "lockedDialogue": "mono_stairs_locked",
-     "art": "stairs_up"
+     "art": "stairs_down"
     },
     {
      "type": "examine",
@@ -163,7 +163,8 @@
      "docId": "doctrine_lobby",
      "art": "doctrine_frame",
      "doneFlag": "doc_seen:doctrine_lobby",
-     "artBottom": 62
+     "artBottom": 62,
+     "thoughtId": "mono_doctrine_lobby"
     }
    ],
    "props": [
@@ -382,7 +383,7 @@
      "kind": "stairs",
      "requires": "haneul_met&floor3_reason",
      "lockedDialogue": "mono_floor3_locked",
-     "art": "stairs_up"
+     "art": "stairs_down"
     },
     {
      "type": "examine",
@@ -402,7 +403,8 @@
      "docId": "doctrine_ward",
      "art": "doctrine_frame",
      "doneFlag": "doc_seen:doctrine_ward",
-     "artBottom": 62
+     "artBottom": 62,
+     "thoughtId": "mono_doctrine_ward"
     }
    ],
    "bg": {
@@ -445,7 +447,18 @@
      "name": "기도 자리",
      "docId": "prayer_schedule_choi",
      "art": "prayer_corner",
-     "doneFlag": "doc_seen:prayer_schedule_choi"
+     "doneFlag": "doc_seen:prayer_schedule_choi",
+     "thoughtId": "mono_prayer_choi"
+    },
+    {
+     "type": "examine",
+     "id": "clock",
+     "x": 240,
+     "name": "벽시계",
+     "dialogueId": "mono_wall_clock",
+     "doneFlag": "clock_seen:room_choi",
+     "art": "wall_clock",
+     "artBottom": 92
     }
    ],
    "npcSprite": {
@@ -498,7 +511,8 @@
      "name": "기도 자리",
      "docId": "prayer_schedule_han",
      "art": "prayer_corner",
-     "doneFlag": "doc_seen:prayer_schedule_han"
+     "doneFlag": "doc_seen:prayer_schedule_han",
+     "thoughtId": "mono_prayer_han"
     }
    ],
    "npcSprite": {
@@ -550,6 +564,16 @@
      "x": 405,
      "name": "정하늘",
      "dialogueId": "jeong_haneul"
+    },
+    {
+     "type": "examine",
+     "id": "clock",
+     "x": 315,
+     "name": "벽시계",
+     "dialogueId": "mono_wall_clock",
+     "doneFlag": "clock_seen:room_jeong",
+     "art": "wall_clock",
+     "artBottom": 92
     }
    ],
    "npcSprite": {
@@ -709,7 +733,8 @@
       "E09_sedative_gap",
       "E05_access_log"
      ],
-     "art": "nurse_counter"
+     "art": "nurse_counter",
+     "dialogueId": "mono_stock"
     }
    ],
    "npcSprite": {
@@ -757,7 +782,8 @@
       "E11_transfer_order"
      ],
      "puzzleId": "P04_approval_chain",
-     "art": "lee_desk"
+     "art": "lee_desk",
+     "dialogueId": "mono_transfer_desk"
     },
     {
      "type": "examine",
@@ -767,7 +793,8 @@
      "docId": "donor_plaque",
      "art": "donor_plaque",
      "doneFlag": "doc_seen:donor_plaque",
-     "artBottom": 70
+     "artBottom": 70,
+     "thoughtId": "mono_plaque"
     }
    ],
    "npcSprite": {
@@ -804,7 +831,7 @@
      "to": "floor1",
      "spawnX": 1390,
      "kind": "stairs",
-     "art": "stairs_up",
+     "art": "stairs_down",
      "flipArt": true
     },
     {
@@ -871,7 +898,8 @@
      "name": "기도실",
      "docId": "sermon_draft",
      "art": "prayer_corner",
-     "doneFlag": "doc_seen:sermon_draft"
+     "doneFlag": "doc_seen:sermon_draft",
+     "thoughtId": "mono_sermon"
     }
    ],
    "npcSprite": {

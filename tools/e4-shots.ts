@@ -43,5 +43,17 @@ if (want('p03')) {
   await runDesktopCompare(page); await wait(200); await shot('P03_result');
   const cyc = page.locator('#puzzle [data-cycle="chg_position"]'); await cyc.click(); await wait(250); await shot('P03_dropdown');
 }
+if (want('stairs')) { // 올라가는 계단·내려가는 계단 (1층 오른쪽 끝 / 2층 왼쪽 끝 / 2층 오른쪽 끝)
+  for (const [area, x, name] of [['floor1', 1600, 'stairs_floor1_up'], ['floor2', 60, 'stairs_floor2_down'], ['floor2', 1330, 'stairs_floor2_up']] as const) {
+    await jump(4); await cw(`cw.scene.buildArea('${area}', ${x})`); await wait(600); await shot(name);
+  }
+}
+if (want('desk')) { // 사무실 책상 근접 조사
+  await jump(1); await cw("cw.ui.closeup('office_desk')"); await page.waitForSelector('#closeup'); await wait(600); await shot('desk');
+  await page.locator('#closeup .hot').nth(2).hover(); await wait(300); await shot('desk_newspaper_hover');
+}
+if (want('clock')) { // 201호·203호 벽시계
+  for (const [area, x, name] of [['room_choi', 230, 'clock_201'], ['room_jeong', 305, 'clock_203']] as const) { await jump(4); await cw(`cw.scene.buildArea('${area}', ${x})`); await wait(600); await shot(name); }
+}
 console.log(errors.length ? `페이지 오류: ${errors.join(' | ')}` : '페이지 오류 없음');
 await browser.close();

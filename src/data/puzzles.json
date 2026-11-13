@@ -393,24 +393,18 @@
    "E07_report_revision"
   ],
   "slots": [
-   "marks",
-   "fact_1",
-   "fact_2",
-   "fact_3"
+   "chg_position",
+   "chg_laceration",
+   "chg_breath"
   ],
   "correctSlots": {
-   "marks": [
-    "1",
-    "2",
-    "3"
-   ],
-   "fact_1": [
+   "chg_position": [
     "body_moved"
    ],
-   "fact_2": [
+   "chg_laceration": [
     "impact_injury"
    ],
-   "fact_3": [
+   "chg_breath": [
     "alive_delay"
    ]
   },
@@ -438,8 +432,7 @@
       "기존 심장 질환에 의한 급성 심정지 추정",
       "의식없음, 발견 당시 사망",
       "※ 부원장 재검토 요청"
-     ],
-     "markable": true
+     ]
     },
     {
      "id": "log",
@@ -453,34 +446,106 @@
      "inTrash": true
     }
    ],
-   "trashName": "휴지통",
-   "factOptions": [
-    {
-     "id": "body_moved",
-     "label": "원장이 옮겨졌다"
-    },
-    {
-     "id": "impact_injury",
-     "label": "충돌로 인한 외상"
-    },
-    {
-     "id": "alive_delay",
-     "label": "발견 당시 살아 있었다(구조 지연)"
-    },
-    {
-     "id": "d_time",
-     "label": "사망 시각"
-    },
-    {
-     "id": "d_drug",
-     "label": "투여된 약물"
-    },
-    {
-     "id": "d_witness",
-     "label": "목격자의 신원"
-    }
-   ]
-  }
+   "trashName": "휴지통"
+  },
+  "tasks": [
+   {
+    "slot": "chg_position",
+    "label": "‘발견 위치’ 줄의 수정이 숨기려 한 사실",
+    "kind": "mark",
+    "single": true,
+    "options": [
+     {
+      "id": "body_moved",
+      "label": "원장이 옮겨졌다"
+     },
+     {
+      "id": "impact_injury",
+      "label": "충돌로 인한 외상"
+     },
+     {
+      "id": "alive_delay",
+      "label": "발견 당시 살아 있었다(구조 지연)"
+     },
+     {
+      "id": "d_time",
+      "label": "사망 시각"
+     },
+     {
+      "id": "d_drug",
+      "label": "투여된 약물"
+     },
+     {
+      "id": "d_witness",
+      "label": "목격자의 신원"
+     }
+    ]
+   },
+   {
+    "slot": "chg_laceration",
+    "label": "‘후두부 열상’ 줄의 수정이 숨기려 한 사실",
+    "kind": "mark",
+    "single": true,
+    "options": [
+     {
+      "id": "body_moved",
+      "label": "원장이 옮겨졌다"
+     },
+     {
+      "id": "impact_injury",
+      "label": "충돌로 인한 외상"
+     },
+     {
+      "id": "alive_delay",
+      "label": "발견 당시 살아 있었다(구조 지연)"
+     },
+     {
+      "id": "d_time",
+      "label": "사망 시각"
+     },
+     {
+      "id": "d_drug",
+      "label": "투여된 약물"
+     },
+     {
+      "id": "d_witness",
+      "label": "목격자의 신원"
+     }
+    ]
+   },
+   {
+    "slot": "chg_breath",
+    "label": "‘호흡’ 줄의 수정이 숨기려 한 사실",
+    "kind": "mark",
+    "single": true,
+    "options": [
+     {
+      "id": "body_moved",
+      "label": "원장이 옮겨졌다"
+     },
+     {
+      "id": "impact_injury",
+      "label": "충돌로 인한 외상"
+     },
+     {
+      "id": "alive_delay",
+      "label": "발견 당시 살아 있었다(구조 지연)"
+     },
+     {
+      "id": "d_time",
+      "label": "사망 시각"
+     },
+     {
+      "id": "d_drug",
+      "label": "투여된 약물"
+     },
+     {
+      "id": "d_witness",
+      "label": "목격자의 신원"
+     }
+    ]
+   }
+  ]
  },
  {
   "id": "P04_approval_chain",

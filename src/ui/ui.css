@@ -276,9 +276,9 @@
 .puzzle { font-size: 8px; }
 .puzzle .ptitle { position: absolute; left: 6px; top: 2px; right: 6px; color: var(--gold); font-size: 11px; font-weight: 700; line-height: 13px; }
 .puzzle .psub { display: block; font-size: 7px; font-weight: 400; line-height: 9px; color: #c9bb9d; white-space: normal; }
-.puzzle .pz-main { position: absolute; left: 6px; top: 26px; width: 300px; height: 146px; }
-.puzzle .pz-side { position: absolute; left: 312px; right: 6px; top: 26px; height: 146px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #86672b transparent; }
-.puzzle .pz-bottom { position: absolute; left: 6px; right: 6px; top: 172px; bottom: 14px; }
+.puzzle .pz-main { position: absolute; left: 6px; top: calc(26px + var(--hx, 0px)); width: 300px; height: 146px; }
+.puzzle .pz-side { position: absolute; left: 312px; right: 6px; top: calc(26px + var(--hx, 0px)); height: 146px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #86672b transparent; }
+.puzzle .pz-bottom { position: absolute; left: 6px; right: 6px; top: calc(172px + var(--hx, 0px)); bottom: 14px; }
 .puzzle .pz-grid, .puzzle .pz-tree { position: relative; width: 100%; height: 100%; }
 .puzzle .zone { position: absolute; box-sizing: border-box; border: 1px dashed #d8c8a0; background: rgba(216,200,160,.08); padding: 1px 2px; overflow: hidden; cursor: pointer; }
 .puzzle .zone:hover, .puzzle .zone.pick { background: rgba(216,200,160,.24); }
@@ -359,7 +359,7 @@
 /* 논리표 (P05) */
 .puzzle.lay-logic .pz-main { width: 468px; height: 92px; }
 .puzzle.lay-logic .pz-side { display: none; }
-.puzzle.lay-logic .pz-bottom { top: 112px; }
+.puzzle.lay-logic .pz-bottom { top: calc(112px + var(--hx, 0px)); }
 .puzzle .ltab { border-collapse: collapse; background: var(--grain), linear-gradient(180deg, #ddcea8, var(--paper-2)); color: var(--ink); width: 100%; font-size: 8px; }
 .puzzle .ltab th { text-align: left; border-bottom: 2px solid var(--stamp); padding: 0 3px; }
 .puzzle .ltab td { border-bottom: 1px solid var(--paper-edge); padding: 0 3px; }

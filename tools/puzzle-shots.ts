@@ -23,7 +23,7 @@ for (const id of Object.keys(SCENE)) {
   await dismissRule(page); await shot(`${k}_empty`);
   await placeCorrect(page, id); await wait(200); await shot(`${k}_placed`);
   // 오답 1번째(충돌 문장 + 힌트): 한 칸을 틀리게
-  const wrongSlot = p.layout === 'desktop' ? 'fact_1' : p.layout === 'tree' ? 'doc_selection' : p.layout === 'logic' ? 'identity' : null;
+  const wrongSlot = p.layout === 'desktop' ? 'chg_position' : p.layout === 'tree' ? 'doc_selection' : p.layout === 'logic' ? 'identity' : null;
   if (wrongSlot) {
     await page.locator('#puzzle [data-submit]').click(); await wait(200); await shot(`${k}_confirm`);
     await page.locator('#puzzle [data-confirm="no"]').click();

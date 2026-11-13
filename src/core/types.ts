@@ -24,12 +24,10 @@ export interface PuzzleTask { slot: string; label: string; token?: string; detai
 export interface PuzzleBox { id: string; label: string; sub?: string; x: number; y: number; w: number; h: number } // 평면도 좌표(%)
 /** 퍼즐 조각: label 은 source(단서·진술 ID, 또는 dialogue:<대화>:<노드>)의 원문에 실제로 있는 문장이다. need: 그 플래그가 서야 나타난다(대화 출처). decoy: 어느 칸에도 놓지 않는 오답 조각 */
 export interface PuzzlePiece { id: string; label: string; source: string; srcName?: string; need?: string; decoy?: boolean } // srcName: 단서·진술이 아닌 출처(대화 독백)의 표시 이름
-/** P03 부원장 PC 바탕화면: 파일(문서·수정 이력)·휴지통 안의 이전 판. 플레이어가 최종본과 이전 판을 두 창으로 열어 눈으로 비교하고, 최종본의 바뀐 줄을 클릭해 "수정됨"으로 표시한 뒤 줄마다 "숨기려 한 사실"을 고른다.
- *  답: marks = 표시한 줄 번호들, fact_<줄 번호> = 그 줄의 숨기려 한 사실 */
+/** P03 부원장 PC 바탕화면: 파일(문서·수정 이력)·휴지통 안의 이전 판. 플레이어가 최종본과 이전 판을 두 창으로 열어 눈으로 비교하고, 오른쪽의 고정 3칸(줄마다 "수정이 숨기려 한 사실")을 드롭다운으로 고른다. */
 export interface PuzzleDesktop {
-  files: { id: string; name: string; evidenceId?: string; lines?: string[]; inTrash?: boolean; markable?: boolean }[]; // markable: 줄을 눌러 "수정됨"을 표시할 수 있는 창(최종본)
+  files: { id: string; name: string; evidenceId?: string; lines?: string[]; inTrash?: boolean }[];
   trashName: string;
-  factOptions: { id: string; label: string }[]; // "숨기려 한 사실" 후보 (줄마다 같은 목록)
 }
 /** P01 추리 문답: 질문 노드마다 선택지(판단 + 이유). 답에 따라 다음 질문이 달라진다. next 가 없는 선택지가 마지막 판단이다. 결론 문장 = subject + 지나온 선택지의 says 를 이은 것. quote: source(단서·진술 ID) 원문에 실제 있는 문장 */
 export interface QuizChoice { id: string; judge: string; reason: string; source: string; srcName?: string; quote: string; short: string; says: string; next?: string }

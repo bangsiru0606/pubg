@@ -179,7 +179,7 @@ describe('12.4 퍼즐', () => {
     const wrongs: [string, PuzzleAnswer][] = [
       ['P01_scene_rebuild', { path: ['c1_head', 'c2_fight', 'c3_chair', 'c4_moved'] }],
       ['P02_night_timeline', { t2234: ['t_out'], t2241: ['t_door'], t2246: ['d_sermon'], t2251: ['t_time'], excluded: ['d_prayer', 't_thud'] }],
-      ['P03_revision_diff', { marks: ['1', '2', '3'], fact_1: ['impact_injury'], fact_2: ['body_moved'], fact_3: ['alive_delay'] }],
+      ['P03_revision_diff', { chg_position: ['impact_injury'], chg_laceration: ['body_moved'], chg_breath: ['alive_delay'] }],
       ['P04_approval_chain', { doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['baek_sunwoo'] }],
       ['P05_patient_code', { ...ANSWERS.P05_patient_code, admissionMatch: ['yujin'], belongingMatch: ['yujin'], linkedSources: ['E14_belongings_diary'], identity: ['yujin'] }],
     ];

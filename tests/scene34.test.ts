@@ -88,7 +88,7 @@ describe('씬 4 관계자 구역', () => {
   it('P03 열림 조건 E03 + E07, 해결하면 E07 검증, 수정이 숨긴 사실을 잘못 고르면 정답이 아니다', () => {
     expect(P('P03_revision_diff').openWhen!.evidence).toEqual(['E03_preliminary_exam', 'E07_report_revision']);
     const s = createGameState(); acquireEvidence(s, 'E03_preliminary_exam'); acquireEvidence(s, 'E07_report_revision');
-    const bad = submitPuzzle(s, 'P03_revision_diff', { marks: ['1', '2', '3'], fact_1: ['d_time'], fact_2: ['impact_injury'], fact_3: ['alive_delay'] });
+    const bad = submitPuzzle(s, 'P03_revision_diff', { chg_position: ['d_time'], chg_laceration: ['impact_injury'], chg_breath: ['alive_delay'] });
     expect(bad.status).toBe('settled'); expect(s.failedPuzzleIds).toEqual(['P03_revision_diff']); expect(s.verifiedEvidenceIds).not.toContain('E07_report_revision');
     const s2 = createGameState(); acquireEvidence(s2, 'E03_preliminary_exam'); acquireEvidence(s2, 'E07_report_revision');
     expect(submitPuzzle(s2, 'P03_revision_diff', P('P03_revision_diff').correctSlots).status).toBe('settled');
@@ -198,10 +198,9 @@ describe('5단계 보완', () => {
     const fin = d.files.find((f) => f.id === 'final')!.lines!;
     expect(fin).toHaveLength(e03.length);
     const changedIdx = fin.map((l, i) => (e03[i] !== l ? String(i) : '')).filter(Boolean);
-    expect(changedIdx).toEqual(p.correctSlots.marks); expect(changedIdx).toEqual(['1', '2', '3']); // 바뀐 줄 = 정답 표시 줄
-    expect(JSON.stringify(p)).not.toMatch(/compareName|문서 비교|diffs/); expect(d.files.filter((f) => f.markable).map((f) => f.id)).toEqual(['final']);
+    expect(changedIdx).toEqual(['1', '2', '3']); // 바뀐 줄은 발견 위치·열상·호흡 세 줄뿐
+    expect(JSON.stringify(p)).not.toMatch(/compareName|문서 비교|diffs/); expect(p.tasks!.map((t) => t.slot)).toEqual(['chg_position', 'chg_laceration', 'chg_breath']); // 오른쪽 고정 3칸
     expect(p.info!.join(' ')).not.toMatch(/휴지통|수정 이력|바뀐 줄/); // 탐색 방법을 알려 주지 않는다
-    expect(isCorrectAnswer(p, { ...p.correctSlots, marks: ['0', '1', '2', '3'], fact_0: ['d_time'] })).toBe(false); // 바뀌지 않은 줄을 표시하면 오답
     expect(fin[fin.length - 1]).toBe(e03[e03.length - 1]); // 머리 기호·문장 위치 그대로
   });
   it('E01 원문 끝에 봉투 정보(입원번호 EW-0827)가 있고 새 문장으로 표시된다', () => {

@@ -26,8 +26,7 @@ export async function placeCorrect(page: Page, id: string, overrides: Record<str
   const markSlots = new Set((p.tasks ?? []).filter((t) => t.kind === 'mark').map((t) => t.slot));
   if (p.layout === 'desktop') { // 창을 열고, 바뀐 줄을 클릭해 표시한 뒤 줄마다 숨기려 한 사실을 고른다
     await openDesktopWindows(page);
-    for (const m of ans.marks) await click(`[data-line="${m}"]`);
-    for (const m of ans.marks) { await click(`[data-cycle="fact_${m}"]`); await click(`[data-opt="fact_${m}|${ans[`fact_${m}`][0]}"]`); }
+    for (const tk of p.tasks ?? []) { await click(`[data-cycle="${tk.slot}"]`); await click(`[data-opt="${tk.slot}|${ans[tk.slot][0]}"]`); } // 칸을 눌러 펼치고 후보를 누른다
     return;
   }
   for (const [slot, ids] of Object.entries(ans)) {

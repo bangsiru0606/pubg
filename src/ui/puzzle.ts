@@ -18,7 +18,7 @@ import { openViewer } from './viewer';
 import { openNotebook } from './notebook';
 import { TYPE_MARK } from './labels';
 
-type Focus = { kind: 'piece' | 'person' | 'chip' | 'cycle' | 'icon' | 'line' | 'src' | 'submit' | 'hold' | 'choice' | 'back' | 'clues'; id: string };
+type Focus = { kind: 'piece' | 'person' | 'chip' | 'cycle' | 'icon' | 'src' | 'submit' | 'hold' | 'choice' | 'back' | 'clues'; id: string };
 const TRAY = 'tray';
 export const RULE_TEXT = '사건 재구성은 단서가 사라지기 전에 해야 한다. 결론은 한 번만 확정할 수 있다.';
 
@@ -68,7 +68,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   }
   // 드롭다운 (P03): 칸을 누르면 그 칸 바로 아래에 후보 목록이 펼쳐진다. ↑↓ Enter 로도 고른다.
   let ddSlot: string | null = null, ddi = 0;
-  const optsOf = (slot: string) => (layout === 'desktop' ? desk!.factOptions : tasks.find((q) => q.slot === slot)!.options);
+  const optsOf = (slot: string) => tasks.find((q) => q.slot === slot)!.options;
   const openDd = (slot: string) => { if (ddSlot === slot) { ddSlot = null; render(); return; } ddSlot = slot; ddi = Math.max(0, optsOf(slot).findIndex((o) => o.id === (ans[slot] ?? [])[0])); render(); };
   const pickDd = (slot: string, id: string) => { ans[slot] = [id]; ddSlot = null; note = ''; render(); };
   const placeSlotsFilled = () => p.slots.filter((sl) => !markTasks.some((t) => t.slot === sl)).every((sl) => !!ans[sl]?.length);
@@ -80,8 +80,6 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   // ---- 바탕화면(P03) 상태 ----
   type Win = { id: string; kind: 'file' | 'trash'; ref: string; x: number; y: number; z: number };
   let wins: Win[] = []; let zTop = 1;
-  const marksOf = () => ans.marks ?? []; // P03: "수정됨"으로 표시한 줄 번호 (문자열)
-  const toggleMark = (i: string) => { const m = marksOf(); if (m.includes(i)) { ans.marks = m.filter((x) => x !== i); delete ans[`fact_${i}`]; if (ddSlot === `fact_${i}`) ddSlot = null; } else ans.marks = [...m, i].sort((a, b) => +a - +b); note = ''; render(); };
   const deskFiles = () => desk?.files ?? [];
   const fileLines = (f: { evidenceId?: string; lines?: string[] }) => f.lines ?? shownEvidence(s, f.evidenceId!)?.body ?? [];
   function openWin(kind: Win['kind'], ref: string) {
@@ -101,9 +99,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     if (isQuiz) { const w = quizWalk(p, qpath()); if (w.at) out.push(...p.quiz!.nodes[w.at].choices.map((c) => ({ kind: 'choice' as const, id: c.id }))); if (qpath().length) out.push({ kind: 'back', id: 'back' }); out.push({ kind: 'clues', id: 'clues' }); }
     if (layout === 'desktop') {
       out.push(...deskFiles().filter((f) => !f.inTrash).map((f) => ({ kind: 'icon' as const, id: `file:${f.id}` })), { kind: 'icon', id: 'trash' });
-      const mw = wins.find((w) => w.kind === 'file' && deskFiles().find((f) => f.id === w.ref)?.markable);
-      if (mw) out.push(...fileLines(deskFiles().find((f) => f.id === mw.ref)!).map((_, i) => ({ kind: 'line' as const, id: String(i) })));
-      out.push(...marksOf().map((m) => ({ kind: 'cycle' as const, id: `fact_${m}` })));
+      out.push(...markTasks.map((t) => ({ kind: 'cycle' as const, id: t.slot })));
     } else if (!pieceLayout || placeSlotsFilled()) {
       out.push(...markTasks.flatMap((t) => t.options.map((o) => ({ kind: 'chip' as const, id: `${t.slot}|${o.id}` }))));
     }
@@ -155,7 +151,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     const iconHtml = icons.map((ic) => `<button class="dicon${fcls('icon', ic.id)}" data-icon="${esc(ic.id)}"><b>${ic.glyph}</b><span>${esc(ic.name)}</span></button>`).join('');
     const winHtml = [...wins].sort((a, b) => a.z - b.z).map((w) => {
       let title = '', body = '';
-      if (w.kind === 'file') { const f = deskFiles().find((x) => x.id === w.ref)!; title = f.name; body = `<div class="wdoc">${fileLines(f).map((l, i) => (f.markable ? `<p class="ln${marksOf().includes(String(i)) ? ' mk' : ''}${fcls('line', String(i))}" data-line="${i}">${esc(l)}${marksOf().includes(String(i)) ? '<b class="mkb">수정됨</b>' : ''}</p>` : l ? `<p>${esc(l)}</p>` : '<br>')).join('')}</div>`; }
+      if (w.kind === 'file') { const f = deskFiles().find((x) => x.id === w.ref)!; title = f.name; body = `<div class="wdoc">${fileLines(f).map((l) => (l ? `<p>${esc(l)}</p>` : '<br>')).join('')}</div>`; }
       else if (w.kind === 'trash') { title = desk!.trashName; body = `<div class="wlist">${deskFiles().filter((f) => f.inTrash).map((f) => `<button class="dicon small" data-wfile="${f.id}"><b>▤</b><span>${esc(f.name)}</span></button>`).join('')}</div>`; }
     
       return `<div class="win" data-win="${w.id}" style="left:${w.x}px;top:${w.y}px;z-index:${w.z}"><div class="wtitle" data-wdrag="${w.id}"><span>${esc(title)}</span><button data-wclose="${w.id}">×</button></div>${body}</div>`;
@@ -166,10 +162,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     if (layout === 'quiz') { const ch = quizWalk(p, qpath()).chosen; return `<div class="slotlbl">지나온 판단 (누르면 그 질문으로 돌아간다)</div>${ch.map((c, i) => `<button class="qt" data-trail="${i}">${i + 1}. ${esc(c.short)}</button>`).join('') || '<div class="slotlbl">(아직 없다)</div>'}${ch.length ? `<button class="qb${fcls('back', 'back')}" data-back>← 이전 질문으로 <kbd>Bksp</kbd></button>` : ''}<button class="qb${fcls('clues', 'clues')}" data-clues>단서 보기 <kbd>Tab</kbd></button>`; }
     if (pieceLayout) { const u = unplaced(); return `<div class="slotlbl">단서 조각 — 놓지 않은 조각</div>${u.map(pcHtml).join('') || '<div class="slotlbl">모두 놓았다</div>'}`; }
     if (layout === 'tree') return `<div class="slotlbl">인물 카드 (같은 카드를 여러 칸에 놓을 수 있다)</div>${people.map((q) => personHtml(q)).join('')}`;
-    if (layout === 'desktop') { // 표시한 줄마다 "숨기려 한 사실" 칸이 생기고, 표시를 끄면 사라진다
-      const fin = deskFiles().find((f) => f.markable); const ln = (i: string) => (fin ? fileLines(fin)[+i] ?? '' : '');
-      return `<div class="slotlbl">수정됨으로 표시한 줄</div>${marksOf().map((m) => { const slot = `fact_${m}`, cur = desk!.factOptions.find((o) => o.id === (ans[slot] ?? [])[0]), open = ddSlot === slot; return `<div class="ctask"><div class="slotlbl">‘${esc(ln(m))}’ 줄이 숨기려 한 사실</div><button class="cyc${fcls('cycle', slot)}" data-cycle="${slot}">${cur ? esc(cur.label) : '(눌러서 고른다)'} ▾</button>${open ? `<div class="ddl">${desk!.factOptions.map((o, i) => `<button class="ddo${i === ddi ? ' foc' : ''}${cur?.id === o.id ? ' on' : ''}" data-opt="${slot}|${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>` : ''}</div>`; }).join('') || '<div class="slotlbl">(아직 없다)</div>'}`;
-    }
+    if (layout === 'desktop') return markTasks.map((t) => { const cur = t.options.find((o) => o.id === (ans[t.slot] ?? [])[0]), open = ddSlot === t.slot; return `<div class="ctask"><div class="slotlbl">${esc(t.label)}</div><button class="cyc${fcls('cycle', t.slot)}" data-cycle="${t.slot}">${cur ? esc(cur.label) : '(눌러서 고른다)'} ▾</button>${open ? `<div class="ddl">${t.options.map((o, i) => `<button class="ddo${i === ddi ? ' foc' : ''}${cur?.id === o.id ? ' on' : ''}" data-opt="${t.slot}|${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>` : ''}</div>`; }).join('');
     return '';
   }
   function bottomHtml(): string {
@@ -191,9 +184,12 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   }
   function render() {
     box.className = `modal puzzle lay-${layout}`;
+    box.style.setProperty('--hx', '0px');
     box.innerHTML = `<div class="ptitle">${esc(p.title ?? '')}<span class="psub">${layout === 'desktop' ? '' : esc((p.info ?? []).join(' · '))}</span></div>
       <div class="pz-main">${mainHtml()}</div><div class="pz-side">${sideHtml()}</div><div class="pz-bottom">${bottomHtml()}</div>
       <div class="foot">${grabbed ? '←→ 위치 선택 · Enter 놓기 · Esc 취소' : isQuiz ? '↑↓ 선택 · Enter 고르기 · Backspace 이전 질문 · Tab 단서 보기 · Esc 보류하고 나가기' : '←→ 선택 · Enter 잡기/표시/열기 · Esc 보류하고 나가기 · 마우스: 드래그·클릭'}</div>${overlayHtml()}`;
+    const head = box.querySelector('.ptitle') as HTMLElement | null; // 머리말이 두 줄 이상이면 그만큼 아래 칸을 내린다 (잘리지 않게)
+    if (head) box.style.setProperty('--hx', `${Math.max(0, head.offsetHeight - 24)}px`);
     box.querySelector('.ddo.foc')?.scrollIntoView({ block: 'nearest' }); // 열린 드롭다운에서 고른 항목이 보이게
   }
 
@@ -217,7 +213,6 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     else if (f.kind === 'chip') { const [slot, id] = f.id.split('|'); toggleChip(slot, id, !!tasks.find((t) => t.slot === slot)?.single); }
     else if (f.kind === 'cycle') openDd(f.id);
     else if (f.kind === 'icon') { if (f.id === 'trash') openWin('trash', 'trash'); else openWin('file', f.id.slice(5)); }
-    else if (f.kind === 'line') toggleMark(f.id);
     else if (f.kind === 'src') openViewer(s, f.id);
     else if (f.kind === 'hold') close();
     else if (complete()) { confirming = true; confirmSel = 0; render(); }
@@ -242,7 +237,6 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     const cyc = t.closest('[data-cycle]') as HTMLElement | null; if (cyc) { openDd(cyc.dataset.cycle!); return; }
     if (ddSlot) { ddSlot = null; render(); }
     const src = t.closest('[data-src]') as HTMLElement | null; if (src) { openViewer(s, src.dataset.src!); return; }
-    const ln = t.closest('[data-line]') as HTMLElement | null; if (ln) { toggleMark(ln.dataset.line!); return; }
     const wc = t.closest('[data-wclose]') as HTMLElement | null; if (wc) { wins = wins.filter((w) => w.id !== wc.dataset.wclose); render(); return; }
     const wf = t.closest('[data-wfile]') as HTMLElement | null; if (wf) { wins = wins.filter((w) => w.kind !== 'trash'); openWin('file', wf.dataset.wfile!); return; } // 휴지통에서 파일을 열면 휴지통 창은 닫아 자리를 비운다
     const win = t.closest('[data-win]') as HTMLElement | null; if (win) { const w = wins.find((q) => q.id === win.dataset.win); if (w && w.z !== zTop) { w.z = ++zTop; render(); } }

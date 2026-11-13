@@ -36,8 +36,7 @@ if (want('p03')) {
   await jump(4); await openPuzzle('P03_revision_diff', 4); await dismissRule(page);
   await shot('P03_start');
   await openDesktopWindows(page); await wait(200); await shot('P03_windows');
-  await page.locator('#puzzle .win .ln').nth(1).click(); await page.locator('#puzzle .win .ln').nth(2).click(); await wait(150); await shot('P03_marked');
-  await page.locator('#puzzle [data-cycle="fact_1"]').click(); await wait(250); await shot('P03_dropdown');
+  await page.locator('#puzzle [data-cycle="chg_position"]').click(); await wait(250); await shot('P03_dropdown');
 }
 if (want('stairs')) { // 올라가는 계단·내려가는 계단 (1층 오른쪽 끝 / 2층 왼쪽 끝 / 2층 오른쪽 끝)
   for (const [area, x, name] of [['floor1', 1600, 'stairs_floor1_up'], ['floor2', 60, 'stairs_floor2_down'], ['floor2', 1330, 'stairs_floor2_up']] as const) {

@@ -614,23 +614,17 @@ await shot('stage5_p03_compare');
 // 설명 문구는 창 밖 고정 영역에 항상 보이고, 탐색 방법은 알려 주지 않는다
 check((await page.locator('#puzzle .pz-info').innerText()).includes('더블클릭') && !/휴지통|수정 이력|바뀐 줄|문서 비교/.test(await page.locator('#puzzle .pz-info').innerText()) && (await page.locator('#puzzle .pz-info').isVisible()), '[P03] 설명 문구는 조작 방법만 남아 있고 창 밖 고정 영역에 있다');
 { const info = await page.locator('#puzzle .pz-info').boundingBox(), desk = await page.locator('#puzzle .desk').boundingBox(); check(!!info && !!desk && info.y >= desk.y + desk.height - 1, '[P03] 설명 문구는 바탕화면 아래 칸에 있어 창과 겹치지 않는다'); }
-// 줄 클릭: "수정됨" 표시 + 오른쪽에 숨기려 한 사실 칸, 다시 클릭하면 사라진다
-check((await page.locator('#puzzle .win .ln').count()) === 5 && (await page.locator('#puzzle .ctask').count()) === 0, '[P03] 최종본의 줄 5개는 클릭할 수 있고, 처음에는 사실 칸이 없다');
-await page.locator('#puzzle .win .ln').nth(0).click(); await wait(60);
-check((await page.locator('#puzzle .win .ln.mk').count()) === 1 && (await page.locator('#puzzle .ctask').count()) === 1 && (await page.locator('#puzzle .mkb').first().innerText()).includes('수정됨'), '[P03] 줄을 클릭하면 “수정됨” 표시가 켜지고 오른쪽에 그 줄의 사실 칸이 생긴다');
-await page.locator('#puzzle .win .ln').nth(0).click(); await wait(60);
-check((await page.locator('#puzzle .win .ln.mk').count()) === 0 && (await page.locator('#puzzle .ctask').count()) === 0, '[P03] 다시 클릭하면 표시와 칸이 사라진다');
-await page.locator('#puzzle .win .ln').nth(1).click(); await wait(60);
+// 오른쪽에는 고정 3칸(발견 위치·후두부 열상·호흡 줄의 수정이 숨기려 한 사실)이 처음부터 있다
+check((await page.locator('#puzzle .ctask').count()) === 3 && (await page.locator('#puzzle .win .ln').count()) === 0 && (await page.locator('#puzzle .pz-side').innerText()).includes('‘발견 위치’ 줄의 수정이 숨기려 한 사실'), '[P03] 오른쪽에 고정 3칸이 있고 줄 클릭 표시 방식은 없다');
 // 드롭다운: 칸을 누르면 그 칸 아래에 후보 목록이 펼쳐진다 (아래 칸을 가려도 되고, 밖을 누르거나 Esc 로 닫는다)
-await page.locator('#puzzle [data-cycle="fact_1"]').click(); await wait(80);
-{ const cyc = await page.locator('#puzzle [data-cycle="fact_1"]').boundingBox(), list = await page.locator('#puzzle .ddl').first().boundingBox(); check(!!cyc && !!list && list.y >= cyc.y + cyc.height - 2 && list.y < cyc.y + cyc.height + 12 && (await page.locator('#puzzle .ddo').count()) === 6, '[P03] 칸 바로 아래에 후보 6개가 펼쳐진다'); }
+await page.locator('#puzzle [data-cycle="chg_position"]').click(); await wait(80);
+{ const cyc = await page.locator('#puzzle [data-cycle="chg_position"]').boundingBox(), list = await page.locator('#puzzle .ddl').first().boundingBox(); check(!!cyc && !!list && list.y >= cyc.y + cyc.height - 2 && list.y < cyc.y + cyc.height + 12 && (await page.locator('#puzzle .ddo').count()) === 6, '[P03] 칸 바로 아래에 후보 6개가 펼쳐진다'); }
 await press('Escape'); await wait(60);
-check((await page.locator('#puzzle .ddl').count()) === 0 && (await page.locator('#puzzle .ctask').count()) === 1, '[P03] Esc 로 닫으면 목록이 사라지고 가려진 칸이 다시 보인다');
-await page.locator('#puzzle [data-cycle="fact_1"]').click(); await page.locator('#puzzle .pz-info').click(); await wait(60);
+check((await page.locator('#puzzle .ddl').count()) === 0 && (await page.locator('#puzzle .ctask').count()) === 3, '[P03] Esc 로 닫으면 목록이 사라지고 가려진 칸이 다시 보인다');
+await page.locator('#puzzle [data-cycle="chg_position"]').click(); await page.locator('#puzzle .pz-info').click(); await wait(60);
 check((await page.locator('#puzzle .ddl').count()) === 0, '[P03] 목록 밖을 클릭해도 닫힌다');
-await page.locator('#puzzle [data-cycle="fact_1"]').click(); await press('ArrowDown'); await press('Enter'); await wait(80);
-check((await page.locator('#puzzle [data-cycle="fact_1"]').innerText()).includes('충돌로 인한 외상') && (await page.locator('#puzzle .ddl').count()) === 0, '[P03] 키보드(↑↓ Enter)로 고르면 목록이 닫히고 칸에 들어간다');
-await page.locator('#puzzle .win .ln').nth(1).click(); await wait(60); // 틀린 표시를 풀고 정답으로
+await page.locator('#puzzle [data-cycle="chg_position"]').click(); await press('ArrowDown'); await press('Enter'); await wait(80);
+check((await page.locator('#puzzle [data-cycle="chg_position"]').innerText()).includes('충돌로 인한 외상') && (await page.locator('#puzzle .ddl').count()) === 0, '[P03] 키보드(↑↓ Enter)로 고르면 목록이 닫히고 칸에 들어간다');
 await placeCorrect(page, 'P03_revision_diff');
 await confirm(page); await page.waitForFunction(() => !document.querySelector('#puzzle'));
 check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P03_revision_diff') && cw.state.verifiedEvidenceIds.includes('E07_report_revision')"), '[P03] 정답 → 정리, E07 검증');

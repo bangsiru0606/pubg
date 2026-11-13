@@ -28,3 +28,13 @@ describe('걷기·대기 그림 크기 (4차 피드백 7: 걷기 쪼그라듦)',
     }
   });
 });
+
+describe('서 있는 그림 = walk_pass (4차 후속)', () => {
+  it('걷는 인물의 idle_0(정하늘은 idle_side)은 walk_pass 와 같은 크기·몸 폭이다', async () => {
+    const { measure } = await import('../tools/walk-measure');
+    for (const [id, stand] of [['player', 'idle_0'], ['eunho', 'idle_0'], ['baek', 'idle_0'], ['haneul', 'idle_side']] as const) {
+      const a = (await measure(`public/assets/${id}_${stand}.png`))!, b = (await measure(`public/assets/${id}_walk_pass.png`))!;
+      expect(a, id).toEqual(b);
+    }
+  });
+});

@@ -1058,8 +1058,8 @@ await page.locator('#puzzle [data-hold]').click(); await page.waitForSelector('#
 check((await page.locator('#dialogue .text').innerText()).includes('이 장부를 정리하기 전에는 여기서 더 알아낼 수 없다'), '[P05 보류] 보류하고 나가면 한 번 독백으로 알려 준다 (정하늘이 나타나지 않는 까닭)');
 await mash();
 check(await cw<boolean>("!cw.state.flags.includes('puzzle_done:P05_patient_code') && cw.state.flags.includes('p05_hold_seen')"), '[P05 보류] 보류는 풀리지도 닫히지도 않은 상태다');
-await cw('cw.scene.teleportX(0)'); await wait(500);
-for (let i = 0; i < 14 && !(await page.locator('#dialogue').count()); i++) { await press('Enter'); await wait(600); } // 계단 프롬프트가 뜰 때까지 눌러 본다
+for (let i = 0; i < 14 && !(await page.locator('#dialogue').count()); i++) { await cw('cw.scene.teleportX(0)'); await wait(700); await press('Enter'); await wait(500); } // 계단 앞에 서서 프롬프트가 뜰 때까지 눌러 본다
+if (!(await page.locator('#dialogue').count())) console.error('P05 계단 진단', await page.evaluate(() => JSON.stringify({ area: (window as any).__cw.scene.areaId, busy: (window as any).__cw.scene.busy, locked: (window as any).__cw.scene.locked, x: (window as any).__cw.scene.player.x, prompt: document.querySelector('#prompt')?.textContent, modal: !!document.querySelector('.modal'), seen: (window as any).__cw.state.flags.filter((f: string) => f.startsWith('p05')) })));
 await page.waitForSelector('#dialogue');
 await wait(2400);
 check((await page.locator('#dialogue .text').innerText()).includes('이 장부를 정리하기 전에는'), '[P05 보류] 지하에서 계단으로 올라가려 할 때 P05 가 미결이면 같은 안내를 한 번 더 보여 준다');

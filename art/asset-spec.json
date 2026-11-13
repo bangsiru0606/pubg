@@ -35,7 +35,7 @@
         "walk_2": "generated/characters/player/walk_2_v2",
         "walk_3": "generated/characters/player/walk_3_v2",
         "walk_pass": "generated/characters/player/walk_pass_v2",
-        "idle_0": "generated/characters/player/idle_0"
+        "idle_0": "generated/characters/player/walk_pass_v2"
       },
       "alignFeet": true,
       "breathe": true
@@ -63,7 +63,7 @@
         "walk_2": "generated/characters/eunho/walk_2_v2",
         "walk_3": "generated/characters/eunho/walk_3_v2",
         "walk_pass": "generated/characters/eunho/walk_pass_v3",
-        "idle_0": "generated/characters/eunho/idle_0"
+        "idle_0": "generated/characters/eunho/walk_pass_v3"
       },
       "alignFeet": true,
       "walkScale": 1.034,
@@ -89,7 +89,7 @@
       "draft": true,
       "alignFeet": true,
       "frameSrc": {
-        "idle_0": "generated/characters/baek/idle_0_v2"
+        "idle_0": "generated/characters/baek/walk_pass"
       }
     },
     {
@@ -181,7 +181,10 @@
       "breathe": true,
       "draft": true,
       "outline": true,
-      "alignFeet": true
+      "alignFeet": true,
+      "frameSrc": {
+        "idle_side": "generated/characters/haneul/walk_pass"
+      }
     }
   ],
   "sprites": [
@@ -564,7 +567,12 @@
     "props/stairs_down_v2.png",
     "props/newspaper_desk.png",
     "props/stairs_down.png",
-    "props/stairs_up.png"
+    "props/stairs_up.png",
+    "characters/player/idle_0.png",
+    "characters/eunho/idle_0.png",
+    "characters/baek/idle_0_v2.png",
+    "characters/baek/idle_0.png",
+    "characters/haneul/idle_side.png"
   ],
   "pending": [],
   "illustExclude": [

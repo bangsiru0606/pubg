@@ -36,11 +36,11 @@ describe('걷기 5프레임·1/3 속도 (asset-spec 데이터)', () => {
       expect((q as Seq & { alignFeet?: boolean }).alignFeet, q.id).toBe(true);
     }
   });
-  it('한지수·박은호는 새 걷기(_v2, 박은호 walk_pass 는 _v3 최신판)와 새 대기 idle_0 를 쓴다 (craft_on 사본 Art/ 는 그대로, idle_1 은 breathe)', () => {
+  it('한지수·박은호는 새 걷기(_v2, 박은호 walk_pass 는 _v3 최신판)를 쓰고, 서 있는 그림(idle_0)은 각자의 walk_pass 와 같은 그림이다 (4차 후속: 대기 그림이 더 넓어 걷기 시작하면 쪼그라들어 보였다. craft_on 사본 Art/ 는 그대로, idle_1 은 breathe)', () => {
     type S2 = Seq & { src: string; frameSrc: Record<string, string> };
     const p = seqs.find((q) => q.id === 'player') as S2, e = seqs.find((q) => q.id === 'eunho') as S2;
     expect(p.src).toBe('Art/Player'); expect(e.src).toBe('Art/ParkEunho');
-    expect(p.frameSrc).toEqual({ idle_0: 'generated/characters/player/idle_0', walk_0: 'generated/characters/player/walk_0_v2', walk_1: 'generated/characters/player/walk_1_v2', walk_2: 'generated/characters/player/walk_2_v2', walk_3: 'generated/characters/player/walk_3_v2', walk_pass: 'generated/characters/player/walk_pass_v2' });
+    expect(p.frameSrc.idle_0).toBe(p.frameSrc.walk_pass); expect(e.frameSrc.idle_0).toBe(e.frameSrc.walk_pass); expect(p.frameSrc.walk_0).toBe('generated/characters/player/walk_0_v2');
     expect(e.frameSrc.walk_pass).toBe('generated/characters/eunho/walk_pass_v3'); expect(e.frameSrc.walk_0).toBe('generated/characters/eunho/walk_0_v2');
     for (const f of Object.values({ ...p.frameSrc, ...e.frameSrc })) expect(existsSync(`art/source/${f}.png`), f).toBe(true);
   });

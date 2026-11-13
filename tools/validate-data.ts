@@ -146,6 +146,25 @@ for (const p of puzzles) {
   if (p.layout === 'tree') for (const slot of p.slots) for (const c of p.correctSlots[slot]) if (!peopleIds.has(c)) err(`${p.id}: ${slot} 정답 인물 ${c} 없다`);
   for (const t of p.tokens ?? []) if (t.decoy) for (const slot of p.slots) if (p.correctSlots[slot].includes(t.id)) err(`${p.id}: 오답 조각 ${t.id} 가 ${slot} 의 정답에 있다`);
   if ((p.tokens ?? []).length && !(p.tokens ?? []).some((t) => t.decoy)) err(`${p.id}: 오답 조각이 하나도 없다`);
+  if (p.quiz) { // 추리 문답: 길이 이어지고, 정답 길이 끝까지 가며, 선택지마다 출처·인용·한 줄 결론 조각이 있다
+    const q = p.quiz, ids = Object.values(q.nodes).flatMap((n) => n.choices.map((c) => c.id));
+    dup(ids, `${p.id} quiz choice`);
+    if (!q.nodes[q.start]) err(`${p.id}: quiz 시작 질문 ${q.start} 없음`);
+    const onPath = new Set<string>(); { let cur: string | null = q.start; for (const id of p.correctSlots.path) { if (!cur) break; onPath.add(cur); cur = q.nodes[cur].choices.find((x) => x.id === id)?.next ?? null; } }
+    for (const [nid, n] of Object.entries(q.nodes)) {
+      if (n.choices.length < 2) err(`${p.id}/${nid}: 선택지가 둘 이상 있어야 한다`);
+      for (const c of n.choices) {
+        if (c.next && !q.nodes[c.next]) err(`${p.id}/${c.id}: next ${c.next} 없음`);
+        if (!c.judge || !c.reason || !c.says || !c.short || !c.quote) err(`${p.id}/${c.id}: judge·reason·says·short·quote 필요`);
+        if (!evidenceById.has(c.source) && !stmtIds.has(c.source)) err(`${p.id}/${c.id}: 출처 ${c.source} 는 단서도 진술도 아님`);
+        if (!p.correctSlots.path.includes(c.id) && !c.conflict && onPath.has(nid)) err(`${p.id}/${c.id}: 정답 길의 질문에 있는 오답 선택지에는 충돌 문장이 필요하다`);
+      }
+    }
+    let at: string | null = q.start; const walked: string[] = [];
+    for (const id of p.correctSlots.path) { const c: { id: string; next?: string } | undefined = at ? q.nodes[at].choices.find((x) => x.id === id) : undefined; if (!c) { err(`${p.id}: 정답 길의 ${id} 가 길 위에 없다`); break; } walked.push(id); at = c.next ?? null; }
+    if (at !== null) err(`${p.id}: 정답 길이 마지막 판단까지 가지 않는다`);
+    for (const k of p.distractors) { const id = k.replace(/^\*:/, ''); if (!ids.includes(id) || p.correctSlots.path.includes(id)) err(`${p.id}: distractors ${k} 는 정답 길 밖의 선택지여야 한다`); }
+  }
   if (p.hintTexts.length !== 2) err(`${p.id}: hintTexts 는 2개 (1번째 오답 힌트 문장, 2번째 오답 후보 제거 안내)`);
   const slotKeys = new Set(p.slots);
   for (const k of [...p.distractors, ...Object.keys(p.conflicts)]) {

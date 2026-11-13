@@ -2,7 +2,7 @@
 //   npx tsx tools/puzzle-sim.ts          → 퍼즐마다 1만 회, 목표 5% 미만
 // 무작위 풀이: 조각은 칸(+보관함)에 균등 무작위로 놓되 모든 칸이 채워질 때까지 다시 뽑는다(빈 칸이 있으면 확정할 수 없으므로).
 // 표시 선택지는 비어 있지 않은 부분집합(단일 선택은 하나), 트리의 인물 카드·논리표 토큰은 칸마다 균등 무작위. 시도끼리는 서로 모른다(이전 오답을 학습하지 않는다).
-import { MAX_ATTEMPTS, availablePieces, isAnswerComplete, isCorrectAnswer, puzzles, type GameState, type Puzzle, type PuzzleAnswer } from '../src/core';
+import { MAX_ATTEMPTS, availablePieces, isAnswerComplete, isCorrectAnswer, puzzles, quizPathBy, type GameState, type Puzzle, type PuzzleAnswer } from '../src/core';
 import { applyScene, buildProgress } from '../src/explore/playthrough';
 import { rng } from './sfx/generate-sfx';
 
@@ -16,6 +16,7 @@ export function stateBeforePuzzle(id: string): GameState {
 
 export function randomAnswer(p: Puzzle, s: GameState, r: () => number): PuzzleAnswer {
   const pick = <T,>(xs: T[]) => xs[Math.floor(r() * xs.length)];
+  if (p.quiz) return { path: quizPathBy(p, pick) }; // 추리 문답: 질문마다 선택지를 균등 무작위로 고른다
   for (let tries = 0; tries < 1000; tries++) {
     const a: PuzzleAnswer = {};
     if (p.layout === 'plan' || p.layout === 'timeline') {

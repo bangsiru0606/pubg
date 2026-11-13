@@ -26,6 +26,7 @@ export async function placeCorrect(page: Page, id: string, overrides: Record<str
   const p = puzzleData(id), ans = { ...p.correctSlots, ...overrides };
   const click = (sel: string) => page.locator(`#puzzle ${sel}`).first().click();
   await dismissRule(page);
+  if (p.layout === 'quiz') { while (await page.locator('#puzzle [data-back]').count()) await click('[data-back]'); for (const c of ans.path) await click(`[data-choice="${c}"]`); return; } // 추리 문답: 길을 따라 선택지를 고른다
   const markSlots = new Set((p.tasks ?? []).filter((t) => t.kind === 'mark').map((t) => t.slot));
   if (p.layout === 'desktop') await runDesktopCompare(page);
   for (const [slot, ids] of Object.entries(ans)) {

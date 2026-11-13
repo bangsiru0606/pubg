@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import real from '../src/data/dialogue.json';
-import { acquireEvidence, createGameState, enterNode, getNode, hasFlag, puzzleById, shownEvidence, type Dialogues } from '../src/core';
+import { acquireEvidence, createGameState, enterNode, getNode, hasFlag, puzzleById, quizConclusion, quizWalk, shownEvidence, type Dialogues } from '../src/core';
 import { submitPuzzle } from './helpers';
 import { areas, isAvailable, nearest } from '../src/explore/interaction';
 
 const D = real.dialogues as unknown as Dialogues;
 const find = (area: string, id: string) => areas[area].interactables.find((i) => i.id === id)!;
 const P = 'P01_scene_rebuild';
-const ok = { altar_floor: ['p_blood', 'p_exam'], desk_chair: ['p_baek', 'p_drag'], movedObjects: ['body', 'chair'] };
+const ok = { path: ['c1_head', 'c2_fight', 'c3_altar', 'c4_moved'] };
 
 describe('씬 1·2 진행 조건', () => {
   it('사무실 문은 박은호 대화(intro_done) 후, 원장실 문과 검안 메모는 백선우가 떠난 뒤', () => {
@@ -69,26 +69,30 @@ describe('씬 1·2 진행 조건', () => {
 
 describe('P01 오답 표시', () => {
   const sub = (a: object) => submitPuzzle(createGameState(), P, a as never);
-  it('혈흔 조각을 책상 의자에 놓으면 그 자료 이름만 충돌로 표시하고 정답 위치는 알려주지 않는다', () => {
-    const r = sub({ ...ok, altar_floor: ['p_exam'], desk_chair: ['p_baek', 'p_drag', 'p_blood'] });
+  it('틀린 판단은 처음 틀린 선택과 부딪히는 자료 이름만 충돌로 표시하고 정답은 알려주지 않는다', () => {
+    const r = sub({ path: ['c1_head', 'c2_seizure', 'c3_altar', 'c4_moved'] });
     expect(r.status).toBe('wrong');
     expect(r.conflicts).toHaveLength(1);
-    expect(r.conflicts[0]).toContain('기도대 아래 혈흔'); expect(JSON.stringify(r.conflicts)).not.toContain('기도대 옆 바닥');
+    expect(r.conflicts[0]).toContain('찢어진 손목띠 조각'); expect(JSON.stringify(r.conflicts)).not.toContain('몸싸움');
   });
-  it('주사기를 이동 대상에 넣으면 충돌, 의자를 빼면 끌린 자국 자료가 충돌', () => {
-    expect(sub({ ...ok, movedObjects: ['body', 'chair', 'syringe'] }).conflicts).toHaveLength(1);
-    expect(sub({ ...ok, movedObjects: ['body'] }).conflicts).toEqual([puzzleById.get(P)!.conflicts['movedObjects:!chair']]);
+  it('지병을 고르면 다른 질문으로 이어지고 막다른 길 없이 그럴듯한 결론에 도착한다 — 충돌은 예비 검안 메모', () => {
+    const p = puzzleById.get(P)!, w = quizWalk(p, ['c1_disease', 'ca1_chair', 'ca2_fall']);
+    expect(w.valid && w.at === null).toBe(true);
+    expect(quizConclusion(p, ['c1_disease', 'ca1_chair', 'ca2_fall'])).toContain('지병');
+    expect(sub({ path: ['c1_disease', 'ca1_chair', 'ca2_fall'] }).conflicts[0]).toContain('예비 검안 메모');
   });
   it('빈 칸이 있으면 확정되지 않고 기회도 줄지 않는다', () => {
     const s = createGameState();
-    expect(submitPuzzle(s, P, { ...ok, desk_chair: [] }).status).toBe('incomplete');
+    expect(submitPuzzle(s, P, { path: ['c1_head', 'c2_fight'] }).status).toBe('incomplete'); // 마지막 판단까지 가지 않았다
     expect(s.wrongCountByPuzzle[P]).toBeUndefined();
   });
-  it('조각은 단서의 문장이다: 정답 조각 4개 + 오답 조각 2개, 이동 대상 선택지 4개', () => {
-    const p = puzzleById.get(P)!;
-    expect(p.tokens!.filter((t) => !t.decoy).map((t) => t.id).sort()).toEqual(['p_baek', 'p_blood', 'p_drag', 'p_exam']);
-    expect(p.tokens!.filter((t) => t.decoy)).toHaveLength(2);
-    expect(p.slots).toEqual(['altar_floor', 'desk_chair', 'movedObjects']); expect(p.tasks!.map((t) => t.slot)).toEqual(['movedObjects']);
+  it('문답 구조: 질문 4개짜리 정답 길, 선택지는 판단 + 이유, 독살·약물은 없고 누구인가는 묻지 않는다', () => {
+    const p = puzzleById.get(P)!, q = p.quiz!;
+    expect(p.layout).toBe('quiz'); expect(p.correctSlots.path).toEqual(['c1_head', 'c2_fight', 'c3_altar', 'c4_moved']);
+    expect(quizWalk(p, p.correctSlots.path).at).toBeNull();
+    const all = Object.values(q.nodes).flatMap((n) => [n.q, ...n.choices.flatMap((c) => [c.judge, c.reason, c.says])]).join(' ');
+    expect(all).not.toMatch(/독|약물|찻잔|화학/); expect(Object.values(q.nodes).some((n) => /누구/.test(n.q))).toBe(false);
+    expect(q.nodes.q2.choices.length).toBeGreaterThanOrEqual(4);
   });
 });
 

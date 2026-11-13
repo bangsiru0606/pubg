@@ -9,6 +9,7 @@ describe('퍼즐 근거표 (docs/퍼즐_근거표.md)', () => {
     const rows = [...ROWS, ...pieceRows()];
     for (const p of puzzles) {
       for (const slot of p.slots) expect(rows.some((r) => r.puzzle === p.id && r.slot === slot), `${p.id}/${slot} 줄 없음`).toBe(true);
+      for (const c of Object.values(p.quiz?.nodes ?? {}).flatMap((n) => n.choices)) expect(rows.some((r) => r.puzzle === p.id && r.token === `${c.judge} — ${c.reason}`), `${p.id}/${c.id} 선택지 줄 없음`).toBe(true);
       for (const t of p.tokens ?? []) expect(rows.some((r) => r.puzzle === p.id && r.token === t.label), `${p.id}/${t.id} 조각 줄 없음`).toBe(true);
     }
   });

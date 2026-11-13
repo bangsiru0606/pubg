@@ -4,10 +4,11 @@
 //  desktop  P03: 부원장 PC 바탕화면 — 파일·휴지통·문서 비교 프로그램을 열어 바뀐 줄을 찾고, 수정이 숨기려 한 사실을 고른다
 //  tree     P04: 승인 체계 트리 — 서식 문구(약자·권한)를 보고 인물 카드를 칸에 놓는다
 //  logic    P05: 후보 표와 대조 (조각 표시만 통일)
+//  quiz     P01: 추리 문답 — 질문에 판단+이유 선택지로 답하며 결론에 이른다. 고르는 동안 맞고 틀림을 알리지 않고, 확정 전에는 이전 질문으로 돌아갈 수 있다
 // 결론은 [결론 확정] → 확인 창(남은 기회) 으로만 낸다. 기회는 3번, [보류하고 나가기]는 벌점 없이 놓은 조각을 저장한다.
 // 마우스: 조각 드래그 / 클릭 → 칸 클릭. 키보드: ←→ 선택 → Enter 로 잡기 → ←→ 위치 → Enter 로 놓기.
 import {
-  MAX_ATTEMPTS, attemptsLeft, availablePieces, hintFor, isAnswerComplete, puzzleById, puzzleDraftOf, savePuzzleDraft, setFlag, shownEvidence, sourceName, submitPuzzle,
+  MAX_ATTEMPTS, attemptsLeft, availablePieces, hintFor, isAnswerComplete, puzzleById, puzzleDraftOf, quizConclusion, quizWalk, savePuzzleDraft, setFlag, shownEvidence, sourceName, submitPuzzle,
   type GameState, type PuzzleAnswer, type PuzzlePiece, type PuzzleTask,
 } from '../core';
 import { el, esc, root } from './hud';
@@ -15,7 +16,7 @@ import { bgmPop, bgmPush, puzzleTrack, sfx } from '../audio/audio';
 import { popModal, pushModal } from './input';
 import { openViewer } from './viewer';
 
-type Focus = { kind: 'piece' | 'person' | 'chip' | 'cycle' | 'icon' | 'cmp' | 'src' | 'submit' | 'hold'; id: string };
+type Focus = { kind: 'piece' | 'person' | 'chip' | 'cycle' | 'icon' | 'cmp' | 'src' | 'submit' | 'hold' | 'choice' | 'back'; id: string };
 const TRAY = 'tray';
 export const RULE_TEXT = '결론은 세 번까지 확정할 수 있다. 확신이 없으면 보류하고 나가도 된다.';
 
@@ -38,9 +39,17 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   let fi = 0;
   let confirming = false, confirmSel = 0;
   let rule = !s.flags.includes('puzzle_rule_seen') && phase === 'play';
-  const applyHint = () => { const h = hintFor(p, s.wrongCountByPuzzle[puzzleId] ?? 0); removed = new Set(h.removedTokens); hintText = h.text; return h; };
-  applyHint();
+  const isQuiz = layout === 'quiz';
+  const qpath = () => ans.path ?? [];
   const isRemoved = (slot: string, id: string) => removed.has(`${slot}:${id}`) || removed.has(`*:${id}`);
+  const applyHint = () => {
+    const h = hintFor(p, s.wrongCountByPuzzle[puzzleId] ?? 0); removed = new Set(h.removedTokens); hintText = h.text;
+    if (isQuiz) { const i = qpath().findIndex((id) => isRemoved('', id)); if (i >= 0) ans.path = qpath().slice(0, i); } // 제거된 선택지를 골랐던 길은 그 질문까지 되돌린다
+    return h;
+  };
+  applyHint();
+  function choose(id: string) { ans.path = [...qpath(), id]; note = ''; fi = 0; render(); }
+  function goBack(to = qpath().length - 1) { if (to < 0) return; ans.path = qpath().slice(0, to); note = ''; fi = 0; render(); }
 
   const pieces = (): PuzzlePiece[] => availablePieces(s, p).filter((t) => !isRemoved('', t.id));
   const zoneOf = (id: string) => Object.keys(ans).find((k) => ans[k]?.includes(id));
@@ -90,6 +99,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     if (pieceLayout) out.push(...pieces().map((t) => ({ kind: 'piece' as const, id: t.id })));
     if (layout === 'tree') out.push(...people.filter((q) => !isRemoved('', q.id)).map((q) => ({ kind: 'person' as const, id: q.id })));
     if (layout === 'logic') out.push(...placeTasks.map((t) => ({ kind: 'person' as const, id: t.slot })));
+    if (isQuiz) { const w = quizWalk(p, qpath()); if (w.at) out.push(...p.quiz!.nodes[w.at].choices.filter((c) => !isRemoved('', c.id)).map((c) => ({ kind: 'choice' as const, id: c.id }))); if (qpath().length) out.push({ kind: 'back', id: 'back' }); }
     if (layout === 'desktop') {
       out.push(...deskFiles().filter((f) => !f.inTrash).map((f) => ({ kind: 'icon' as const, id: `file:${f.id}` })), { kind: 'icon', id: 'trash' }, { kind: 'icon', id: 'compare' });
       if (wins.some((w) => w.kind === 'compare')) out.push({ kind: 'cmp', id: 'a' }, { kind: 'cmp', id: 'b' }, { kind: 'cmp', id: 'run' });
@@ -108,6 +118,11 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
 
   // ---- 그리기 ----
   function mainHtml(): string {
+    if (layout === 'quiz') {
+      const w = quizWalk(p, qpath()), q = p.quiz!;
+      if (!w.at) return `<div class="qq">마지막 판단까지 이르렀다. 지나온 판단을 한 문장으로 정리하면:</div><div class="qconc">${esc(quizConclusion(p, qpath()))}</div><div class="slotlbl">확신이 없으면 이전 질문으로 돌아가 다시 고를 수 있다. [결론 확정]을 누르면 확인 창이 뜬다.</div>`;
+      return `<div class="qq">질문 ${w.chosen.length + 1}. ${esc(q.nodes[w.at].q)}</div>${q.nodes[w.at].choices.filter((c) => !isRemoved('', c.id)).map((c) => `<button class="qc${fcls('choice', c.id)}" data-choice="${esc(c.id)}"><b>${esc(c.judge)}</b><span>${esc(c.reason)}<i>‹${esc(sourceName(s, { source: c.source, srcName: c.srcName }))}›</i></span></button>`).join('')}`;
+    }
     if (layout === 'plan') {
       return `<div class="pz-grid">${(p.zones ?? []).map((z) => `<div class="zone" data-zone="${z.id}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span class="zl">${esc(z.label)}</span>${pieces().filter((t) => zoneOf(t.id) === z.id).map(pcHtml).join('')}</div>`).join('')}</div>`;
     }
@@ -152,6 +167,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     return `<div class="desk"><div class="dicons">${iconHtml}</div>${winHtml}<div class="taskbar"><span class="start">시작</span><span class="tclock">23:52</span></div></div>`;
   }
   function sideHtml(): string {
+    if (layout === 'quiz') { const ch = quizWalk(p, qpath()).chosen; return `<div class="slotlbl">지나온 판단 (누르면 그 질문으로 돌아간다)</div>${ch.map((c, i) => `<button class="qt" data-trail="${i}">${i + 1}. ${esc(c.short)}</button>`).join('') || '<div class="slotlbl">(아직 없다)</div>'}${ch.length ? `<button class="qb${fcls('back', 'back')}" data-back>← 이전 질문으로 <kbd>Bksp</kbd></button>` : ''}`; }
     if (pieceLayout) { const u = unplaced(); return `<div class="slotlbl">단서 조각 — 놓지 않은 조각</div>${u.map(pcHtml).join('') || '<div class="slotlbl">모두 놓았다</div>'}`; }
     if (layout === 'tree') return `<div class="slotlbl">인물 카드 (같은 카드를 여러 칸에 놓을 수 있다)</div>${people.filter((q) => !isRemoved('', q.id)).map((q) => personHtml(q)).join('')}`;
     if (layout === 'desktop') return markTasks.map((t) => { const cur = t.options.find((o) => o.id === (ans[t.slot] ?? [])[0]); return `<div class="ctask"><div class="slotlbl">${esc(t.label)}</div><button class="cyc${fcls('cycle', t.slot)}" data-cycle="${t.slot}">${cur ? esc(cur.label) : '(눌러서 고른다)'}</button></div>`; }).join('');
@@ -179,7 +195,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     box.className = `modal puzzle lay-${layout}`;
     box.innerHTML = `<div class="ptitle">${esc(p.title ?? '')}<span class="psub">${esc((p.info ?? []).join(' · '))}</span></div>
       <div class="pz-main">${mainHtml()}</div><div class="pz-side">${sideHtml()}</div><div class="pz-bottom">${bottomHtml()}</div>
-      <div class="foot">${grabbed ? '←→ 위치 선택 · Enter 놓기 · Esc 취소' : '←→ 선택 · Enter 잡기/표시/열기 · Esc 보류하고 나가기 · 마우스: 드래그·클릭'}</div>${overlayHtml()}`;
+      <div class="foot">${grabbed ? '←→ 위치 선택 · Enter 놓기 · Esc 취소' : isQuiz ? '↑↓ 선택 · Enter 고르기 · Backspace 이전 질문 · Esc 보류하고 나가기' : '←→ 선택 · Enter 잡기/표시/열기 · Esc 보류하고 나가기 · 마우스: 드래그·클릭'}</div>${overlayHtml()}`;
   }
 
   // ---- 동작 ----
@@ -201,6 +217,8 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   function activate() {
     const f = focusList()[fi]; if (!f) return;
     if (f.kind === 'piece' || f.kind === 'person') { grabbed = f.id; grabZone = layout === 'logic' ? p.table!.rows[0].id : zoneList()[0]?.id ?? null; render(); }
+    else if (f.kind === 'choice') choose(f.id);
+    else if (f.kind === 'back') goBack();
     else if (f.kind === 'chip') { const [slot, id] = f.id.split('|'); toggleChip(slot, id, !!tasks.find((t) => t.slot === slot)?.single); }
     else if (f.kind === 'cycle') cycle(f.id);
     else if (f.kind === 'icon') { if (f.id === 'trash') openWin('trash', 'trash'); else if (f.id === 'compare') openWin('compare', 'cmp'); else openWin('file', f.id.slice(5)); }
@@ -227,6 +245,9 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
     if (t.closest('[data-hold]')) { close(); return; }
     if (t.closest('[data-submit]')) { if (complete()) { confirming = true; confirmSel = 0; render(); } return; }
     const clr = t.closest('[data-clear]') as HTMLElement | null; if (clr) { delete ans[clr.dataset.clear!]; render(); return; }
+    const ch = t.closest('[data-choice]') as HTMLElement | null; if (ch) { choose(ch.dataset.choice!); return; }
+    const tr = t.closest('[data-trail]') as HTMLElement | null; if (tr) { goBack(+tr.dataset.trail!); return; }
+    if (t.closest('[data-back]')) { goBack(); return; }
     const chip = t.closest('[data-chip]') as HTMLElement | null; if (chip) { const [slot, id] = chip.dataset.chip!.split('|'); toggleChip(slot, id, !!tasks.find((q) => q.slot === slot)?.single); return; }
     const cyc = t.closest('[data-cycle]') as HTMLElement | null; if (cyc) { cycle(cyc.dataset.cycle!); return; }
     const src = t.closest('[data-src]') as HTMLElement | null; if (src) { openViewer(s, src.dataset.src!); return; }
@@ -297,6 +318,7 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
         if (grabbed) { render(); box.querySelector(`[data-zone="${grabZone}"]`)?.classList.add('pick'); } else render();
         return;
       }
+      if (isQuiz && e.key === 'Backspace' && !e.repeat) { goBack(); return; }
       if (e.key === 'Escape' && !e.repeat) { if (wins.length) { wins.sort((a, b) => b.z - a.z); wins.shift(); render(); } else close(); return; }
       const n = focusList().length;
       if (fwd) fi = (fi + 1) % n; else if (back) fi = (fi + n - 1) % n;

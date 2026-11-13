@@ -3,7 +3,7 @@
 // 표의 인용문은 실제 데이터(단서 본문·설명, 진술 문장, 퍼즐 문서 패널)에 있는지 검사하고, 근거가 퍼즐이 열리기 전에 얻어지는지도 검사한다.
 // (tests/puzzle-evidence-table.test.ts 가 같은 검사를 한다)
 import { readFileSync, writeFileSync } from 'node:fs';
-import { evidenceById, puzzles, shownEvidence } from '../src/core';
+import { evidenceById, puzzles, quizConclusion, shownEvidence } from '../src/core';
 import real from '../src/data/dialogue.json';
 import { areas } from '../src/explore/interaction';
 import { PUZZLE_SCENE, stateBeforePuzzle } from './puzzle-sim';
@@ -13,8 +13,6 @@ export interface Row { puzzle: string; slot: string; label: string; token: strin
 
 /** 정답 칸마다의 근거 인용 (id: 단서 ID · 진술 ID · "panel:<퍼즐>:<문서 이름>") */
 export const ROWS: Row[] = [
-  { puzzle: 'P01_scene_rebuild', slot: 'movedObjects', label: '이동된 대상: 원장 시신', token: '원장 시신 (표시)', cites: [{ id: 'E03_preliminary_exam', contains: '발견 위치: 기도대 옆 바닥', note: '↔ 백선우의 진술 "의자에 앉으신 채"와 위치가 다르다' }], why: '예비 기록의 위치(바닥)와 공식 설명의 위치(의자)가 달라 시신이 옮겨졌음을 보인다.' },
-  { puzzle: 'P01_scene_rebuild', slot: 'movedObjects', label: '이동된 대상: 의자', token: '의자 (표시)', cites: [{ id: 'han_o_chair', contains: '의자 다리 아래 바닥이 기도대 쪽에서부터 길게 긁혀 있다' }], why: '의자 다리 아래 바닥의 긁힌 자국은 의자가 끌려 옮겨졌다는 직접 흔적이다.' },
   { puzzle: 'P04_approval_chain', slot: 'doc_selection', label: '대상자 선정표', token: '이혜정', cites: [{ id: 'E10_consent_forms', contains: '[대상자 선정표] 작성: LHJ / 권한: 선정', note: 'LHJ = Lee HyeJeong (이혜정)' }], why: '동의서 묶음의 대상자 선정표가 작성 약자 LHJ 와 선정 권한을 적었고, 이혜정의 로마자 첫 글자와 맞는다.' },
   { puzzle: 'P04_approval_chain', slot: 'doc_approval', label: '원장 승인표', token: '이한신', cites: [{ id: 'E10_consent_forms', contains: '[원장 승인표] 작성: LHS / 권한: 최종 승인', note: 'LHS = Lee HanShin (이한신)' }], why: '원장 승인표의 작성 약자 LHS 와 최종 승인 권한은 이한신의 첫 글자와 직위에 맞는다.' },
   { puzzle: 'P04_approval_chain', slot: 'doc_schedule', label: '시술 일정표', token: '백선우', cites: [{ id: 'E10_consent_forms', contains: '[시술 일정표] 작성: BSW / 권한: 시술 진행', note: 'BSW = Baek SunWoo (백선우), E07 의 수정 계정 BSW_ADMIN 과 같다' }], why: '시술 일정표의 작성 약자 BSW 와 시술 진행 권한은 백선우(수정 계정 BSW_ADMIN 과 같은 약자)에 맞는다.' },
@@ -39,6 +37,10 @@ export function pieceRows(): Row[] {
     for (const k of p.tokens ?? []) {
       const slot = p.slots.find((sl) => (p.correctSlots[sl] ?? []).includes(k.id)) ?? (k.decoy ? 'decoy' : '?');
       out.push({ puzzle: p.id, slot, label: k.decoy ? '오답 조각 (놓지 않는다)' : `조각 → ${slot}`, token: k.label, cites: quoteParts(k.label).map((c) => ({ id: k.source, contains: c })), why: k.decoy ? '사건과 직접 관련 없는 자료라서 어느 칸에도 놓지 않는다.' : '출처 자료의 문장이 그 칸의 위치·시각을 말한다.' });
+    }
+    for (const [nid, n] of Object.entries(p.quiz?.nodes ?? {})) for (const c of n.choices) { // 추리 문답: 선택지 → 출처 → 원문 인용
+      const right = p.correctSlots.path.includes(c.id);
+      out.push({ puzzle: p.id, slot: right ? 'path' : `path(오답:${nid})`, label: `${nid} ${right ? '정답' : '오답'} 선택지`, token: `${c.judge} — ${c.reason}`, cites: [{ id: c.source, contains: c.quote }], why: right ? '출처 문장이 이 판단의 이유다.' : '출처 하나에 기대어 그럴듯하지만 다른 자료와 부딪힌다.' });
     }
     for (const tk of p.tasks ?? []) if (tk.form) out.push({ puzzle: p.id, slot: tk.slot, label: `${tk.label} 칸의 서식 문구`, token: (p.people ?? []).find((q) => q.id === p.correctSlots[tk.slot][0])?.label ?? '', cites: [{ id: tk.formSource!, contains: tk.form.replace(/ · .*/, '') }], why: '서식 문구의 약자·권한이 그 인물을 가리킨다.' });
   }
@@ -76,10 +78,15 @@ export function checkRows() {
 
 if (process.argv[1]?.endsWith('puzzle-evidence-table.ts')) {
   const res = checkRows();
-  const names: Record<string, string> = { P01_scene_rebuild: 'P01 원장실 재구성', P02_night_timeline: 'P02 야간 동선 시간 배열', P03_revision_diff: 'P03 검안 기록 변조 비교 (부원장 PC)', P04_approval_chain: 'P04 특별 치료 승인 체계', P05_patient_code: 'P05 환자 코드 대조' };
+  const names: Record<string, string> = { P01_scene_rebuild: 'P01 원장실 추리 문답', P02_night_timeline: 'P02 야간 동선 시간 배열', P03_revision_diff: 'P03 검안 기록 변조 비교 (부원장 PC)', P04_approval_chain: 'P04 특별 치료 승인 체계', P05_patient_code: 'P05 환자 코드 대조' };
   const lines = ['# 퍼즐 근거표', '', '> `npx tsx tools/puzzle-evidence-table.ts` 가 만든다. 퍼즐 조각(= 단서의 핵심 문장) → 출처(단서·진술 ID) → 원문 인용이 실제 데이터에 있는지, 출처가 퍼즐이 열리기 전에 얻어지는지 검사한 결과다 (`tests/puzzle-evidence-table.test.ts` 가 같은 검사를 한다). 근거 카드를 붙이는 단계는 없다 — 조각 자체가 단서 문장이고, 어느 칸에 놓느냐로 판정한다.', ''];
   for (const pid of Object.keys(names)) {
     const p = puzzles.find((q) => q.id === pid)!, scene = PUZZLE_SCENE[pid];
+    if (p.quiz) { // P01: 질문 → 선택지(정답/오답) → 근거 단서 원문 → 충돌 문장
+      lines.push(`## ${names[pid]} (씬 ${scene})`, '', `결론 기회 3번. 정답 길: ${p.correctSlots.path.join(' → ')}`, '', `정답 결론: ${quizConclusion(p, p.correctSlots.path)}`, '', '| 질문 | 선택지 (판단 — 이유) | 정답? | 출처 | 원문 인용 | 틀렸을 때 충돌 문장 |', '|---|---|---|---|---|---|');
+      for (const [nid, n] of Object.entries(p.quiz.nodes)) for (const c of n.choices) lines.push(`| ${nid} ${n.q} | ${c.judge} — ${c.reason} | ${p.correctSlots.path.includes(c.id) ? '정답 길' : '오답'} | ${c.source} | “${c.quote}” | ${c.conflict ?? ''} |`);
+      lines.push(''); continue;
+    }
     lines.push(`## ${names[pid]} (씬 ${scene})`, '', `결론 기회 3번. 정답: ${p.slots.map((sl) => `\`${sl}\` = ${p.correctSlots[sl].join(' · ')}`).join(' / ')}`, '', '| 칸·조각 | 조각 문구 / 정답 | 출처 | 원문 인용 | 이유 |', '|---|---|---|---|---|');
     for (const r of res.filter((x) => x.row.puzzle === pid)) {
       const c = r.row.cites;

@@ -3,6 +3,7 @@
   "id": "P01_scene_rebuild",
   "type": "SpatialPlacement",
   "flagOnSolve": "flag_scene_rebuilt",
+  "layout": "quiz",
   "sourceEvidenceIds": [
    "E02_altar_blood",
    "E03_preliminary_exam",
@@ -13,104 +14,30 @@
    "E03_preliminary_exam"
   ],
   "slots": [
-   "altar_floor",
-   "desk_chair",
-   "movedObjects"
+   "path"
   ],
   "correctSlots": {
-   "altar_floor": [
-    "p_blood",
-    "p_exam"
-   ],
-   "desk_chair": [
-    "p_baek",
-    "p_drag"
-   ],
-   "movedObjects": [
-    "body",
-    "chair"
+   "path": [
+    "c1_head",
+    "c2_fight",
+    "c3_altar",
+    "c4_moved"
    ]
   },
   "distractors": [
-   "movedObjects:syringe",
-   "*:d_letter"
+   "*:c2_seizure"
   ],
-  "conflicts": {
-   "movedObjects:syringe": "예비 검안 메모의 상처 기록과 맞지 않는다.",
-   "movedObjects:altar": "기도대 아래 혈흔과 맞지 않는다.",
-   "movedObjects:!chair": "의자 아래 바닥의 긁힌 자국({player}의 관찰)과 맞지 않는다.",
-   "movedObjects:!body": "예비 검안 메모와 백선우의 진술을 함께 보면 빠진 항목이 있다."
-  },
+  "conflicts": {},
   "hintTexts": [
-   "혈흔이 남은 자리와 두 기록이 말하는 발견 위치를 다시 견줘 보세요.",
+   "공식 설명과 현장 기록이 서로 부딪히는 곳이 없는지, 처음 판단부터 다시 견줘 보세요.",
    "틀린 후보 하나를 제거했습니다."
   ],
-  "title": "현장 위치 재구성 — 원장실 평면도",
+  "title": "원장실 추리 문답",
   "info": [
-   "단서 조각을 평면도의 위치에 끌어다 놓는다",
-   "관련 없는 조각은 놓지 않아도 된다",
-   "모든 위치에 조각을 놓으면 “무엇이 옮겨졌나?”를 고른다"
+   "질문에 차례로 답하며 결론에 이른다",
+   "고르는 동안에는 맞고 틀림을 알려 주지 않는다",
+   "[결론 확정] 전에는 이전 질문으로 돌아갈 수 있다"
   ],
-  "zones": [
-   {
-    "id": "altar_floor",
-    "label": "기도대 옆 바닥",
-    "x": 0,
-    "y": 0,
-    "w": 49,
-    "h": 49
-   },
-   {
-    "id": "desk_chair",
-    "label": "책상 의자",
-    "x": 51,
-    "y": 0,
-    "w": 49,
-    "h": 49
-   },
-   {
-    "id": "door",
-    "label": "문 앞",
-    "x": 0,
-    "y": 51,
-    "w": 49,
-    "h": 49
-   },
-   {
-    "id": "window",
-    "label": "창가",
-    "x": 51,
-    "y": 51,
-    "w": 49,
-    "h": 49
-   }
-  ],
-  "tasks": [
-   {
-    "slot": "movedObjects",
-    "label": "그렇다면 무엇이 옮겨졌나? (모두 고른다)",
-    "kind": "mark",
-    "options": [
-     {
-      "id": "body",
-      "label": "원장 시신"
-     },
-     {
-      "id": "chair",
-      "label": "의자"
-     },
-     {
-      "id": "altar",
-      "label": "기도대"
-     },
-     {
-      "id": "syringe",
-      "label": "주사기"
-     }
-    ]
-   }
-  ],
-  "layout": "plan",
   "openWhen": {
    "evidence": [
     "E02_altar_blood",
@@ -122,41 +49,239 @@
    ]
   },
   "solvedDialogue": "mono_p01_solved",
-  "tokens": [
-   {
-    "id": "p_blood",
-    "label": "놋쇠 기도대 받침 아래에 닦이지 않은 혈흔이 남아 있다",
-    "source": "E02_altar_blood"
-   },
-   {
-    "id": "p_exam",
-    "label": "발견 위치: 기도대 옆 바닥",
-    "source": "E03_preliminary_exam"
-   },
-   {
-    "id": "p_baek",
-    "label": "집무실 의자에 앉으신 채 발견됐고",
-    "source": "baek_s_natural"
-   },
-   {
-    "id": "p_drag",
-    "label": "의자 다리 아래 바닥이 기도대 쪽에서부터 길게 긁혀 있다",
-    "source": "han_o_chair"
-   },
-   {
-    "id": "d_letter",
-    "label": "밤마다 빈 침대가 하나씩 늘어나",
-    "source": "E01_last_letter",
-    "decoy": true
-   },
-   {
-    "id": "d_wrist",
-    "label": "정ㅎ / 2병동 / 04",
-    "source": "E04_wristband_fragment",
-    "decoy": true
+  "quiz": {
+   "start": "q1",
+   "subject": "원장은",
+   "nodes": {
+    "q1": {
+     "q": "원장의 직접 사인은 무엇인가?",
+     "choices": [
+      {
+       "id": "c1_head",
+       "judge": "머리 손상 때문에 숨졌다",
+       "reason": "후두부 열상과 기도대 아래 혈흔이 남아 있다.",
+       "source": "E03_preliminary_exam",
+       "quote": "후두부 열상 및 출혈 흔적",
+       "short": "머리 손상",
+       "says": "머리 손상으로 숨졌고,",
+       "next": "q2"
+      },
+      {
+       "id": "c1_disease",
+       "judge": "지병으로 쓰러져 숨졌다",
+       "reason": "백선우가 “지병으로 돌아가셨습니다”라고 했다.",
+       "source": "baek_s_natural",
+       "quote": "지병으로 돌아가셨습니다",
+       "short": "지병",
+       "says": "지병으로 쓰러졌고,",
+       "next": "qa1",
+       "conflict": "「예비 검안 메모」의 후두부 열상 기록과 맞지 않는다."
+      },
+      {
+       "id": "c1_unknown",
+       "judge": "아직 사인을 정할 수 없다",
+       "reason": "예비 검안 메모는 “미약 호흡”이라 적었는데 백선우는 이미 숨졌다고 한다.",
+       "source": "E03_preliminary_exam",
+       "quote": "의식없음, 미약 호흡",
+       "short": "사인 미정",
+       "says": "사인은 아직 정하지 못했고,",
+       "next": "qu1",
+       "conflict": "「예비 검안 메모」와(과) 「기도대 아래 혈흔」은(는) 이 판단과 맞지 않는다."
+      }
+     ]
+    },
+    "q2": {
+     "q": "원장은 왜 머리를 다쳤나?",
+     "choices": [
+      {
+       "id": "c2_fight",
+       "judge": "누군가와 몸싸움을 하다 밀려 기도대에 부딪혔다",
+       "reason": "책상 아래에서 찢어진 손목띠 조각이 나왔다.",
+       "source": "E04_wristband_fragment",
+       "quote": "원장 책상 아래에서 나온 찢어진 환자 손목띠 조각",
+       "short": "몸싸움 중 밀림",
+       "says": "몸싸움 중 밀려 기도대에 부딪혔으며,",
+       "next": "q3"
+      },
+      {
+       "id": "c2_seizure",
+       "judge": "심정지 발작으로 쓰러지며 기도대에 부딪혔다",
+       "reason": "지병이라는 설명과 맞는다.",
+       "source": "baek_s_natural",
+       "quote": "지병으로 돌아가셨습니다",
+       "short": "발작으로 쓰러짐",
+       "says": "발작으로 쓰러지며 기도대에 부딪혔으며,",
+       "next": "q3",
+       "conflict": "「찢어진 손목띠 조각」은(는) 이 설명과 맞지 않는다."
+      },
+      {
+       "id": "c2_slip",
+       "judge": "기도하다 미끄러져 기도대에 부딪혔다",
+       "reason": "혈흔이 기도대 받침 아래에 있다.",
+       "source": "E02_altar_blood",
+       "quote": "놋쇠 기도대 받침 아래에 닦이지 않은 혈흔이 남아 있다",
+       "short": "미끄러짐",
+       "says": "기도하다 미끄러져 기도대에 부딪혔으며,",
+       "next": "q3",
+       "conflict": "「찢어진 손목띠 조각」은(는) 원장 혼자 있었다는 전제와 맞지 않는다."
+      },
+      {
+       "id": "c2_chair",
+       "judge": "의자에 앉은 채 쓰러지며 책상에 부딪혔다",
+       "reason": "집무실 의자에 앉은 채 발견됐다고 한다.",
+       "source": "baek_s_natural",
+       "quote": "집무실 의자에 앉으신 채 발견됐고",
+       "short": "의자에서 쓰러짐",
+       "says": "의자에서 쓰러지며 책상에 부딪혔으며,",
+       "next": "q3",
+       "conflict": "「기도대 아래 혈흔」은(는) 이 설명과 맞지 않는다."
+      }
+     ]
+    },
+    "q3": {
+     "q": "원장이 처음 쓰러진 곳은 어디인가?",
+     "choices": [
+      {
+       "id": "c3_altar",
+       "judge": "기도대 옆 바닥",
+       "reason": "예비 검안이 발견 위치를 그렇게 적었다.",
+       "source": "E03_preliminary_exam",
+       "quote": "발견 위치: 기도대 옆 바닥",
+       "short": "기도대 옆 바닥",
+       "says": "처음 쓰러진 곳은 기도대 옆 바닥이고,",
+       "next": "q4"
+      },
+      {
+       "id": "c3_chair",
+       "judge": "책상 의자",
+       "reason": "백선우는 의자에 앉은 채 발견됐다고 했다.",
+       "source": "baek_s_natural",
+       "quote": "집무실 의자에 앉으신 채 발견됐고",
+       "short": "책상 의자",
+       "says": "처음 쓰러진 곳은 책상 의자이고,",
+       "next": "q4",
+       "conflict": "「예비 검안 메모」의 발견 위치와 맞지 않는다."
+      },
+      {
+       "id": "c3_desk",
+       "judge": "책상 앞 바닥",
+       "reason": "손목띠 조각이 책상 아래에서 나왔다.",
+       "source": "E04_wristband_fragment",
+       "quote": "원장 책상 아래에서 나온 찢어진 환자 손목띠 조각",
+       "short": "책상 앞 바닥",
+       "says": "처음 쓰러진 곳은 책상 앞 바닥이고,",
+       "next": "q4",
+       "conflict": "「기도대 아래 혈흔」은(는) 이 위치와 맞지 않는다."
+      }
+     ]
+    },
+    "q4": {
+     "q": "그런데 “의자에 앉은 채 발견됐다”는 설명은 어떻게 된 것인가?",
+     "choices": [
+      {
+       "id": "c4_moved",
+       "judge": "누군가 시신과 의자를 옮겨 놓았다",
+       "reason": "의자 다리 아래 바닥이 기도대 쪽에서부터 길게 긁혀 있다.",
+       "source": "han_o_chair",
+       "quote": "의자 다리 아래 바닥이 기도대 쪽에서부터 길게 긁혀 있다",
+       "short": "시신·의자를 옮김",
+       "says": "누군가 시신과 의자를 옮겨 지병으로 꾸몄다."
+      },
+      {
+       "id": "c4_self",
+       "judge": "원장이 스스로 의자까지 가서 앉았다",
+       "reason": "예비 검안은 “미약 호흡”을 적었다.",
+       "source": "E03_preliminary_exam",
+       "quote": "의식없음, 미약 호흡",
+       "short": "스스로 의자로 감",
+       "says": "스스로 의자까지 가서 앉아 숨졌다.",
+       "conflict": "「예비 검안 메모」의 “의식없음” 기록과 맞지 않는다."
+      },
+      {
+       "id": "c4_mistake",
+       "judge": "백선우가 발견 위치를 착각했다",
+       "reason": "예비 검안과 백선우의 진술이 가리키는 위치가 다르다.",
+       "source": "baek_s_natural",
+       "quote": "집무실 의자에 앉으신 채 발견됐고",
+       "short": "위치 착각",
+       "says": "백선우가 발견 위치를 착각한 것일 뿐이다.",
+       "conflict": "의자 아래 바닥의 긁힌 자국({player}의 관찰)과 맞지 않는다."
+      }
+     ]
+    },
+    "qa1": {
+     "q": "원장은 어디서 숨졌나?",
+     "choices": [
+      {
+       "id": "ca1_chair",
+       "judge": "책상 의자",
+       "reason": "백선우는 의자에 앉은 채 발견됐다고 했다.",
+       "source": "baek_s_natural",
+       "quote": "집무실 의자에 앉으신 채 발견됐고",
+       "short": "책상 의자",
+       "says": "책상 의자에서 숨졌으며,",
+       "next": "qa2"
+      },
+      {
+       "id": "ca1_altar",
+       "judge": "기도대 옆 바닥",
+       "reason": "예비 검안이 발견 위치를 그렇게 적었다.",
+       "source": "E03_preliminary_exam",
+       "quote": "발견 위치: 기도대 옆 바닥",
+       "short": "기도대 옆 바닥",
+       "says": "기도대 옆 바닥에서 숨졌으며,",
+       "next": "qa2"
+      }
+     ]
+    },
+    "qa2": {
+     "q": "그렇다면 기도대 아래 혈흔은 어떻게 설명하나?",
+     "choices": [
+      {
+       "id": "ca2_fall",
+       "judge": "쓰러지며 다쳐서 생긴 흔적이다",
+       "reason": "후두부 열상과 출혈 흔적이 기록돼 있다.",
+       "source": "E03_preliminary_exam",
+       "quote": "후두부 열상 및 출혈 흔적",
+       "short": "쓰러지며 다침",
+       "says": "혈흔은 쓰러지며 다친 흔적이다."
+      },
+      {
+       "id": "ca2_open",
+       "judge": "아직 이유를 알 수 없다",
+       "reason": "닦이지 않은 혈흔이 남아 있을 뿐이다.",
+       "source": "E02_altar_blood",
+       "quote": "놋쇠 기도대 받침 아래에 닦이지 않은 혈흔이 남아 있다",
+       "short": "이유 미상",
+       "says": "혈흔의 이유는 아직 설명하지 못했다."
+      }
+     ]
+    },
+    "qu1": {
+     "q": "그렇다면 원장의 시신은 처음 어디에 있었나?",
+     "choices": [
+      {
+       "id": "cu1_chair",
+       "judge": "책상 의자",
+       "reason": "백선우는 의자에 앉은 채 발견됐다고 했다.",
+       "source": "baek_s_natural",
+       "quote": "집무실 의자에 앉으신 채 발견됐고",
+       "short": "책상 의자",
+       "says": "시신은 처음부터 책상 의자에 있었다."
+      },
+      {
+       "id": "cu1_altar",
+       "judge": "기도대 옆 바닥",
+       "reason": "예비 검안이 발견 위치를 그렇게 적었다.",
+       "source": "E03_preliminary_exam",
+       "quote": "발견 위치: 기도대 옆 바닥",
+       "short": "기도대 옆 바닥",
+       "says": "시신은 처음 기도대 옆 바닥에 있었다."
+      }
+     ]
+    }
    }
-  ],
-  "pieceConflict": "「{src}」은(는) 이 위치와 맞지 않는다."
+  }
  },
  {
   "id": "P02_night_timeline",

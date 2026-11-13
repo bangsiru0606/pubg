@@ -15,7 +15,7 @@ export interface Hypothesis {
   refutedBy: string[]; temptation?: string; requiresFlag?: string;
 }
 export interface Claim {
-  claimId: string; question: string; requiredDistinctSourceTypes: number;
+  claimId: string; question: string; stem?: string; requiredDistinctSourceTypes: number; // stem: 보고서의 문장 빈칸 ({} 자리에 가설 문장이 들어간다)
   requiresFlag?: string; hypotheses: Hypothesis[];
   relatedEvidenceIds: string[]; // 엔딩 D 재도전에서 "관련" 으로 먼저 보여 줄 단서 (그 질문을 다루는 장면에서 얻는 것, 정답 근거만이 아니다)
 }
@@ -30,10 +30,14 @@ export interface PuzzleDesktop {
   trashName: string; compareName: string;
   diffs: { id: string; before: string; after: string }[]; // 비교하면 표시되는 바뀐 줄 (의미 없는 변경은 넣지 않는다)
 }
+/** P01 추리 문답: 질문 노드마다 선택지(판단 + 이유). 답에 따라 다음 질문이 달라진다. next 가 없는 선택지가 마지막 판단이다. 결론 문장 = subject + 지나온 선택지의 says 를 이은 것. quote: source(단서·진술 ID) 원문에 실제 있는 문장 */
+export interface QuizChoice { id: string; judge: string; reason: string; source: string; srcName?: string; quote: string; short: string; says: string; next?: string; conflict?: string }
+export interface PuzzleQuiz { start: string; subject: string; nodes: Record<string, { q: string; choices: QuizChoice[] }> }
 export interface Puzzle {
   id: string; type: PuzzleType; flagOnSolve: string;
   // 화면 구성 데이터
-  layout?: 'plan' | 'timeline' | 'desktop' | 'tree' | 'logic';
+  quiz?: PuzzleQuiz;                                    // quiz: 추리 문답 (답 = path 칸에 지나온 선택지 ID 들)
+  layout?: 'plan' | 'timeline' | 'desktop' | 'tree' | 'logic' | 'quiz';
   table?: { columns: string[]; rows: { id: string; cells: string[] }[] }; // logic: 후보 표
   statements?: string[];                                // logic: 대조에 쓰는 진술 ID
   title?: string; info?: string[]; tasks?: PuzzleTask[]; fixtures?: PuzzleBox[]; zones?: PuzzleBox[];

@@ -5,7 +5,7 @@
 //  - 보류하고 나가면 놓은 조각이 그대로 저장되고 기회는 줄지 않는다.
 import { characterName, evidenceById, puzzleById } from './data';
 import { isVerified, setFlag } from './state';
-import type { GameState, Puzzle, PuzzlePiece } from './types';
+import type { GameState, Puzzle, PuzzlePiece, QuizChoice } from './types';
 
 export type PuzzleAnswer = Record<string, string[]>;
 export const MAX_ATTEMPTS = 3;
@@ -25,8 +25,33 @@ const sameSet = (a: string[] = [], b: string[] = []) =>
 export const hintLevelFor = (wrongCount: number) => Math.min(Math.max(wrongCount, 0), 2);
 export const attemptsLeft = (s: GameState, id: string) => Math.max(0, MAX_ATTEMPTS - (s.wrongCountByPuzzle[id] ?? 0));
 
-/** 모든 칸이 채워졌는가 (확정 버튼을 누를 수 있는 조건) */
-export const isAnswerComplete = (p: Puzzle, a: PuzzleAnswer) => p.slots.every((slot) => !!a[slot]?.length);
+/** 추리 문답: 선택지 ID 를 처음 질문부터 따라간다. at = 다음에 답할 질문(null = 마지막 판단까지 끝), valid = 모든 ID 가 길 위에 있다 */
+export function quizWalk(p: Puzzle, ids: string[] = []): { chosen: QuizChoice[]; at: string | null; valid: boolean } {
+  const q = p.quiz!, chosen: QuizChoice[] = [];
+  let at: string | null = q.start;
+  for (const id of ids) {
+    const c: QuizChoice | undefined = at ? q.nodes[at]?.choices.find((x) => x.id === id) : undefined;
+    if (!c) return { chosen, at, valid: false };
+    chosen.push(c); at = c.next ?? null;
+  }
+  return { chosen, at, valid: true };
+}
+/** 정답이 아닌 길 하나 (각 질문에서 정답 선택지가 아닌 첫 선택지) — F9·시험용 */
+export const quizWrongPath = (p: Puzzle) => quizPathBy(p, (cs) => cs.find((c) => !p.correctSlots.path.includes(c.id)) ?? cs[0]);
+/** 지나온 판단을 한 문장 결론으로 */
+export const quizConclusion = (p: Puzzle, ids: string[]) => [p.quiz!.subject, ...quizWalk(p, ids).chosen.map((c) => c.says)].join(' ');
+/** 어느 길로든 마지막 판단까지 가는 답 (pick 이 각 질문의 선택지를 고른다) — F9·시험·무작위 시뮬레이션용 */
+export function quizPathBy(p: Puzzle, pick: (choices: QuizChoice[]) => QuizChoice): string[] {
+  const out: string[] = []; let at: string | null = p.quiz!.start;
+  while (at) { const c = pick(p.quiz!.nodes[at].choices); out.push(c.id); at = c.next ?? null; }
+  return out;
+}
+
+/** 모든 칸이 채워졌는가 (확정 버튼을 누를 수 있는 조건). 추리 문답은 마지막 판단까지 답해야 한다. */
+export function isAnswerComplete(p: Puzzle, a: PuzzleAnswer): boolean {
+  if (p.quiz) { const w = quizWalk(p, a.path); return w.valid && w.at === null && w.chosen.length > 0; }
+  return p.slots.every((slot) => !!a[slot]?.length);
+}
 
 /** 칸마다 정답과 같고, 칸이 아닌 곳(문 앞·창가 같은 오답 위치)에는 아무것도 놓지 않았다 */
 export function isCorrectAnswer(p: Puzzle, a: PuzzleAnswer): boolean {
@@ -48,6 +73,7 @@ export function availablePieces(s: GameState, p: Puzzle): PuzzlePiece[] {
 
 /** 충돌 문장들 (슬롯 순서). 화면에는 첫 번째 하나만 보여 준다. */
 function conflictsOf(s: GameState, p: Puzzle, a: PuzzleAnswer): string[] {
+  if (p.quiz) { const ok = p.correctSlots.path; const c = quizWalk(p, a.path).chosen.find((x) => !ok.includes(x.id) && x.conflict); return c ? [c.conflict!] : []; } // 처음 틀린 판단과 부딪히는 자료 하나
   const out: string[] = [];
   const add = (m?: string) => { if (m && !out.includes(m)) out.push(m); };
   const piece = (id: string) => p.tokens?.find((t) => t.id === id);

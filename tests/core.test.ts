@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   acquireEvidence, chooseEvidencePreservation, claims, createGameState, evidenceById, evidenceList, hintLevelFor,
-  isBasementOpen, loadGame, puzzles, resolveClaim, resolveEnding, saveConclusion, saveGame, setReportTarget,
+  isBasementOpen, loadGame, puzzles, quizWrongPath, resolveClaim, resolveEnding, saveConclusion, saveGame, setReportTarget,
   claimById, puzzleById, solvedClaimIds, type GameState, type PuzzleAnswer,
 } from '../src/core';
 import { submitPuzzle } from './helpers';
@@ -165,8 +165,8 @@ describe('12.4 퍼즐', () => {
     s.flags.push('basement_key'); expect(isBasementOpen(s)).toBe(true);
     expect(isBasementOpen(createGameState())).toBe(false);
   });
-  it('1. P01 혈흔·예비 검안 조각과 백선우 진술 조각의 위치를 뒤바꾸면 해결되지 않는다', () => {
-    const { r } = sub('P01_scene_rebuild', { altar_floor: ['p_baek', 'p_drag'], desk_chair: ['p_blood', 'p_exam'], movedObjects: ['body', 'chair'] });
+  it('1. P01 처음 쓰러진 곳을 의자로 고르면 해결되지 않는다', () => {
+    const { r } = sub('P01_scene_rebuild', { path: ['c1_head', 'c2_fight', 'c3_chair', 'c4_moved'] });
     expect(r.status).toBe('wrong');
     expect(r.conflicts).toHaveLength(1);
   });
@@ -208,14 +208,14 @@ describe('12.4 퍼즐', () => {
     const s = createGameState();
     ALL_EXCEPT_E16.forEach((id) => acquireEvidence(s, id));
     for (const p of puzzles) {
-      for (let i = 0; i < 3; i++) submitPuzzle(s, p.id, p.slots.reduce((a, sl) => ({ ...a, [sl]: ['__wrong__'] }), {}));
+      for (let i = 0; i < 3; i++) submitPuzzle(s, p.id, p.quiz ? { path: quizWrongPath(p) } : p.slots.reduce((a, sl) => ({ ...a, [sl]: ['__wrong__'] }), {}));
       expect(s.failedPuzzleIds).toContain(p.id);
     }
     chooseEvidencePreservation(s, true); setReportTarget(s, 'external');
     expect(resolveEnding(s).id).toBe('ending_d'); // 결론을 하나도 풀 수 없다
   });
   it('오답은 정답을 직접 보여주지 않는다 (충돌 문구만)', () => {
-    const { r } = sub('P01_scene_rebuild', { altar_floor: ['p_blood', 'p_exam'], desk_chair: ['p_baek', 'p_drag'], door: ['d_letter'], movedObjects: ['body', 'chair'] });
+    const { r } = sub('P01_scene_rebuild', { path: ['c1_head', 'c2_fight', 'c3_altar', 'c4_self'] });
     expect(r).not.toHaveProperty('wrongSlots');
     expect(r.hint).not.toHaveProperty('autoFill');
   });

@@ -42,15 +42,15 @@ describe('퍼즐 규칙 (이전계획 11.12 / 기획서 4.6): 결론 기회 3번
   it('오답 위치(문 앞·창가)나 오답 조각을 칸에 놓으면 정답이 아니다 — 놓지 않는 것이 정답', () => {
     const p = P('P01_scene_rebuild');
     expect(isCorrectAnswer(p, p.correctSlots)).toBe(true);
-    expect(isCorrectAnswer(p, { ...p.correctSlots, door: ['d_letter'] })).toBe(false);
-    expect(isCorrectAnswer(p, { ...p.correctSlots, altar_floor: [...p.correctSlots.altar_floor, 'd_wrist'] })).toBe(false);
+    expect(isAnswerComplete(p, { path: p.correctSlots.path.slice(0, 3) })).toBe(false); // 문답은 마지막 판단까지 가야 확정할 수 있다
+    expect(isCorrectAnswer(p, { path: ['c1_head', 'c2_fight', 'c3_altar', 'c4_self'] })).toBe(false);
     const t = P('P02_night_timeline');
     expect(isCorrectAnswer(t, { ...t.correctSlots, t2241: ['d_sermon'] })).toBe(false);
   });
   it('조각 충돌 문장은 자료 이름으로 말하고 정답 위치는 말하지 않는다', () => {
     const s = stateBeforePuzzle('P01_scene_rebuild'), p = P('P01_scene_rebuild');
-    const r = submitPuzzle(s, p.id, { altar_floor: ['p_baek', 'p_exam'], desk_chair: ['p_blood', 'p_drag'], movedObjects: ['body', 'chair'] });
-    expect(r.status).toBe('wrong'); expect(r.conflicts[0]).toContain('백선우의 진술'); expect(r.conflicts[0]).not.toContain('책상 의자');
+    const r = submitPuzzle(s, p.id, { path: ['c1_head', 'c2_seizure', 'c3_altar', 'c4_moved'] });
+    expect(r.status).toBe('wrong'); expect(r.conflicts[0]).toContain('찢어진 손목띠 조각'); expect(r.conflicts[0]).not.toContain('몸싸움');
   });
   it('보류: 놓은 조각이 저장되고 기회는 줄지 않는다. 틀린 답도 그대로 남아 이어서 고친다', () => {
     const s = stateBeforePuzzle('P02_night_timeline');

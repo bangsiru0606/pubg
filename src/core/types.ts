@@ -15,7 +15,7 @@ export interface Hypothesis {
   refutedBy: string[]; temptation?: string; requiresFlag?: string;
 }
 export interface Claim {
-  claimId: string; question: string; stem?: string; requiredDistinctSourceTypes: number; // stem: 보고서의 문장 빈칸 ({} 자리에 가설 문장이 들어간다)
+  claimId: string; question: string; stem?: string; // stem: 보고서의 문장 빈칸 ({} 자리에 가설 문장이 들어간다)
   requiresFlag?: string; hypotheses: Hypothesis[];
   relatedEvidenceIds: string[]; // 엔딩 D 재도전에서 "관련" 으로 먼저 보여 줄 단서 (그 질문을 다루는 장면에서 얻는 것, 정답 근거만이 아니다)
 }

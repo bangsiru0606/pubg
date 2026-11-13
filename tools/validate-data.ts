@@ -182,8 +182,7 @@ for (const c of claims) {
       if (evidenceById.get(id)?.sourceType === 'context') err(`${w}: context 단서 ${id} 가 필수 근거/반박 근거로 지정됨`);
     if (h.rebuttalEvidenceIds.some((id) => h.supportEvidenceIds.includes(id))) err(`${w}: 지지 근거와 반박 근거가 겹침`);
     if (h.isCorrect) {
-      const types = new Set(h.supportEvidenceIds.map((id) => evidenceById.get(id)?.sourceType));
-      if (types.size < c.requiredDistinctSourceTypes) err(`${w}: 정답 가설의 근거 유형이 ${c.requiredDistinctSourceTypes}종 미만`);
+      if (h.supportEvidenceIds.length < 2) err(`${w}: 정답 가설의 근거가 2개 미만`);
       if (!h.rebuttalEvidenceIds.length) err(`${w}: 정답 가설에 반박 근거 없음`);
     } else {
       if (h.supportEvidenceIds.length || h.rebuttalEvidenceIds.length) err(`${w}: 오답 가설은 지지/반박 근거를 갖지 않는다`);

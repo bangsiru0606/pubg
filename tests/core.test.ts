@@ -58,21 +58,21 @@ describe('12.1 추리 공정성', () => {
     expect(h.supportEvidenceIds).not.toContain('E05_access_log');
     expect(h.rebuttalEvidenceIds).toContain('E05_access_log');
   });
-  it('4. 오미란 수정 증언(E08) 없이는 현장 위조를 확정할 수 없다', () => {
+  it('4. 질문 C: 근거가 1개뿐이면 확정되지 않고, 수정 이력 + 이송 지시서(기록 둘)나 수정 이력 + 오미란 수정 진술이면 해결된다 (유형 조건 없음)', () => {
     const s = fullState();
-    saveConclusion(s, 'claim_c', 'c3_baek_lee', ['E07_report_revision', 'E11_transfer_order'], ['E06_torn_sleeve']); // 기록 둘뿐
-    const r = resolveClaim(s, claimById.get('claim_c')!);
-    expect(r.evidencePoint).toBe(0);
-    expect(r.solved).toBe(false);
+    saveConclusion(s, 'claim_c', 'c3_baek_lee', ['E07_report_revision'], ['E06_torn_sleeve']);
+    expect(resolveClaim(s, claimById.get('claim_c')!).solved).toBe(false);
+    saveConclusion(s, 'claim_c', 'c3_baek_lee', ['E07_report_revision', 'E11_transfer_order'], ['E06_torn_sleeve']);
+    expect(resolveClaim(s, claimById.get('claim_c')!).solved).toBe(true);
     saveConclusion(s, 'claim_c', 'c3_baek_lee', ['E07_report_revision', 'E08_miran_revised'], ['E06_torn_sleeve']);
     expect(resolveClaim(s, claimById.get('claim_c')!).solved).toBe(true);
   });
-  it('5. 장부(E12)만, 또는 기록 두 개만으로 박은지 신원을 확정하지 않는다', () => {
+  it('5. 질문 D: 장부(E12)만으로는 확정되지 않고, 장부 + 연결표(기록 둘)면 해결된다', () => {
     const s = fullState();
     saveConclusion(s, 'claim_d', 'd3_p271', ['E12_ledger'], ['E15_transport_manifest']);
     expect(resolveClaim(s, claimById.get('claim_d')!).solved).toBe(false);
     saveConclusion(s, 'claim_d', 'd3_p271', ['E12_ledger', 'E13_identity_map'], ['E15_transport_manifest']);
-    expect(resolveClaim(s, claimById.get('claim_d')!).solved).toBe(false);
+    expect(resolveClaim(s, claimById.get('claim_d')!).solved).toBe(true);
   });
 });
 
@@ -97,10 +97,20 @@ describe('증명 규칙', () => {
     acquireEvidence(s, 'E05_access_log');
     expect(s.verifiedEvidenceIds).toContain('E05_access_log');
   });
-  it('증언 두 개만 제출하면 근거 유형 조건 불충족', () => {
+  it('근거 점수는 정답 가설의 맞는 근거 2개면 받는다 — 유형은 묻지 않는다 (5차 피드백)', () => {
     const s = fullState();
     saveConclusion(s, 'claim_b', 'b3_selfdefense', ['E08_miran_revised'], ['E05_access_log']);
-    expect(resolveClaim(s, claimById.get('claim_b')!).evidencePoint).toBe(0);
+    expect(resolveClaim(s, claimById.get('claim_b')!).evidencePoint).toBe(0); // 근거가 1개뿐
+    saveConclusion(s, 'claim_b', 'b3_selfdefense', ['E09_sedative_gap', 'E08_miran_revised'], ['E05_access_log']);
+    expect(resolveClaim(s, claimById.get('claim_b')!).solved).toBe(true);
+    // 같은 유형(기록·기록) 2개: 질문 D(장부 + 연결표), 질문 C(수정 이력 + 이송 지시서)
+    saveConclusion(s, 'claim_d', 'd3_p271', ['E12_ledger', 'E13_identity_map'], ['E15_transport_manifest']);
+    expect(resolveClaim(s, claimById.get('claim_d')!).solved).toBe(true);
+    saveConclusion(s, 'claim_c', 'c3_baek_lee', ['E07_report_revision', 'E11_transfer_order'], ['E06_torn_sleeve']);
+    expect(resolveClaim(s, claimById.get('claim_c')!).solved).toBe(true);
+    // 정답 가설의 근거가 아닌 자료(맥락·오답 근거)는 세지 않는다
+    saveConclusion(s, 'claim_d', 'd3_p271', ['E12_ledger', 'E02_altar_blood'], ['E15_transport_manifest']);
+    expect(resolveClaim(s, claimById.get('claim_d')!).evidencePoint).toBe(0);
   });
   it('오답 가설은 근거가 많아도 해결 처리하지 않는다', () => {
     const s = fullState();

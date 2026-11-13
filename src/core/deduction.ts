@@ -3,6 +3,7 @@ import { hasFlag, isUnsettledClue, isVerified } from './state';
 import type { Claim, GameState } from './types';
 
 export const MAX_SUPPORT_SLOTS = 2;
+export const REQUIRED_SUPPORT = 2; // 점수를 받으려면 정답 가설의 맞는 근거가 이만큼 있어야 한다 (유형은 묻지 않는다)
 export const MAX_REBUTTAL_SLOTS = 1;
 
 export interface ClaimResult {
@@ -36,17 +37,17 @@ export function saveConclusion(s: GameState, claimId: string, hypothesisId: stri
 }
 
 /**
- * 가설 1점 + 필수 근거 유형 1점 + 반박 1점 (씬 7). 2점 이상이면서 정답 가설이고 근거 유형 조건을 만족해야 해결.
- * (근거 유형 조건을 필수로 둔 이유: 가설+반박만으로 해결되면 12.1.4·12.1.5 가 깨진다.)
+ * 가설 1점 + 근거 1점 + 반박 1점 (씬 7). 2점 이상이면서 정답 가설이고 근거 조건을 만족해야 해결.
+ * 근거 조건: 정답 가설의 맞는 근거 2개 (5차 피드백: "출처 유형이 서로 달라야 한다"는 조건은 없앴다. 화면에는 증거·증언 2분류만 보여 플레이어가 알 수 없고, 기록 둘이 정답인 질문 C·D 가 해결되지 않았다.)
+ * 가설+반박만으로 해결되면 12.1.4·12.1.5 가 깨지므로 근거 조건은 필수로 둔다.
  */
 export function resolveClaim(s: GameState, claim: Claim): ClaimResult {
   const hyp = claim.hypotheses.find((h) => h.id === s.selectedHypothesisByClaim[claim.claimId]);
   const ok = (id: string) => s.evidenceIds.includes(id) && isVerified(s, id) && evidenceById.get(id)?.sourceType !== 'context';
   const correct = !!hyp?.isCorrect;
   const eligible = (s.submittedEvidenceByClaim[claim.claimId] ?? []).filter((id) => hyp?.supportEvidenceIds.includes(id) && ok(id));
-  const types = new Set(eligible.map((id) => evidenceById.get(id)!.sourceType));
   const hypothesisPoint = correct ? 1 : 0;
-  const evidencePoint = correct && types.size >= claim.requiredDistinctSourceTypes ? 1 : 0;
+  const evidencePoint = correct && new Set(eligible).size >= REQUIRED_SUPPORT ? 1 : 0;
   const rebuttalPoint = correct && (s.submittedRebuttalByClaim[claim.claimId] ?? []).some((id) => hyp!.rebuttalEvidenceIds.includes(id) && ok(id)) ? 1 : 0;
   const score = hypothesisPoint + evidencePoint + rebuttalPoint;
   return { claimId: claim.claimId, hypothesisPoint, evidencePoint, rebuttalPoint, score, solved: hypothesisPoint === 1 && evidencePoint === 1 && score >= 2 };

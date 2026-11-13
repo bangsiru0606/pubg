@@ -1374,6 +1374,18 @@
     }
    }
   },
+  "mono_p05_hold": {
+   "start": "m",
+   "nodes": {
+    "m": {
+     "speaker": "han_jisu",
+     "text": "이 장부를 정리하기 전에는 여기서 더 알아낼 수 없다. 수첩의 ‘미결 사건’에서 다시 맞춰 보자.",
+     "source": "new",
+     "voice": "inner",
+     "noPortrait": true
+    }
+   }
+  },
   "mono_pending_hint": {
    "start": "m",
    "nodes": {

@@ -4,7 +4,7 @@ import spec from '../../art/asset-spec.json';
 import { areaTrack, bgmBase, sceneTrack, sfx, transitionSfx } from '../audio/audio';
 import { openNamePopup } from '../ui/namepopup';
 import {
-  acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, puzzles, puzzleReady, setFlag, type GameState,
+  acquireEvidence, createGameState, evidenceById, hasFlag, isBasementOpen, loadGame, saveGame, setPlayerName, shownEvidence, pendingPuzzles, puzzles, puzzleReady, setFlag, type GameState,
 } from '../core';
 import {
   GROUND_Y, OPENING, PLAYER_SPEED, RUN_MULTIPLIER, START, areas, autoTriggered, facesLeft, fadeSeconds, flipFor, isAvailable, isHidden, nearest, showsSparkle, walkFlip, promptOf, themes,
@@ -39,7 +39,6 @@ export class ExploreScene extends Phaser.Scene {
   private camMax = 0;
   private scripted = new Set<Phaser.GameObjects.Sprite>(); // 연출이 직접 걷게 하는 스프라이트: 잠금 중에도 걷기 그림을 유지한다
   started = false;                 // 타이틀에서 새 게임/이어하기를 고른 뒤에만 자동 저장한다
-  private reportCheckpoint = '';  // 씬 7 시작 시점 저장본(엔딩 D 재도전용)
   private npcSprites = new Map<string, Phaser.GameObjects.Sprite>();
   locked = false;                  // 오프닝 연출 중에는 이동·상호작용·Tab 을 잠근다
   private skip = false;
@@ -225,6 +224,9 @@ export class ExploreScene extends Phaser.Scene {
       if (it.type === 'transition' && it.lockedDialogue) { setPrompt(null); if (it.lockedSfx) sfx(it.lockedSfx); openDialogue(this.state, it.lockedDialogue); } // 잠긴 이유 한 줄 독백 (지하 철창문은 쇠 소리도)
       return;
     }
+    if (it.type === 'transition' && this.areaId === 'b1' && it.id === 'stairs_up' && pendingPuzzles(this.state).some((q) => q.id === 'P05_patient_code') && !hasFlag(this.state, 'p05_stairs_seen')) { // 지하에서 올라가려는데 P05 가 미결이면 한 번 더 알려 준다 (올라가는 것은 막지 않는다)
+      setFlag(this.state, 'p05_stairs_seen'); setPrompt(null); openDialogue(this.state, 'mono_p05_hold', () => this.useTransition(it)); return;
+    }
     if (it.type === 'transition') this.useTransition(it);
     else if (it.type === 'npc') this.talk(it);
     else if (it.closeup) { setPrompt(null); openCloseup(this.state, it.closeup, () => {}); }
@@ -288,6 +290,7 @@ export class ExploreScene extends Phaser.Scene {
     openPuzzle(this.state, id, (solved) => {
       if (solved) { this.refresh(); solvedText(); return; }
       if (this.state.failedPuzzleIds.includes(id)) { this.refresh(); return; } // 검증 실패: 이야기는 이어진다
+      if (id === 'P05_patient_code' && !hasFlag(this.state, 'p05_hold_seen')) { setFlag(this.state, 'p05_hold_seen'); openDialogue(this.state, 'mono_p05_hold'); return; } // P05 를 보류하면 정하늘이 나타나지 않는 까닭을 한 번 알려 준다
       if (!hasFlag(this.state, 'pending_hint_seen')) { setFlag(this.state, 'pending_hint_seen'); openDialogue(this.state, 'mono_pending_hint'); } // 처음 한 번: 미결 사건은 수첩에 남는다
     });
   }
@@ -335,29 +338,24 @@ export class ExploreScene extends Phaser.Scene {
     // 증거 보존 선택이 끝날 때까지 남아 있던 정하늘은 보고서로 넘어가는 페이드 속에서 정리한다
     void fadeThrough(0.4, 0.4, () => {
       setFlag(this.state, 'haneul_cleared'); this.buildArea(this.areaId, this.player.x);
-      this.reportCheckpoint = JSON.stringify(this.state);
       saveGame(this.state, undefined, 'report');
       openReport(this.state, () => this.showEnding());
     }).then(() => { this.busy = false; });
   }
 
   private showEnding() {
-    const unsolved = unsolvedClaimIds(this.state);
     openEnding(this.state, {
-      onRetry: () => this.retryReport(unsolved),
+      onRetry: () => this.retryReport(),
       onRestart: () => this.newGame(),
       onTitle: () => this.openTitle(),
     });
   }
 
-  /** 엔딩 D: 씬 7 시작 시점으로 돌아가 보고서를 다시 쓴다. 미해결 질문과 관련된 단서를 수첩에서 먼저 보여 준다. */
-  private retryReport(unsolved: string[]) {
-    const saved = this.reportCheckpoint ? (JSON.parse(this.reportCheckpoint) as GameState) : loadGame(undefined, 'report');
-    if (!saved) { this.newGame(); return; }
-    saved.retryClaimIds = unsolved;
-    this.state = saved;
-    this.buildArea(saved.currentSceneId, saved.playerX);
-    this.startReport();
+  /** 엔딩 뒤 "다시 추리하기": 같은 수사 상태(모은 단서·검증 상태·퍼즐 검증 실패·증거 보존 선택 그대로)로, 이전 결론이 채워진 보고서로 돌아간다.
+   *  해결하지 못한 질문과 관련된 단서는 서랍·수첩에서 먼저 보인다. 엔딩 D 전용이던 재시도 흐름은 이것으로 합쳤다. */
+  private retryReport() {
+    this.state.retryClaimIds = unsolvedClaimIds(this.state);
+    openReport(this.state, () => this.showEnding(), { retry: true });
   }
 
   openTitle() {

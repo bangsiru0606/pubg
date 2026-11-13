@@ -847,7 +847,8 @@
      "dialogueId": "jeong_haneul_final",
      "hideWhen": "haneul_cleared",
      "autoWhen": [
-      "diary_closed"
+      "diary_closed",
+      "puzzle_done:P05_patient_code"
      ],
      "inertWhen": "haneul_confessed",
      "introScene": "haneul_arrival"
@@ -860,8 +861,7 @@
      "dialogueId": "eunho_message",
      "silent": true,
      "autoWhen": [
-      "haneul_confessed",
-      "flag_claim_d_open"
+      "haneul_confessed"
      ]
     },
     {

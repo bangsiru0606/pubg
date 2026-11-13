@@ -284,8 +284,10 @@ export class ExploreScene extends Phaser.Scene {
     const p = puzzles.find((q) => q.id === id)!;
     const solvedText = () => { if (p.solvedDialogue) openDialogue(this.state, p.solvedDialogue); };
     if (this.state.solvedPuzzleIds.includes(id)) { solvedText(); return; }
+    if (this.state.failedPuzzleIds.includes(id)) { showToast('검증에 실패해 닫힌 사건이다. (수첩의 미결 사건에서 확인)'); return; }
     openPuzzle(this.state, id, (solved) => {
       if (solved) { this.refresh(); solvedText(); return; }
+      if (this.state.failedPuzzleIds.includes(id)) { this.refresh(); return; } // 검증 실패: 이야기는 이어진다
       if (!hasFlag(this.state, 'pending_hint_seen')) { setFlag(this.state, 'pending_hint_seen'); openDialogue(this.state, 'mono_pending_hint'); } // 처음 한 번: 미결 사건은 수첩에 남는다
     });
   }

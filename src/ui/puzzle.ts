@@ -1,17 +1,23 @@
-// 퍼즐 화면 (공통 틀 + 배치 4종). 판정은 src/core 의 submitPuzzle 만 쓴다. 화면 구성은 puzzles.json 데이터.
-//  plan      P01: 토큰(원장 ①②)을 평면도의 위치 칸에 놓고, 이동된 대상을 표시
-//  timeline  P02: 사건 카드를 시간 칸에 놓는다. 타임라인에 안 넣는 카드는 "타임라인 바깥"
-//  lightbox  P03: 세 문서를 나란히 보고 의미가 달라진 항목을 표시
-//  connect   P04: 문서 카드를 인물 노드에 연결(연결선)
-// 마우스: 토큰 드래그 / 클릭 → 위치 클릭. 키보드: ←→ 선택 → Enter 로 잡기 → ←→ 위치 → Enter 로 놓기.
-import { characterName, hintFor, isLinkSlot, linkCandidates, linkTitle, puzzleById, shownEvidence, slotLabelOf, submitPuzzle, type GameState, type PuzzleAnswer, type PuzzleLinks, type PuzzleTask } from '../core';
+// 퍼즐 화면 (공통 틀 + 배치 5종). 판정은 src/core 의 submitPuzzle 만 쓴다. 화면 구성은 puzzles.json 데이터.
+//  plan     P01: 단서 조각(인용 문장)을 평면도의 위치에 놓고, 모두 놓으면 "무엇이 옮겨졌나?"를 고른다
+//  timeline P02: 진술·기록 조각을 시간 칸에 놓는다 (시각이 없는 조각은 순서로 추론)
+//  desktop  P03: 부원장 PC 바탕화면 — 파일·휴지통·문서 비교 프로그램을 열어 바뀐 줄을 찾고, 수정이 숨기려 한 사실을 고른다
+//  tree     P04: 승인 체계 트리 — 서식 문구(약자·권한)를 보고 인물 카드를 칸에 놓는다
+//  logic    P05: 후보 표와 대조 (조각 표시만 통일)
+// 결론은 [결론 확정] → 확인 창(남은 기회) 으로만 낸다. 기회는 3번, [보류하고 나가기]는 벌점 없이 놓은 조각을 저장한다.
+// 마우스: 조각 드래그 / 클릭 → 칸 클릭. 키보드: ←→ 선택 → Enter 로 잡기 → ←→ 위치 → Enter 로 놓기.
+import {
+  MAX_ATTEMPTS, attemptsLeft, availablePieces, hintFor, isAnswerComplete, puzzleById, puzzleDraftOf, savePuzzleDraft, setFlag, shownEvidence, sourceName, submitPuzzle,
+  type GameState, type PuzzleAnswer, type PuzzlePiece, type PuzzleTask,
+} from '../core';
 import { el, esc, root } from './hud';
 import { bgmPop, bgmPush, puzzleTrack, sfx } from '../audio/audio';
 import { popModal, pushModal } from './input';
 import { openViewer } from './viewer';
 
-type Focus = { kind: 'token' | 'chip' | 'link' | 'src' | 'submit'; id: string };
-const OUTSIDE = 'outside';
+type Focus = { kind: 'piece' | 'person' | 'chip' | 'cycle' | 'icon' | 'cmp' | 'src' | 'submit' | 'hold'; id: string };
+const TRAY = 'tray';
+export const RULE_TEXT = '결론은 세 번까지 확정할 수 있다. 확신이 없으면 보류하고 나가도 된다.';
 
 export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boolean) => void) {
   const p = puzzleById.get(puzzleId)!;
@@ -19,234 +25,241 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   const tasks = p.tasks ?? [];
   const placeTasks = tasks.filter((t) => t.kind === 'place');
   const markTasks: PuzzleTask[] = tasks.filter((t) => t.kind === 'mark');
-  const timeline = layout === 'timeline';
+  const pieceLayout = layout === 'plan' || layout === 'timeline';
+  const people = p.people ?? [];
+  const desk = p.desktop;
 
-  // ---- 상태: where[토큰] = 위치 칸, marks = 표시한 항목 ----
-  const where: Record<string, string | undefined> = {};
-  const marks: Record<string, string[]> = Object.fromEntries(markTasks.map((t) => [t.slot, [] as string[]]));
-  const tokenKeys = (): string[] => (timeline ? (p.tokens ?? []).map((t) => t.id) : placeTasks.map((t) => t.slot));
-  const tokenLabel = (k: string) => {
-    if (timeline) return p.tokens!.find((t) => t.id === k)!.label;
-    const t = placeTasks.find((q) => q.slot === k)!;
-    return t.token ?? t.label;
-  };
-
-  function toAnswer(): PuzzleAnswer {
-    const a: PuzzleAnswer = {};
-    for (const slot of p.slots) a[slot] = [];
-    if (timeline) { for (const [k, z] of Object.entries(where)) if (z && z !== OUTSIDE) a[z] = [k]; }
-    else for (const t of placeTasks) if (where[t.slot]) a[t.slot] = [where[t.slot]!];
-    for (const t of markTasks) a[t.slot] = [...marks[t.slot]];
-    return a;
-  }
-  function fromAutoFill(slotId: string, tokens: string[]) {
-    if (marks[slotId]) marks[slotId] = [...tokens];
-    else if (timeline) { for (const k of Object.keys(where)) if (where[k] === slotId) where[k] = OUTSIDE; where[tokens[0]] = slotId; }
-    else where[slotId] = tokens[0];
-  }
-  if (timeline) for (const k of tokenKeys()) where[k] = OUTSIDE;
-
-  let needLinks = new Set<string>(); // 근거를 붙이지 않아 제출이 막힌 칸 (근거 칸을 강조한다)
-  const links: PuzzleLinks = {}; // 슬롯 → 붙인 근거 카드 (단서·진술)
-  let pick: { slot: string; cursor: number } | null = null; // 근거 고르기 목록
-  let conflicts: string[] = [];
-  let note = '';
-  let solved = false;
-  let hintLevel = 0, removed = new Set<string>(), highlight = new Set<string>();
-  let grabbed: string | null = null;
-  let grabFrom: string | undefined;
+  // ---- 상태: ans[칸] = 그 칸에 놓은 조각·인물·표시 (draft 로 저장되는 형식과 같다) ----
+  const ans: PuzzleAnswer = JSON.parse(JSON.stringify(puzzleDraftOf(s, puzzleId)));
+  let removed = new Set<string>();
+  let conflicts: string[] = [], note = '', hintText = '';
+  let phase: 'play' | 'solved' | 'failed' = s.failedPuzzleIds.includes(puzzleId) ? 'failed' : s.solvedPuzzleIds.includes(puzzleId) ? 'solved' : 'play';
+  let grabbed: string | null = null, grabZone: string | null = null; // 키보드로 잡은 조각/인물과 지금 가리키는 칸
   let fi = 0;
-
-  function applyHint() {
-    const h = hintFor(p, s.wrongCountByPuzzle[puzzleId] ?? 0, toAnswer(), links);
-    hintLevel = h.level; removed = new Set(h.removedTokens); highlight = new Set(h.highlightEvidenceIds);
-    return h;
-  }
+  let confirming = false, confirmSel = 0;
+  let rule = !s.flags.includes('puzzle_rule_seen') && phase === 'play';
+  const applyHint = () => { const h = hintFor(p, s.wrongCountByPuzzle[puzzleId] ?? 0); removed = new Set(h.removedTokens); hintText = h.text; return h; };
+  applyHint();
   const isRemoved = (slot: string, id: string) => removed.has(`${slot}:${id}`) || removed.has(`*:${id}`);
-  { const h = applyHint(); if (h.autoFill) { fromAutoFill(h.autoFill.slotId, h.autoFill.tokens); if (h.autoFill.link) links[h.autoFill.slotId] = h.autoFill.link; } }
-  /** 그 칸에 답(토큰·표시)이 있는가: 있어야 근거를 붙일 수 있다 */
-  const answered = (slot: string) => (timeline ? Object.values(where).includes(slot) : markTasks.some((t) => t.slot === slot) ? marks[slot].length > 0 : !!where[slot]);
-  const linkSlots = () => p.slots.filter((sl) => isLinkSlot(p, sl) && answered(sl));
 
-  // ---- 위치 칸 ----
-  type Zone = { id: string; label: string; sub?: string; x: number; y: number; w: number; h: number };
-  const zonesFor = (key: string): Zone[] => {
-    if (timeline) {
-      const n = p.boxes!.length;
-      return [...p.boxes!.map((b, i) => ({ id: b.id, label: b.label, x: 1 + i * (98 / n), y: 3, w: 98 / n - 2, h: 38 })),
-        { id: OUTSIDE, label: '타임라인 바깥', x: 1, y: 50, w: 98, h: 46 }];
+  const pieces = (): PuzzlePiece[] => availablePieces(s, p).filter((t) => !isRemoved('', t.id));
+  const zoneOf = (id: string) => Object.keys(ans).find((k) => ans[k]?.includes(id));
+  const zoneList = (): { id: string; label: string }[] =>
+    layout === 'plan' ? [...(p.zones ?? []).map((z) => ({ id: z.id, label: z.label })), { id: TRAY, label: '조각 보관' }]
+    : layout === 'timeline' ? [...(p.boxes ?? []).map((b) => ({ id: b.id, label: b.label })), { id: TRAY, label: '조각 보관' }]
+    : layout === 'tree' ? tasks.map((t) => ({ id: t.slot, label: t.label })) : [];
+  const unplaced = () => pieces().filter((t) => !zoneOf(t.id));
+
+  function put(id: string, zone: string) {
+    if (layout === 'tree') { ans[zone] = [id]; }
+    else {
+      for (const k of Object.keys(ans)) ans[k] = (ans[k] ?? []).filter((x) => x !== id);
+      if (zone !== TRAY) { if (layout === 'timeline') for (const old of ans[zone] ?? []) ans[zone] = ans[zone].filter((x) => x !== old); ans[zone] = [...(ans[zone] ?? []), id]; }
     }
-    return (p.zones ?? []).filter((z) => !isRemoved(key, z.id));
-  };
-  const allZones = () => zonesFor(tokenKeys()[0]);
-  const visibleTokens = () => tokenKeys().filter((k) => !(timeline && isRemoved('', k)));
-  const markOptions = (t: PuzzleTask) => t.options.filter((o) => !isRemoved(t.slot, o.id));
+    grabbed = null; grabZone = null; note = ''; render();
+  }
+  function toggleChip(slot: string, id: string, single = false) {
+    const a = ans[slot] ?? []; const i = a.indexOf(id);
+    ans[slot] = single ? (i >= 0 ? [] : [id]) : i >= 0 ? a.filter((x) => x !== id) : [...a, id];
+    note = ''; render();
+  }
+  const cycle = (slot: string) => { const t = tasks.find((q) => q.slot === slot)!; const ops = t.options.filter((o) => !isRemoved(slot, o.id)); const cur = ops.findIndex((o) => o.id === (ans[slot] ?? [])[0]); ans[slot] = cur + 1 >= ops.length ? [] : [ops[cur + 1].id]; note = ''; render(); };
+  const placeSlotsFilled = () => p.slots.filter((sl) => !markTasks.some((t) => t.slot === sl)).every((sl) => !!ans[sl]?.length);
+  const complete = () => isAnswerComplete(p, ans);
 
   const box = el('div', 'modal puzzle'); box.id = 'puzzle'; box.dataset.pid = puzzleId; // 개발용 플레이 기록이 어느 퍼즐인지 읽는다
   root().append(box); bgmPush('puzzle', puzzleTrack());
 
-  const focusList = (): Focus[] => [
-    ...visibleTokens().map((k) => ({ kind: 'token' as const, id: k })),
-    ...markTasks.flatMap((t) => markOptions(t).map((o) => ({ kind: 'chip' as const, id: `${t.slot}|${o.id}` }))),
-    ...linkSlots().map((sl) => ({ kind: 'link' as const, id: sl })),
-    ...p.sourceEvidenceIds.filter((id) => s.evidenceIds.includes(id)).map((id) => ({ kind: 'src' as const, id })),
-    { kind: 'submit', id: 'submit' },
-  ];
-  const isFocus = (kind: Focus['kind'], id: string) => { const f = focusList()[fi]; return !!f && f.kind === kind && f.id === id; };
-  const tkHtml = (k: string) => `<span class="tk${grabbed === k ? ' grab' : ''}${isFocus('token', k) ? ' foc' : ''}" data-token="${esc(k)}">${esc(tokenLabel(k))}</span>`;
+  // ---- 바탕화면(P03) 상태 ----
+  type Win = { id: string; kind: 'file' | 'trash' | 'compare'; ref: string; x: number; y: number; z: number };
+  let wins: Win[] = []; let zTop = 1;
+  let cmpA = -1, cmpB = -1, cmpRan = false, trashSeen = false;
+  const deskFiles = () => desk?.files ?? [];
+  const cmpFiles = () => deskFiles().filter((f) => !f.inTrash || trashSeen);
+  const fileLines = (f: { evidenceId?: string; lines?: string[] }) => f.lines ?? shownEvidence(s, f.evidenceId!)?.body ?? [];
+  function openWin(kind: Win['kind'], ref: string) {
+    const ex = wins.find((w) => w.kind === kind && w.ref === ref);
+    if (ex) ex.z = ++zTop; else wins.push({ id: `${kind}:${ref}`, kind, ref, x: 74 + wins.length * 8, y: 4 + wins.length * 8, z: ++zTop });
+    if (kind === 'trash') trashSeen = true;
+    render();
+  }
 
-  /** 근거 칸: 답을 놓은 칸 옆에 붙이는 단추. 붙인 카드의 이름이 보인다. */
-  const lnkHtml = (slot: string) => {
-    if (!isLinkSlot(p, slot)) return '';
-    const on = answered(slot), id = links[slot];
-    return `<button class="lnk${id ? ' has' : ''}${!on ? ' off' : ''}${needLinks.has(slot) && !id ? ' need' : ''}${isFocus('link', slot) ? ' foc' : ''}" data-link="${esc(slot)}"${on ? '' : ' disabled'}>${id ? `근거: ${esc(linkTitle(s, id))}` : on ? '[근거 붙이기]' : '근거: (먼저 이 칸을 채운다)'}</button>`;
+  const focusList = (): Focus[] => {
+    if (phase !== 'play') return [];
+    const out: Focus[] = [];
+    if (pieceLayout) out.push(...pieces().map((t) => ({ kind: 'piece' as const, id: t.id })));
+    if (layout === 'tree') out.push(...people.filter((q) => !isRemoved('', q.id)).map((q) => ({ kind: 'person' as const, id: q.id })));
+    if (layout === 'logic') out.push(...placeTasks.map((t) => ({ kind: 'person' as const, id: t.slot })));
+    if (layout === 'desktop') {
+      out.push(...deskFiles().filter((f) => !f.inTrash).map((f) => ({ kind: 'icon' as const, id: `file:${f.id}` })), { kind: 'icon', id: 'trash' }, { kind: 'icon', id: 'compare' });
+      if (wins.some((w) => w.kind === 'compare')) out.push({ kind: 'cmp', id: 'a' }, { kind: 'cmp', id: 'b' }, { kind: 'cmp', id: 'run' });
+      out.push(...markTasks.map((t) => ({ kind: 'cycle' as const, id: t.slot })));
+    } else if (!pieceLayout || placeSlotsFilled()) {
+      out.push(...markTasks.flatMap((t) => t.options.filter((o) => !isRemoved(t.slot, o.id)).map((o) => ({ kind: 'chip' as const, id: `${t.slot}|${o.id}` }))));
+    }
+    out.push(...p.sourceEvidenceIds.filter((id) => s.evidenceIds.includes(id) && layout !== 'desktop').map((id) => ({ kind: 'src' as const, id })), { kind: 'hold', id: 'hold' }, { kind: 'submit', id: 'submit' });
+    return out;
   };
+  const isFocus = (kind: Focus['kind'], id: string) => { const f = focusList()[fi]; return !!f && f.kind === kind && f.id === id; };
+  const fcls = (kind: Focus['kind'], id: string) => (isFocus(kind, id) ? ' foc' : '');
+
+  const pcHtml = (t: PuzzlePiece) => `<span class="pc${t.decoy ? '' : ''}${grabbed === t.id ? ' grab' : ''}${fcls('piece', t.id)}" data-piece="${esc(t.id)}">${esc(t.label)}<i>‹${esc(sourceName(s, t))}›</i></span>`;
+  const personHtml = (q: { id: string; label: string }, n = '') => `<span class="pc person${grabbed === q.id ? ' grab' : ''}${fcls('person', q.id)}" data-person="${esc(q.id)}">${esc(q.label)}${n}</span>`;
 
   // ---- 그리기 ----
   function mainHtml(): string {
-    const here = (z: string) => visibleTokens().filter((k) => (where[k] ?? (timeline ? OUTSIDE : undefined)) === z);
+    if (layout === 'plan') {
+      return `<div class="pz-grid">${(p.zones ?? []).map((z) => `<div class="zone" data-zone="${z.id}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span class="zl">${esc(z.label)}</span>${pieces().filter((t) => zoneOf(t.id) === z.id).map(pcHtml).join('')}</div>`).join('')}</div>`;
+    }
+    if (layout === 'timeline') {
+      const n = p.boxes!.length;
+      return `<div class="pz-grid">${p.boxes!.map((b, i) => `<div class="zone tl" data-zone="${b.id}" style="left:${i * (100 / n)}%;width:${100 / n - 1}%"><span class="zl">${esc(b.label)}</span>${pieces().filter((t) => zoneOf(t.id) === b.id).map(pcHtml).join('')}</div>`).join('')}</div>`;
+    }
+    if (layout === 'tree') {
+      const slotHtml = (t: PuzzleTask, cls: string) => {
+        const who = people.find((q) => q.id === (ans[t.slot] ?? [])[0]);
+        return `<div class="zone node ${cls}" data-zone="${t.slot}"><span class="zl">${esc(t.label)}</span><span class="form">${esc(t.form ?? '')}<i>‹${esc(sourceName(s, { source: t.formSource ?? '' }))}›</i></span>${who ? `<span class="pc person placed" data-clear="${t.slot}">${esc(who.label)}</span>` : '<span class="slotlbl">(인물 카드를 놓는다)</span>'}</div>`;
+      };
+      const [root0, ...kids] = placeTasks;
+      return `<div class="pz-tree">${slotHtml(root0, 'root')}<div class="tline"></div><div class="kids">${kids.map((t) => slotHtml(t, 'kid')).join('')}</div></div>`;
+    }
     if (layout === 'logic') {
       const cols = p.table!.columns.map((c) => `<th>${esc(c)}</th>`).join('');
       const rows = p.table!.rows.filter((row) => !isRemoved('identity', row.id)).map((row) => {
-        const toks = here(row.id).map(tkHtml).join('');
-        return `<tr class="zone" data-zone="${row.id}"><td>${esc(row.cells[0])} ${toks}</td>${row.cells.slice(1).map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`;
+        const here = (ans.identity ?? []).includes(row.id) ? `<span class="pc person placed${fcls('person', 'identity')}" data-token="identity">P-271</span>` : '';
+        return `<tr class="zone" data-zone="${row.id}"><td>${esc(row.cells[0])} ${here}</td>${row.cells.slice(1).map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`;
       }).join('');
-      return `<table class="ltab"><tr>${cols}</tr>${rows}</table>`;
+      const tray = (ans.identity ?? []).length ? '' : `<span class="pc person${grabbed === 'identity' ? ' grab' : ''}${fcls('person', 'identity')}" data-token="identity">P-271</span>`;
+      return `<table class="ltab"><tr>${cols}</tr>${rows}</table><div class="ltray"><span class="slotlbl">토큰:</span> ${tray || '<span class="slotlbl">배치했다 (표의 토큰을 누르면 뗀다)</span>'}</div>`;
     }
-    if (layout === 'lightbox') {
-      return `<div class="panels">${(p.panels ?? []).map((pn) => { const lines = pn.evidenceId ? (shownEvidence(s, pn.evidenceId)?.body ?? []) : (pn.lines ?? []); return `<div class="panel"><div class="ph-t">${esc(pn.title)}</div>${lines.map((l) => `<div>${esc(l)}</div>`).join('')}</div>`; }).join('')}</div>`;
-    }
-    if (layout === 'connect') {
-      const zs = allZones();
-      const rows = placeTasks.map((t, i) => {
-        const y = 4 + i * 24;
-        return `<div class="crow" style="top:${y}%"><span class="tk${grabbed === t.slot ? ' grab' : ''}${isFocus('token', t.slot) ? ' foc' : ''}" data-token="${esc(t.slot)}">${esc(t.token ?? t.label)}</span>${lnkHtml(t.slot)}</div>`;
-      }).join('');
-      const nodes = zs.map((z) => `<div class="zone node" data-zone="${z.id}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span class="zl">${esc(z.label)}</span>${z.sub ? `<span class="zs">${esc(z.sub)}</span>` : ''}</div>`).join('');
-      const lines = placeTasks.map((t, i) => {
-        const z = zs.find((q) => q.id === where[t.slot]); if (!z) return '';
-        return `<line x1="58" y1="${4 + i * 24 + 6}" x2="${z.x}" y2="${z.y + z.h / 2}" />`;
-      }).join('');
-      return `<div class="plan"><svg class="lines" viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>${rows}${nodes}</div>`;
-    }
-    const zs = allZones();
-    const zoneHtml = zs.map((z) => {
-      const toks = here(z.id).map(tkHtml).join('');
-      return `<div class="zone${z.id === OUTSIDE ? ' outside' : ''}" data-zone="${z.id}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span class="zl">${esc(z.label)}</span>${toks}</div>`;
+    return deskHtml();
+  }
+  function deskHtml(): string {
+    const icons = [...deskFiles().filter((f) => !f.inTrash).map((f) => ({ id: `file:${f.id}`, name: f.name, glyph: f.evidenceId ? '▤' : '▥' })), { id: 'trash', name: desk!.trashName, glyph: '🗑' }, { id: 'compare', name: desk!.compareName, glyph: '⇄' }];
+    const iconHtml = icons.map((ic) => `<button class="dicon${fcls('icon', ic.id)}" data-icon="${esc(ic.id)}"><b>${ic.glyph}</b><span>${esc(ic.name)}</span></button>`).join('');
+    const winHtml = [...wins].sort((a, b) => a.z - b.z).map((w) => {
+      let title = '', body = '';
+      if (w.kind === 'file') { const f = deskFiles().find((x) => x.id === w.ref)!; title = f.name; body = `<div class="wdoc">${fileLines(f).map((l) => (l ? `<p>${esc(l)}</p>` : '<br>')).join('')}</div>`; }
+      else if (w.kind === 'trash') { title = desk!.trashName; body = `<div class="wlist">${deskFiles().filter((f) => f.inTrash).map((f) => `<button class="dicon small" data-wfile="${f.id}"><b>▤</b><span>${esc(f.name)}</span></button>`).join('')}</div>`; }
+      else {
+        title = desk!.compareName; const fs = cmpFiles();
+        const sel = (k: 'a' | 'b', v: number) => `<button class="cmpsel${fcls('cmp', k)}" data-cmp="${k}">${k === 'a' ? '이전 판' : '이후 판'}: ${v >= 0 && fs[v] ? esc(fs[v].name) : '(선택)'}</button>`;
+        const res = cmpRan ? desk!.diffs.map((d) => `<div class="diff"><s>${esc(d.before)}</s><b>${esc(d.after)}</b></div>`).join('') || '<div class="slotlbl">바뀐 줄이 없다.</div>' : '<div class="slotlbl">두 파일을 고르고 [비교 실행]을 누른다.</div>';
+        body = `<div class="wcmp">${sel('a', cmpA)}${sel('b', cmpB)}<button class="cmpsel run${fcls('cmp', 'run')}" data-cmp="run">비교 실행</button>${res}</div>`;
+      }
+      return `<div class="win" data-win="${w.id}" style="left:${w.x}px;top:${w.y}px;z-index:${w.z}"><div class="wtitle" data-wdrag="${w.id}"><span>${esc(title)}</span><button data-wclose="${w.id}">×</button></div>${body}</div>`;
     }).join('');
-    const fixtures = (p.fixtures ?? []).map((f) => `<div class="fix fx-${f.id}" style="left:${f.x}%;top:${f.y}%;width:${f.w}%;height:${f.h}%"><span>${esc(f.label)}</span></div>`).join('');
-    return `<div class="plan">${fixtures}${zoneHtml}</div>`;
+    return `<div class="desk"><div class="dicons">${iconHtml}</div>${winHtml}<div class="taskbar"><span class="start">시작</span><span class="tclock">23:52</span></div></div>`;
   }
-
+  function sideHtml(): string {
+    if (pieceLayout) { const u = unplaced(); return `<div class="slotlbl">단서 조각 — 놓지 않은 조각</div>${u.map(pcHtml).join('') || '<div class="slotlbl">모두 놓았다</div>'}`; }
+    if (layout === 'tree') return `<div class="slotlbl">인물 카드 (같은 카드를 여러 칸에 놓을 수 있다)</div>${people.filter((q) => !isRemoved('', q.id)).map((q) => personHtml(q)).join('')}`;
+    if (layout === 'desktop') return markTasks.map((t) => { const cur = t.options.find((o) => o.id === (ans[t.slot] ?? [])[0]); return `<div class="ctask"><div class="slotlbl">${esc(t.label)}</div><button class="cyc${fcls('cycle', t.slot)}" data-cycle="${t.slot}">${cur ? esc(cur.label) : '(눌러서 고른다)'}</button></div>`; }).join('');
+    return '';
+  }
+  function bottomHtml(): string {
+    const chips = markTasks.length && layout !== 'desktop' && (!pieceLayout || placeSlotsFilled())
+      ? markTasks.map((t) => `<div class="trow">${esc(t.label)}: ${t.options.filter((o) => !isRemoved(t.slot, o.id)).map((o) => { const key = `${t.slot}|${o.id}`, on = (ans[t.slot] ?? []).includes(o.id); return `<button class="chip${on ? ' on' : ''}${fcls('chip', key)}" data-chip="${esc(key)}">${on ? '☑' : '☐'} ${esc(o.label)}</button>`; }).join('')}</div>`).join('')
+      : pieceLayout && markTasks.length ? '<div class="slotlbl">모든 위치에 조각을 놓으면 다음 질문이 나온다.</div>' : '';
+    const srcs = layout === 'desktop' ? '' : p.sourceEvidenceIds.filter((id) => s.evidenceIds.includes(id)).map((id) => `<button class="src${fcls('src', id)}" data-src="${id}">${esc(shownEvidence(s, id)!.title)}</button>`).join('');
+    const left = attemptsLeft(s, puzzleId);
+    let fb = '';
+    if (phase === 'solved') fb = '<div class="ok">맞춰졌다. (Enter: 닫기)</div>';
+    else if (phase === 'failed') fb = `<div class="bad">검증 실패 — 결론 기회를 모두 썼다. 이 사건은 닫혔다. 관련 단서는 ‘검증 실패(신빙성 낮음)’로 남아 최종 보고서의 핵심 근거로 쓸 수 없다. (Enter: 닫기)</div>${conflicts.length ? `<div class="warn">· ${esc(conflicts[0])}</div>` : ''}`;
+    else fb = `${conflicts.length ? `<div class="warn">${conflicts.map((c) => `· ${esc(c)}`).join('<br>')}</div>` : ''}${note ? `<div class="note">${esc(note)}</div>` : ''}${hintText ? `<div class="hint-t">힌트: ${esc(hintText)}</div>` : ''}${(s.wrongCountByPuzzle[puzzleId] ?? 0) >= 2 ? '<div class="hint-t">틀린 후보 하나를 제거했다.</div>' : ''}`;
+    const btns = phase === 'play' ? `<button class="hold${fcls('hold', 'hold')}" data-hold>보류하고 나가기 <kbd>Esc</kbd></button><button class="submit${complete() ? '' : ' off'}${fcls('submit', 'submit')}" data-submit${complete() ? '' : ' disabled'}>결론 확정</button>` : '';
+    return `<div class="pz-q">${chips}</div><div class="pz-src">${srcs}</div><div class="pz-fb">${fb}</div><div class="pz-btns">${btns}</div>${phase === 'play' ? `<div class="pz-att">남은 기회 ${'●'.repeat(left)}${'○'.repeat(MAX_ATTEMPTS - left)} (${left}/${MAX_ATTEMPTS})</div>` : ''}`;
+  }
+  function overlayHtml(): string {
+    if (rule) return `<div class="pz-ov"><div class="ovbox"><div class="ovt">퍼즐 규칙</div><p>${esc(RULE_TEXT)}</p><div class="ovb"><button class="foc" data-rule>알겠다 <kbd>Enter</kbd></button></div></div></div>`;
+    if (confirming) return `<div class="pz-ov"><div class="ovbox"><div class="ovt">이 결론을 확정할까요?</div><p>남은 기회 ${attemptsLeft(s, puzzleId)}/${MAX_ATTEMPTS}${attemptsLeft(s, puzzleId) === 1 ? ' — 이번이 마지막 기회다. 틀리면 이 사건은 검증에 실패한다.' : ''}</p><div class="ovb"><button class="${confirmSel === 0 ? 'foc' : ''}" data-confirm="yes">확정 <kbd>Enter</kbd></button><button class="${confirmSel === 1 ? 'foc' : ''}" data-confirm="no">취소 <kbd>Esc</kbd></button></div></div></div>`;
+    return '';
+  }
   function render() {
-    const taskRows = layout === 'plan'
-      ? placeTasks.map((t, i) => `<div class="trow">${'①②③'[i]} ${esc(t.label)}: <b>${where[t.slot] ? esc(allZones().find((z) => z.id === where[t.slot])?.label ?? '') : '<span class="slotlbl">(배치 안 됨)</span>'}</b> ${lnkHtml(t.slot)}</div>`).join('')
-      : '';
-    const tray = layout === 'plan' || layout === 'logic' ? `<div class="tray"><span class="slotlbl">토큰:</span> ${placeTasks.filter((t) => !where[t.slot]).map((t) => tkHtml(t.slot)).join('') || '<span class="slotlbl">모두 배치했다</span>'}${layout === 'logic' ? ` · ④ P-271 신원 ${lnkHtml('identity')}` : ''}</div>` : '';
-    const chips = markTasks.map((t) => `<div class="trow">${layout === 'plan' ? '③ ' : ''}${esc(t.label)}: ${markOptions(t).map((o) => {
-      const key = `${t.slot}|${o.id}`, on = marks[t.slot].includes(o.id);
-      return `<button class="chip${on ? ' on' : ''}${isFocus('chip', key) ? ' foc' : ''}" data-chip="${esc(key)}">${on ? '☑' : '☐'} ${esc(o.label)}</button>`;
-    }).join('')} ${lnkHtml(t.slot)}</div>`).join('');
-    // 타임라인(시간 칸마다)·논리표(신원 토큰)는 과제 줄이 따로 없어서 근거 줄을 만든다
-    const extraLinks = timeline ? `<div class="trow">${p.boxes!.map((b) => `${esc(b.label)} ${lnkHtml(b.id)}`).join(' ')}</div>`
-      : '';
-    const srcs = p.sourceEvidenceIds.filter((id) => s.evidenceIds.includes(id)).map((id) =>
-      `<button class="src${highlight.has(id) ? ' hl' : ''}${isFocus('src', id) ? ' foc' : ''}" data-src="${id}">${esc(shownEvidence(s, id)!.title)}</button>`).join('');
-    const hintTxt = hintLevel ? `<div class="hint-t">힌트 ${hintLevel}단계: ${esc(p.hintTexts[hintLevel - 1])}</div>` : '';
-    const fb = solved ? '<div class="ok">맞춰졌다. (Enter: 닫기)</div>'
-      : `${conflicts.length ? `<div class="warn">${conflicts.map((c) => `· ${esc(c)}`).join('<br>')}</div>` : ''}${note ? `<div class="note">${esc(note)}</div>` : ''}${hintTxt}`;
-    const info = (p.info ?? []).length ? `<div class="slotlbl">제공 정보</div><ul>${p.info!.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : '';
-    const quotes = (p.statements ?? []).map((id) => { const st = s.statements[id]; return st ? `<div class="quote">${esc(characterName(st.speaker))}의 진술: “${esc(st.text)}”</div>` : ''; }).join('');
-    const side = `<div class="pscroll">${info}${quotes}${srcs ? '<div class="slotlbl">원문 자료 다시 열기</div>' + srcs : ''}</div>${fb ? `<div class="pfb">${fb}</div>` : ''}`; // 안내·힌트는 따로 아래에 고정한다 (자료가 많아도 잘리지 않게, 위쪽만 스크롤)
     box.className = `modal puzzle lay-${layout}`;
-    box.innerHTML = `<div class="ptitle">${esc(p.title ?? '')}${p.subtitle ? ` <span class="psub">${esc(p.subtitle)}</span>` : ''}</div>
-      <div class="pleft">${mainHtml()}${tray}</div>
-      <div class="pright">${side}</div>
-      <div class="ptasks">${taskRows}${chips}${extraLinks}<button class="submit${isFocus('submit', 'submit') ? ' foc' : ''}" data-submit>[확인]</button></div>
-      ${pickHtml()}
-      <div class="foot">${pick ? '↑↓ 자료 선택 · Enter 붙이기 · Esc 닫기' : grabbed ? '←→ 위치 선택 · Enter 놓기 · Esc 취소' : '←→ 선택 · Enter 잡기/표시/근거/열기/확인 · Esc 나가기 · 마우스: 드래그'}</div>`;
-    const sel = box.querySelector('.lrow.sel') as HTMLElement | null, list = box.querySelector('.lplist') as HTMLElement | null; // 선택한 자료가 항상 보이게 목록을 맞춘다
-    if (list && sel) { const top = sel.offsetTop, bottom = top + sel.offsetHeight; if (top < list.scrollTop) list.scrollTop = top; else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight; }
+    box.innerHTML = `<div class="ptitle">${esc(p.title ?? '')}<span class="psub">${esc((p.info ?? []).join(' · '))}</span></div>
+      <div class="pz-main">${mainHtml()}</div><div class="pz-side">${sideHtml()}</div><div class="pz-bottom">${bottomHtml()}</div>
+      <div class="foot">${grabbed ? '←→ 위치 선택 · Enter 놓기 · Esc 취소' : '←→ 선택 · Enter 잡기/표시/열기 · Esc 보류하고 나가기 · 마우스: 드래그·클릭'}</div>${overlayHtml()}`;
   }
-  /** 근거 고르기: 가진 단서·진술 카드를 전부 보여 준다 (정답만 추리지 않는다) */
-  function pickHtml(): string {
-    if (!pick) return '';
-    const cands = linkCandidates(s);
-    const rows = [`<button class="lrow${pick.cursor === 0 ? ' sel' : ''}" data-pk="0"><span class="lt">(붙인 자료 떼기)</span></button>`,
-      ...cands.map((c, i) => `<button class="lrow${pick!.cursor === i + 1 ? ' sel' : ''}${links[pick!.slot] === c.id ? ' cur' : ''}" data-pk="${i + 1}"><span class="tag t-${c.kind === 'statement' ? 'testimony' : (shownEvidence(s, c.id)?.sourceType ?? 'record')}">${c.kind === 'statement' ? '진술' : '단서'}</span><span class="lt">${esc(c.title)}</span><span class="ld">${esc(c.detail)}</span></button>`)].join('');
-    return `<div class="lpick"><div class="lph">근거 자료 — ${esc(slotLabelOf(p, pick.slot))}</div><div class="lplist">${rows}</div></div>`;
-  }
-  function choosePick(i: number) {
-    if (!pick) return;
-    const cands = linkCandidates(s);
-    if (i === 0) delete links[pick.slot]; else if (cands[i - 1]) { links[pick.slot] = cands[i - 1].id; needLinks.delete(pick.slot); }
-    pick = null; note = ''; render();
-  }
-  function openPick(slot: string) { if (!answered(slot)) return; const cands = linkCandidates(s), cur = cands.findIndex((c) => c.id === links[slot]); pick = { slot, cursor: cur >= 0 ? cur + 1 : 1 }; render(); }
 
   // ---- 동작 ----
-  function place(key: string, zoneId: string) {
-    if (timeline && zoneId !== OUTSIDE) for (const k of Object.keys(where)) if (k !== key && where[k] === zoneId) where[k] = OUTSIDE; // 한 칸에 카드 하나: 기존 카드는 바깥으로
-    where[key] = zoneId; grabbed = null; grabFrom = undefined; note = ''; render();
-  }
-  function toggleChip(key: string) { const [slot, id] = key.split('|'); const a = marks[slot]; const i = a.indexOf(id); if (i >= 0) a.splice(i, 1); else a.push(id); render(); }
   function submit() {
-    const r = submitPuzzle(s, puzzleId, toAnswer(), { ...links });
-    needLinks = new Set(r.missingLinks ?? []);
-    if (r.status === 'incomplete') { note = r.missingLinks?.length ? '근거를 붙이지 않은 칸이 있다.' : '모든 과제를 채운 뒤에 확인할 수 있다.'; conflicts = []; }
-    else if (r.status === 'wrong') {
+    confirming = false;
+    const r = submitPuzzle(s, puzzleId, JSON.parse(JSON.stringify(ans)));
+    if (r.status === 'incomplete') { note = '모든 칸을 채운 뒤에 확정할 수 있다.'; conflicts = []; }
+    else if (r.status === 'wrong' || r.status === 'failed') {
       conflicts = r.conflicts; note = r.conflicts.length ? '' : '아직 맞지 않는다. 자료를 다시 비교해 보자.';
-      sfx('onPuzzleWrong'); // 확인 버튼을 누른 뒤에만 결과음
-      const prev = hintLevel, h = applyHint();
-      if (h.level > prev) window.setTimeout(() => sfx('onHint'), 450);
-      if (h.autoFill) { fromAutoFill(h.autoFill.slotId, h.autoFill.tokens); if (h.autoFill.link) links[h.autoFill.slotId] = h.autoFill.link; }
-    } else { solved = true; conflicts = []; note = ''; sfx('onPuzzleCorrect'); }
-    render();
+      sfx('onPuzzleWrong'); applyHint(); if (r.status === 'wrong') window.setTimeout(() => sfx('onHint'), 450);
+      if (r.status === 'failed') phase = 'failed';
+    } else if (r.status === 'solved') { phase = 'solved'; conflicts = []; note = ''; sfx('onPuzzleCorrect'); }
+    grabbed = null; render();
   }
-  const close = () => { bgmPop('puzzle'); popModal('puzzle'); box.remove(); onClose(solved); };
-
-  function startGrab(key: string) {
-    grabbed = key; grabFrom = where[key];
-    if (!where[key]) where[key] = (timeline ? OUTSIDE : zonesFor(key)[0].id);
-    render();
-  }
+  const close = () => {
+    if (phase === 'play') savePuzzleDraft(s, puzzleId, ans); // 보류: 놓은 조각 저장, 기회·벌점 없음
+    bgmPop('puzzle'); popModal('puzzle'); box.remove(); onClose(phase === 'solved');
+  };
   function activate() {
     const f = focusList()[fi]; if (!f) return;
-    if (f.kind === 'token') startGrab(f.id);
-    else if (f.kind === 'chip') toggleChip(f.id);
-    else if (f.kind === 'link') openPick(f.id);
+    if (f.kind === 'piece' || f.kind === 'person') { grabbed = f.id; grabZone = layout === 'logic' ? p.table!.rows[0].id : zoneList()[0]?.id ?? null; render(); }
+    else if (f.kind === 'chip') { const [slot, id] = f.id.split('|'); toggleChip(slot, id, !!tasks.find((t) => t.slot === slot)?.single); }
+    else if (f.kind === 'cycle') cycle(f.id);
+    else if (f.kind === 'icon') { if (f.id === 'trash') openWin('trash', 'trash'); else if (f.id === 'compare') openWin('compare', 'cmp'); else openWin('file', f.id.slice(5)); }
+    else if (f.kind === 'cmp') cmpAction(f.id);
     else if (f.kind === 'src') openViewer(s, f.id);
-    else submit();
+    else if (f.kind === 'hold') close();
+    else if (complete()) { confirming = true; confirmSel = 0; render(); }
+  }
+  function cmpAction(k: string) {
+    const n = cmpFiles().length;
+    if (k === 'a') cmpA = (cmpA + 1) % Math.max(n, 1); else if (k === 'b') cmpB = (cmpB + 1) % Math.max(n, 1);
+    else if (cmpA >= 0 && cmpB >= 0 && cmpA !== cmpB) cmpRan = true; else note = '서로 다른 두 파일을 고른 뒤 비교한다.';
+    if (k !== 'run') cmpRan = false;
+    render();
   }
 
   box.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
-    if (solved) { close(); return; }
+    if (rule) { if (t.closest('[data-rule]')) { rule = false; setFlag(s, 'puzzle_rule_seen'); render(); } return; }
+    if (confirming) { const c = t.closest('[data-confirm]') as HTMLElement | null; if (c) { if (c.dataset.confirm === 'yes') submit(); else { confirming = false; render(); } } return; }
+    if (phase !== 'play') { close(); return; }
     const z = t.closest('[data-zone]') as HTMLElement | null;
-    if (grabbed && z) { place(grabbed, z.dataset.zone!); return; }
-    const pk = t.closest('[data-pk]') as HTMLElement | null;
-    if (pick) { if (pk) choosePick(+pk.dataset.pk!); else if (!t.closest('.lpick')) { pick = null; render(); } return; }
-    const lk = t.closest('[data-link]') as HTMLElement | null;
-    if (lk) { fi = focusList().findIndex((f) => f.kind === 'link' && f.id === lk.dataset.link); openPick(lk.dataset.link!); return; }
-    const chip = t.closest('[data-chip]') as HTMLElement | null;
-    const src = t.closest('[data-src]') as HTMLElement | null;
-    const tok = t.closest('[data-token]') as HTMLElement | null;
-    if (chip) { fi = focusList().findIndex((f) => f.kind === 'chip' && f.id === chip.dataset.chip); toggleChip(chip.dataset.chip!); }
-    else if (src) { fi = focusList().findIndex((f) => f.kind === 'src' && f.id === src.dataset.src); openViewer(s, src.dataset.src!); }
-    else if (t.closest('[data-submit]')) { fi = focusList().length - 1; submit(); }
-    else if (tok) { const k = tok.dataset.token!; fi = focusList().findIndex((f) => f.kind === 'token' && f.id === k); grabbed = grabbed === k ? null : k; grabFrom = where[k]; render(); }
+    if (grabbed && z && !t.closest('[data-clear]')) { if (layout === 'logic') { ans.identity = [z.dataset.zone!]; grabbed = null; render(); } else put(grabbed, z.dataset.zone!); return; }
+    if (t.closest('[data-hold]')) { close(); return; }
+    if (t.closest('[data-submit]')) { if (complete()) { confirming = true; confirmSel = 0; render(); } return; }
+    const clr = t.closest('[data-clear]') as HTMLElement | null; if (clr) { delete ans[clr.dataset.clear!]; render(); return; }
+    const chip = t.closest('[data-chip]') as HTMLElement | null; if (chip) { const [slot, id] = chip.dataset.chip!.split('|'); toggleChip(slot, id, !!tasks.find((q) => q.slot === slot)?.single); return; }
+    const cyc = t.closest('[data-cycle]') as HTMLElement | null; if (cyc) { cycle(cyc.dataset.cycle!); return; }
+    const src = t.closest('[data-src]') as HTMLElement | null; if (src) { openViewer(s, src.dataset.src!); return; }
+    const cm = t.closest('[data-cmp]') as HTMLElement | null; if (cm) { cmpAction(cm.dataset.cmp!); return; }
+    const wc = t.closest('[data-wclose]') as HTMLElement | null; if (wc) { wins = wins.filter((w) => w.id !== wc.dataset.wclose); render(); return; }
+    const wf = t.closest('[data-wfile]') as HTMLElement | null; if (wf) { openWin('file', wf.dataset.wfile!); return; }
+    const win = t.closest('[data-win]') as HTMLElement | null; if (win) { const w = wins.find((q) => q.id === win.dataset.win); if (w && w.z !== zTop) { w.z = ++zTop; render(); } }
+    const tok = t.closest('[data-token]') as HTMLElement | null; if (tok) { if (layout === 'logic') { if ((ans.identity ?? []).length) { delete ans.identity; grabbed = null; } else grabbed = grabbed ? null : 'identity'; render(); } return; }
+    const pc = t.closest('[data-piece],[data-person]') as HTMLElement | null;
+    if (pc) { const k = pc.dataset.piece ?? pc.dataset.person!; grabbed = grabbed === k ? null : k; render(); }
   });
+  box.addEventListener('dblclick', (e) => { const ic = (e.target as HTMLElement).closest('[data-icon]') as HTMLElement | null; if (ic && phase === 'play' && !rule && !confirming) { const id = ic.dataset.icon!; if (id === 'trash') openWin('trash', 'trash'); else if (id === 'compare') openWin('compare', 'cmp'); else openWin('file', id.slice(5)); } });
 
-  // 드래그: 토큰 → 위치 칸
+  // 드래그: 조각·인물 카드 → 칸, 창 제목줄 → 창 이동
   box.addEventListener('pointerdown', (e) => {
-    const tk = (e.target as HTMLElement).closest('[data-token]') as HTMLElement | null;
-    if (!tk || solved) return;
-    const key = tk.dataset.token!;
+    if (phase !== 'play' || rule || confirming) return;
+    const target = e.target as HTMLElement;
     const k = root().getBoundingClientRect().width / 480;
     const sx = e.clientX, sy = e.clientY;
+    const wd = target.closest('[data-wdrag]') as HTMLElement | null;
+    if (wd && !target.closest('[data-wclose]')) {
+      const w = wins.find((q) => q.id === wd.dataset.wdrag); if (!w) return;
+      const ox = w.x, oy = w.y; let moved = false;
+      const mv = (ev: PointerEvent) => { const nx = ox + (ev.clientX - sx) / k, ny = oy + (ev.clientY - sy) / k; if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 3) moved = true; w.x = Math.max(0, Math.min(150, nx)); w.y = Math.max(0, Math.min(100, ny)); const dom = box.querySelector(`[data-win="${w.id}"]`) as HTMLElement | null; if (dom) { dom.style.left = `${w.x}px`; dom.style.top = `${w.y}px`; } };
+      const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); if (moved) { box.dataset.dragged = '1'; setTimeout(() => delete box.dataset.dragged, 60); } };
+      window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); return;
+    }
+    const tk = target.closest('[data-piece],[data-person],[data-token]') as HTMLElement | null;
+    if (!tk) return;
+    const key = tk.dataset.piece ?? tk.dataset.person ?? tk.dataset.token!;
     let ghost: HTMLElement | null = null;
     const move = (ev: PointerEvent) => {
-      if (!ghost && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 4) { ghost = el('div', 'tk ghost', tk.textContent ?? ''); box.append(ghost); }
+      if (!ghost && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 4) { ghost = el('div', 'pc ghost', tk.textContent ?? ''); box.append(ghost); }
       if (ghost) { const r = root().getBoundingClientRect(); ghost.style.left = `${(ev.clientX - r.left) / k}px`; ghost.style.top = `${(ev.clientY - r.top) / k}px`; }
     };
     const up = (ev: PointerEvent) => {
@@ -254,7 +267,8 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
       if (!ghost) return;
       ghost.remove();
       const zone = (document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null)?.closest('[data-zone]') as HTMLElement | null;
-      if (zone) place(key, zone.dataset.zone!);
+      if (zone) { if (layout === 'logic') { ans.identity = [zone.dataset.zone!]; grabbed = null; render(); } else put(key, zone.dataset.zone!); }
+      else if (pieceLayout && zoneOf(key)) put(key, TRAY); // 칸 밖에 놓으면 보관함으로
       box.dataset.dragged = '1'; setTimeout(() => delete box.dataset.dragged, 60);
     };
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
@@ -264,29 +278,29 @@ export function openPuzzle(s: GameState, puzzleId: string, onClose: (solved: boo
   pushModal({
     id: 'puzzle',
     onKey(e) {
-      if (solved) { if ((e.key === 'Enter' || e.key === 'Escape') && !e.repeat) close(); return; }
-      if (pick) { // 근거 고르기
-        const n = linkCandidates(s).length + 1;
-        if (e.key === 'ArrowDown') pick.cursor = (pick.cursor + 1) % n;
-        else if (e.key === 'ArrowUp') pick.cursor = (pick.cursor + n - 1) % n;
-        else if (e.key === 'Enter' && !e.repeat) { choosePick(pick.cursor); return; }
-        else if (e.key === 'Escape' && !e.repeat) pick = null;
+      if (rule) { if (e.key === 'Enter' && !e.repeat) { rule = false; setFlag(s, 'puzzle_rule_seen'); render(); } return; }
+      if (confirming) {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') confirmSel = 1 - confirmSel;
+        else if (e.key === 'Enter' && !e.repeat) { if (confirmSel === 0) { submit(); return; } confirming = false; }
+        else if (e.key === 'Escape' && !e.repeat) confirming = false;
         render(); return;
       }
+      if (phase !== 'play') { if ((e.key === 'Enter' || e.key === 'Escape') && !e.repeat) close(); return; }
       const fwd = e.key === 'ArrowRight' || e.key === 'ArrowDown', back = e.key === 'ArrowLeft' || e.key === 'ArrowUp';
       if (grabbed) {
-        const zs = zonesFor(grabbed);
-        const i = Math.max(0, zs.findIndex((z) => z.id === where[grabbed!]));
-        if (fwd) where[grabbed] = zs[(i + 1) % zs.length].id;
-        else if (back) where[grabbed] = zs[(i + zs.length - 1) % zs.length].id;
-        else if (e.key === 'Enter' && !e.repeat) { place(grabbed, where[grabbed]!); return; }
-        else if (e.key === 'Escape' && !e.repeat) { where[grabbed] = grabFrom; grabbed = null; grabFrom = undefined; }
-        render(); return;
+        const zs = layout === 'logic' ? p.table!.rows.filter((r) => !isRemoved('identity', r.id)).map((r) => ({ id: r.id, label: r.cells[0] })) : zoneList();
+        const i = Math.max(0, zs.findIndex((z) => z.id === grabZone));
+        if (fwd) grabZone = zs[(i + 1) % zs.length].id; else if (back) grabZone = zs[(i + zs.length - 1) % zs.length].id;
+        else if (e.key === 'Enter' && !e.repeat) { if (layout === 'logic') { ans.identity = [grabZone!]; grabbed = null; render(); } else put(grabbed, grabZone!); return; }
+        else if (e.key === 'Escape' && !e.repeat) { grabbed = null; grabZone = null; }
+        const ghostZone = box.querySelector(`[data-zone="${grabZone}"]`); box.querySelectorAll('.zone.pick').forEach((z) => z.classList.remove('pick')); ghostZone?.classList.add('pick');
+        if (grabbed) { render(); box.querySelector(`[data-zone="${grabZone}"]`)?.classList.add('pick'); } else render();
+        return;
       }
+      if (e.key === 'Escape' && !e.repeat) { if (wins.length) { wins.sort((a, b) => b.z - a.z); wins.shift(); render(); } else close(); return; }
       const n = focusList().length;
       if (fwd) fi = (fi + 1) % n; else if (back) fi = (fi + n - 1) % n;
       else if (e.key === 'Enter' && !e.repeat) { activate(); return; }
-      else if (e.key === 'Escape' && !e.repeat) { close(); return; }
       render();
     },
   });

@@ -1,6 +1,6 @@
 // 씬 7 최종 보고서: 질문 A~D 결론(수첩에서 저장) + 보고 대상 → 작성 내용 확인 → 제출.
 // 제출 전 요약은 플레이어가 고른 결론과 보고 대상을 문장으로 다시 보여 줄 뿐, 정답·해결 여부·예상 엔딩을 암시하지 않는다.
-import { claims, setReportTarget, shownEvidence, type Claim, type GameState } from '../core';
+import { claims, failedVerifierOf, setReportTarget, shownEvidence, type Claim, type GameState } from '../core';
 import { bgmPop, bgmPush, sceneTrack, sfx } from '../audio/audio';
 import { el, esc, root } from './hud';
 import { popModal, pushModal } from './input';
@@ -24,11 +24,16 @@ export function openReport(s: GameState, onSubmit: () => void) {
   const hypLabel = (c: Claim) => c.hypotheses.find((h) => h.id === s.selectedHypothesisByClaim[c.claimId])?.label;
   const titles = (ids: string[] = []) => ids.map((id) => shownEvidence(s, id)?.title ?? '').join(', ') || '(없음)';
 
+  /** 검증 실패(신빙성 낮음)로 핵심 근거로 쓸 수 없는 단서와 그 이유 */
+  const failedNote = () => {
+    const ids = s.evidenceIds.filter((id) => failedVerifierOf(s, id));
+    return ids.length ? `<div class="warn">검증 실패(신빙성 낮음) — ${esc(ids.map((id) => shownEvidence(s, id)!.title).join(', '))}: 퍼즐의 결론 기회를 모두 써서 검증하지 못했다. 핵심 근거로 쓸 수 없다.</div>` : '';
+  };
   function render() {
     if (page === 'summary') {
       const t = TARGETS.find((x) => x.id === s.reportTarget)!;
       const lines = claims.map((c, i) => `<p>질문 ${NAMES[i]} — ${esc(c.question)}<br>선택한 가설: ${esc(hypLabel(c) ?? '')}<br>지지 근거: ${esc(titles(s.submittedEvidenceByClaim[c.claimId]))} · 반박 근거: ${esc(titles(s.submittedRebuttalByClaim[c.claimId]))}</p>`).join('');
-      box.innerHTML = `<h3>제출 전 확인</h3><div class="sum">${lines}<p>보고 대상: ${esc(t.label)}.</p></div>
+      box.innerHTML = `<h3>제출 전 확인</h3><div class="sum">${lines}<p>보고 대상: ${esc(t.label)}.</p>${failedNote()}</div>
         <button class="rrow${sumSel === 0 ? ' sel' : ''}" data-s="0">[제출한다]</button><button class="rrow${sumSel === 1 ? ' sel' : ''}" data-s="1">[돌아가서 고친다]</button>
         <div class="foot">↑↓ 이동 · Enter 선택 · Esc 돌아가기</div>`;
       return;
@@ -40,7 +45,7 @@ export function openReport(s: GameState, onSubmit: () => void) {
       <div class="slotlbl" style="margin-top:4px">보고 대상 — ←→ 로 고른다</div>
       <button class="rrow${sel === claims.length ? ' sel' : ''}" data-r="${claims.length}">${tg ? '◉ ' + esc(tg.label) : '(아직 고르지 않았다)'}</button>
       <button class="rrow${sel === claims.length + 1 ? ' sel' : ''}" data-r="${claims.length + 1}">[작성 내용 확인]</button></div>
-      <div class="note">${esc(msg)}</div><div class="foot">↑↓ 이동 · Enter 선택 · ←→ 보고 대상 · Tab 수첩</div>`;
+      ${failedNote()}<div class="note">${esc(msg)}</div><div class="foot">↑↓ 이동 · Enter 선택 · ←→ 보고 대상 · Tab 수첩</div>`;
   }
 
   function cycleTarget(d: number) {

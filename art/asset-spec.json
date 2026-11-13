@@ -555,7 +555,7 @@
   "masks": [
     "Resources/Art/Office/hat.png",
     "Resources/Art/Office/calendar.png",
-    "keyed:generated/props/newspaper_desk.png"
+    "keyed:generated/illust/newspaper_desk_v2.png"
   ],
   "unused": [
     "Resources/Art/Office/newspaper.png",
@@ -576,9 +576,10 @@
   ],
   "pending": [],
   "illustExclude": [
-    "ev_altar_blood.png"
+    "ev_altar_blood.png",
+    "newspaper_desk_v2.png"
   ],
   "keyedIcons": [
-    "generated/props/newspaper_desk.png"
+    "generated/illust/newspaper_desk_v2.png"
   ]
 }

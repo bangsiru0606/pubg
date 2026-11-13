@@ -18,7 +18,7 @@ export const closeups: Record<string, Closeup> = {
     hotspots: [
       { name: '모자', icon: 'hat', detail: 'hat_detail', desc: 'closeup_hat', cx: 560, cy: 175, w: 184 },
       { name: '캘린더', icon: 'calendar', detail: 'calendar_detail', desc: 'closeup_calendar', cx: 1010, cy: 210, w: 136 },
-      { name: '신문', icon: 'newspaper_desk', detail: 'ev_newspaper', desc: 'closeup_newspaper', cx: 640, cy: 605, w: 250, doc: true, ph: 1.3 },
+      { name: '신문', icon: 'newspaper_desk_v2', detail: 'ev_newspaper', desc: 'closeup_newspaper', cx: 655, cy: 605, w: 250, doc: true, ph: 1.3 },
     ],
   },
 };

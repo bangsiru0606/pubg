@@ -1064,7 +1064,9 @@ await page.locator('#puzzle [data-hold]').click(); await page.waitForSelector('#
 check((await page.locator('#dialogue .text').innerText()).includes('이 장부를 정리하기 전에는 여기서 더 알아낼 수 없다'), '[P05 보류] 보류하고 나가면 한 번 독백으로 알려 준다 (정하늘이 나타나지 않는 까닭)');
 await mash();
 check(await cw<boolean>("!cw.state.flags.includes('puzzle_done:P05_patient_code') && cw.state.flags.includes('p05_hold_seen')"), '[P05 보류] 보류는 풀리지도 닫히지도 않은 상태다');
-await cw('cw.scene.teleportX(0)'); await wait(300); await press('Enter'); await page.waitForSelector('#dialogue');
+await cw('cw.scene.teleportX(0)'); await wait(500);
+for (let i = 0; i < 6 && !(await page.locator('#dialogue').count()); i++) { await press('Enter'); await wait(400); } // 계단 프롬프트가 뜰 때까지 눌러 본다
+await page.waitForSelector('#dialogue');
 await wait(2400);
 check((await page.locator('#dialogue .text').innerText()).includes('이 장부를 정리하기 전에는'), '[P05 보류] 지하에서 계단으로 올라가려 할 때 P05 가 미결이면 같은 안내를 한 번 더 보여 준다');
 await mash(); await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor1', null, { timeout: 6000 });

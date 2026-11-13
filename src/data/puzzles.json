@@ -13,16 +13,18 @@
    "E03_preliminary_exam"
   ],
   "slots": [
-   "impactPosition",
-   "finalPosition",
+   "altar_floor",
+   "desk_chair",
    "movedObjects"
   ],
   "correctSlots": {
-   "impactPosition": [
-    "altar_floor"
+   "altar_floor": [
+    "p_blood",
+    "p_exam"
    ],
-   "finalPosition": [
-    "desk_chair"
+   "desk_chair": [
+    "p_baek",
+    "p_drag"
    ],
    "movedObjects": [
     "body",
@@ -31,125 +33,62 @@
   },
   "distractors": [
    "movedObjects:syringe",
-   "impactPosition:desk_side"
+   "*:d_letter"
   ],
   "conflicts": {
-   "impactPosition:desk_side": "기도대 아래 혈흔과 맞지 않는다.",
-   "impactPosition:desk_chair": "예비 검안 메모와 맞지 않는다.",
-   "finalPosition:altar_floor": "백선우의 진술과 맞지 않는다.",
-   "finalPosition:desk_side": "백선우의 진술과 맞지 않는다.",
    "movedObjects:syringe": "예비 검안 메모의 상처 기록과 맞지 않는다.",
    "movedObjects:altar": "기도대 아래 혈흔과 맞지 않는다.",
    "movedObjects:!chair": "의자 아래 바닥의 긁힌 자국({player}의 관찰)과 맞지 않는다.",
    "movedObjects:!body": "예비 검안 메모와 백선우의 진술을 함께 보면 빠진 항목이 있다."
   },
   "hintTexts": [
-   "혈흔 위치와 두 기록의 발견 위치를 다시 비교해 보세요.",
-   "후보 하나를 제거했습니다.",
-   "한 칸을 채웠습니다."
+   "혈흔이 남은 자리와 두 기록이 말하는 발견 위치를 다시 견줘 보세요.",
+   "틀린 후보 하나를 제거했습니다."
   ],
   "title": "현장 위치 재구성 — 원장실 평면도",
   "info": [
-   "원장 토큰 둘을 평면도의 위치에 놓는다",
-   "각 과제에는 그렇게 판단한 근거 자료를 붙인다",
-   "둘 사이에 이동된 대상을 표시한다"
+   "단서 조각을 평면도의 위치에 끌어다 놓는다",
+   "관련 없는 조각은 놓지 않아도 된다",
+   "모든 위치에 조각을 놓으면 “무엇이 옮겨졌나?”를 고른다"
   ],
   "zones": [
    {
     "id": "altar_floor",
     "label": "기도대 옆 바닥",
-    "x": 24,
-    "y": 30,
-    "w": 22,
-    "h": 34
-   },
-   {
-    "id": "desk_side",
-    "label": "책상 옆 바닥",
-    "x": 48,
-    "y": 16,
-    "w": 18,
-    "h": 48
+    "x": 0,
+    "y": 0,
+    "w": 49,
+    "h": 49
    },
    {
     "id": "desk_chair",
     "label": "책상 의자",
-    "x": 70,
-    "y": 40,
-    "w": 24,
-    "h": 24
-   }
-  ],
-  "fixtures": [
-   {
-    "id": "altar",
-    "label": "기도대",
-    "x": 4,
-    "y": 18,
-    "w": 18,
-    "h": 30
+    "x": 51,
+    "y": 0,
+    "w": 49,
+    "h": 49
    },
    {
-    "id": "blood",
-    "label": "혈흔",
-    "x": 8,
-    "y": 50,
-    "w": 10,
-    "h": 8
+    "id": "door",
+    "label": "문 앞",
+    "x": 0,
+    "y": 51,
+    "w": 49,
+    "h": 49
    },
    {
-    "id": "desk",
-    "label": "책상",
-    "x": 68,
-    "y": 8,
-    "w": 28,
-    "h": 24
+    "id": "window",
+    "label": "창가",
+    "x": 51,
+    "y": 51,
+    "w": 49,
+    "h": 49
    }
   ],
   "tasks": [
    {
-    "slot": "impactPosition",
-    "label": "충돌 직후 원장의 위치",
-    "kind": "place",
-    "options": [
-     {
-      "id": "altar_floor",
-      "label": "기도대 옆 바닥"
-     },
-     {
-      "id": "desk_side",
-      "label": "책상 옆 바닥"
-     },
-     {
-      "id": "desk_chair",
-      "label": "책상 의자"
-     }
-    ],
-    "token": "원장 ①"
-   },
-   {
-    "slot": "finalPosition",
-    "label": "공식 설명 속 원장의 위치",
-    "kind": "place",
-    "options": [
-     {
-      "id": "altar_floor",
-      "label": "기도대 옆 바닥"
-     },
-     {
-      "id": "desk_side",
-      "label": "책상 옆 바닥"
-     },
-     {
-      "id": "desk_chair",
-      "label": "책상 의자"
-     }
-    ],
-    "token": "원장 ②"
-   },
-   {
     "slot": "movedObjects",
-    "label": "둘 사이에 이동된 대상",
+    "label": "그렇다면 무엇이 옮겨졌나? (모두 고른다)",
     "kind": "mark",
     "options": [
      {
@@ -183,19 +122,41 @@
    ]
   },
   "solvedDialogue": "mono_p01_solved",
-  "evidenceLinks": {
-   "impactPosition": [
-    "E03_preliminary_exam",
-    "E02_altar_blood"
-   ],
-   "finalPosition": [
-    "baek_s_natural"
-   ],
-   "movedObjects": [
-    "han_o_chair",
-    "E03_preliminary_exam"
-   ]
-  }
+  "tokens": [
+   {
+    "id": "p_blood",
+    "label": "놋쇠 기도대 받침 아래에 닦이지 않은 혈흔이 남아 있다",
+    "source": "E02_altar_blood"
+   },
+   {
+    "id": "p_exam",
+    "label": "발견 위치: 기도대 옆 바닥",
+    "source": "E03_preliminary_exam"
+   },
+   {
+    "id": "p_baek",
+    "label": "집무실 의자에 앉으신 채 발견됐고",
+    "source": "baek_s_natural"
+   },
+   {
+    "id": "p_drag",
+    "label": "의자 다리 아래 바닥이 기도대 쪽에서부터 길게 긁혀 있다",
+    "source": "han_o_chair"
+   },
+   {
+    "id": "d_letter",
+    "label": "밤마다 빈 침대가 하나씩 늘어나",
+    "source": "E01_last_letter",
+    "decoy": true
+   },
+   {
+    "id": "d_wrist",
+    "label": "정ㅎ / 2병동 / 04",
+    "source": "E04_wristband_fragment",
+    "decoy": true
+   }
+  ],
+  "pieceConflict": "「{src}」은(는) 이 위치와 맞지 않는다."
  },
  {
   "id": "P02_night_timeline",
@@ -217,67 +178,70 @@
   ],
   "correctSlots": {
    "t2234": [
-    "key_lost"
+    "t_out"
    ],
    "t2241": [
-    "door_open"
+    "t_door"
    ],
    "t2246": [
-    "thud"
+    "t_thud"
    ],
    "t2251": [
-    "return_room"
+    "t_time"
    ]
   },
   "distractors": [
-   "*:sermon"
+   "*:d_prayer"
   ],
   "conflicts": {
-   "*:sermon": "예약 재생이라고 적힌 복도 방송표와 맞지 않는다.",
-   "t2234:door_open": "원장실 출입 기록과 맞지 않는다.",
-   "t2234:thud": "최옥자의 진술과 맞지 않는다.",
-   "t2234:return_room": "채소연의 진술와 맞지 않는다.",
-   "t2241:key_lost": "원장실 출입 기록과 맞지 않는다.",
-   "t2241:thud": "최옥자의 진술과 맞지 않는다.",
-   "t2241:return_room": "채소연의 진술와 맞지 않는다.",
-   "t2246:key_lost": "채소연의 진술와 맞지 않는다.",
-   "t2246:door_open": "원장실 출입 기록과 맞지 않는다.",
-   "t2246:return_room": "채소연의 진술와 맞지 않는다.",
-   "t2251:key_lost": "채소연의 진술와 맞지 않는다.",
-   "t2251:door_open": "원장실 출입 기록과 맞지 않는다.",
-   "t2251:thud": "최옥자의 진술과 맞지 않는다."
+   "*:d_sermon": "예약 재생이라고 적힌 복도 방송표와 맞지 않는다.",
+   "*:d_prayer": "예약 재생이라고 적힌 복도 방송표와 맞지 않는다."
   },
   "hintTexts": [
-   "출입 기록과 채소연의 진술 시각을 확인해 보세요.",
-   "후보 하나를 제거했습니다.",
-   "한 칸을 채웠습니다."
+   "시각이 적힌 조각부터 놓고, 시각이 없는 조각은 앞뒤 순서로 추론해 보세요.",
+   "틀린 후보 하나를 제거했습니다."
   ],
   "layout": "timeline",
   "title": "야간 동선 시간 배열",
   "info": [
-   "사건 카드 5장 중 사람의 동선만 시간 칸에 놓는다",
-   "사람의 동선이 아닌 카드는 “타임라인 바깥”에 둔다"
+   "진술·기록 조각을 시간 칸에 놓는다",
+   "시각이 적히지 않은 조각은 앞뒤 순서로 추론한다",
+   "사람의 동선이 아닌 조각은 놓지 않는다"
   ],
   "tokens": [
    {
-    "id": "key_lost",
-    "label": "청소용 마스터키 분실"
+    "id": "t_out",
+    "label": "10시 34분이에요… 청소용 마스터키도 같이 없어졌어요",
+    "source": "chae_s_out"
    },
    {
-    "id": "door_open",
-    "label": "원장실 문 개방"
+    "id": "t_door",
+    "label": "원장 책상 아래에서 나온 찢어진 환자 손목띠 조각 — 원장실 안에 들어간 흔적, 시각 기록은 없다",
+    "source": "E04_wristband_fragment"
    },
    {
-    "id": "thud",
-    "label": "둔탁한 충돌음"
+    "id": "t_thud",
+    "label": "설교가 한창일 때 아래층 어디선가 쿵 하고 둔탁한 소리가 났어요… 벽시계가 10시 46분이었으니",
+    "source": "choi_s_thud"
    },
    {
-    "id": "return_room",
-    "label": "정하늘 병실 복귀"
+    "id": "t_time",
+    "label": "10시 51분이었어요. 병실 벽시계를 봤거든요",
+    "source": "chae_s_time"
    },
    {
-    "id": "sermon",
-    "label": "기도 설교 방송 시작"
+    "id": "d_sermon",
+    "label": "‘기도 설교’ 칸에는 ‘예약 재생’이라고만 적혀 있다",
+    "source": "dialogue:mono_broadcast:m",
+    "srcName": "복도 방송표",
+    "need": "broadcast_seen",
+    "decoy": true
+   },
+   {
+    "id": "d_prayer",
+    "label": "원장님은 밤새 기도하셨어요. 스피커로 목소리가 들렸으니까",
+    "source": "choi_s_prayer",
+    "decoy": true
    }
   ],
   "boxes": [
@@ -303,28 +267,12 @@
     "choi_done",
     "han_done",
     "chae_done",
-    "broadcast_seen"
-   ],
-   "evidence": [
-    "E05_access_log"
+    "broadcast_seen",
+    "haneul_met"
    ]
   },
   "solvedDialogue": "mono_p02_solved",
-  "evidenceLinks": {
-   "t2234": [
-    "chae_s_out"
-   ],
-   "t2241": [
-    "E05_access_log"
-   ],
-   "t2246": [
-    "choi_s_thud"
-   ],
-   "t2251": [
-    "chae_s_time",
-    "E06_torn_sleeve"
-   ]
-  }
+  "pieceConflict": "「{src}」은(는) 이 시각과 맞지 않는다."
  },
  {
   "id": "P03_revision_diff",
@@ -338,88 +286,149 @@
    "E07_report_revision"
   ],
   "slots": [
-   "marked"
+   "chg_position",
+   "chg_laceration",
+   "chg_breath"
   ],
   "correctSlots": {
-   "marked": [
-    "position_changed",
-    "laceration_deleted",
-    "breathing_changed"
+   "chg_position": [
+    "body_moved"
+   ],
+   "chg_laceration": [
+    "impact_injury"
+   ],
+   "chg_breath": [
+    "alive_delay"
    ]
   },
   "distractors": [
-   "marked:spelling_fix",
-   "marked:sentence_order",
-   "marked:time_format",
-   "marked:symbol_change"
+   "chg_position:d_witness",
+   "chg_laceration:d_drug",
+   "chg_breath:d_time"
   ],
   "conflicts": {
-   "marked:spelling_fix": "검안 기록 수정 이력은 띄어쓰기 수정을 의미 변경으로 기록하지 않는다.",
-   "marked:sentence_order": "검안 기록 수정 이력은 문장 위치 이동을 의미 변경으로 기록하지 않는다.",
-   "marked:time_format": "검안 기록 수정 이력은 시각 표기 형식을 의미 변경으로 기록하지 않는다.",
-   "marked:symbol_change": "검안 기록 수정 이력은 머리 기호를 의미 변경으로 기록하지 않는다."
+   "chg_position:impact_injury": "비교 결과의 ‘발견 위치’ 줄은(는) ‘충돌로 인한 외상’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_position:alive_delay": "비교 결과의 ‘발견 위치’ 줄은(는) ‘발견 당시 살아 있었다(구조 지연)’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_position:d_time": "비교 결과의 ‘발견 위치’ 줄은(는) ‘사망 시각’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_position:d_drug": "비교 결과의 ‘발견 위치’ 줄은(는) ‘투여된 약물’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_position:d_witness": "비교 결과의 ‘발견 위치’ 줄은(는) ‘목격자의 신원’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_laceration:body_moved": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘시신이 옮겨졌다’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_laceration:alive_delay": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘발견 당시 살아 있었다(구조 지연)’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_laceration:d_time": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘사망 시각’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_laceration:d_drug": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘투여된 약물’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_laceration:d_witness": "비교 결과의 ‘후두부 열상’ 줄은(는) ‘목격자의 신원’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_breath:body_moved": "비교 결과의 ‘호흡’ 줄은(는) ‘시신이 옮겨졌다’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_breath:impact_injury": "비교 결과의 ‘호흡’ 줄은(는) ‘충돌로 인한 외상’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_breath:d_time": "비교 결과의 ‘호흡’ 줄은(는) ‘사망 시각’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_breath:d_drug": "비교 결과의 ‘호흡’ 줄은(는) ‘투여된 약물’을(를) 숨기는 수정으로 보이지 않는다.",
+   "chg_breath:d_witness": "비교 결과의 ‘호흡’ 줄은(는) ‘목격자의 신원’을(를) 숨기는 수정으로 보이지 않는다."
   },
   "hintTexts": [
-   "의미가 달라진 항목만 표시하세요. 발견 위치와 상태를 보세요.",
-   "후보 하나를 제거했습니다.",
-   "한 칸을 채웠습니다."
+   "바뀐 줄마다, 수정 전 기록이 말하던 사실이 무엇이었는지 생각해 보세요.",
+   "틀린 후보 하나를 제거했습니다."
   ],
-  "layout": "lightbox",
+  "layout": "desktop",
   "title": "검안 기록 변조 비교",
-  "info": [],
-  "panels": [
-   {
-    "title": "예비 기록",
-    "evidenceId": "E03_preliminary_exam"
-   },
-   {
-    "title": "최종 기록",
-    "lines": [
-     "22시 52분 최초 확인",
-     "* 부원장 재검토 요청",
-     "발견 위치: 책상 의자",
-     "기존 심장 질환에 의한 급성 심정지 추정",
-     "의식 없음, 발견 당시 사망"
-    ]
-   },
-   {
-    "title": "수정 이력",
-    "evidenceId": "E07_report_revision"
-   }
+  "info": [
+   "바탕화면의 파일을 더블클릭해 연다",
+   "휴지통과 수정 이력도 살펴본다",
+   "“문서 비교”로 두 판의 바뀐 줄을 찾는다",
+   "바뀐 줄마다 그 수정이 숨기려 한 사실을 고른다"
   ],
   "tasks": [
    {
-    "slot": "marked",
-    "label": "의미가 달라진 항목",
+    "slot": "chg_position",
+    "label": "‘발견 위치’ 줄의 수정이 숨기려 한 사실",
     "kind": "mark",
+    "single": true,
     "options": [
      {
-      "id": "position_changed",
-      "label": "발견 위치: 기도대 옆 바닥 → 책상 의자"
+      "id": "body_moved",
+      "label": "시신이 옮겨졌다"
      },
      {
-      "id": "laceration_deleted",
-      "label": "‘후두부 열상’ 문구 삭제"
+      "id": "impact_injury",
+      "label": "충돌로 인한 외상"
      },
      {
-      "id": "breathing_changed",
-      "label": "‘미약 호흡’ → ‘발견 당시 사망’"
+      "id": "alive_delay",
+      "label": "발견 당시 살아 있었다(구조 지연)"
      },
      {
-      "id": "spelling_fix",
-      "label": "‘의식없음’ → ‘의식 없음’ 띄어쓰기"
+      "id": "d_time",
+      "label": "사망 시각"
      },
      {
-      "id": "sentence_order",
-      "label": "‘부원장 재검토 요청’ 문장 위치 이동"
+      "id": "d_drug",
+      "label": "투여된 약물"
      },
      {
-      "id": "time_format",
-      "label": "‘22:52’ → ‘22시 52분’ 시각 표기 형식"
+      "id": "d_witness",
+      "label": "목격자의 신원"
+     }
+    ]
+   },
+   {
+    "slot": "chg_laceration",
+    "label": "‘후두부 열상’ 줄의 수정이 숨기려 한 사실",
+    "kind": "mark",
+    "single": true,
+    "options": [
+     {
+      "id": "body_moved",
+      "label": "시신이 옮겨졌다"
      },
      {
-      "id": "symbol_change",
-      "label": "‘※’ → ‘*’ 머리 기호"
+      "id": "impact_injury",
+      "label": "충돌로 인한 외상"
+     },
+     {
+      "id": "alive_delay",
+      "label": "발견 당시 살아 있었다(구조 지연)"
+     },
+     {
+      "id": "d_time",
+      "label": "사망 시각"
+     },
+     {
+      "id": "d_drug",
+      "label": "투여된 약물"
+     },
+     {
+      "id": "d_witness",
+      "label": "목격자의 신원"
+     }
+    ]
+   },
+   {
+    "slot": "chg_breath",
+    "label": "‘호흡’ 줄의 수정이 숨기려 한 사실",
+    "kind": "mark",
+    "single": true,
+    "options": [
+     {
+      "id": "body_moved",
+      "label": "시신이 옮겨졌다"
+     },
+     {
+      "id": "impact_injury",
+      "label": "충돌로 인한 외상"
+     },
+     {
+      "id": "alive_delay",
+      "label": "발견 당시 살아 있었다(구조 지연)"
+     },
+     {
+      "id": "d_time",
+      "label": "사망 시각"
+     },
+     {
+      "id": "d_drug",
+      "label": "투여된 약물"
+     },
+     {
+      "id": "d_witness",
+      "label": "목격자의 신원"
      }
     ]
    }
@@ -431,11 +440,49 @@
    ]
   },
   "solvedDialogue": "mono_p03_solved",
-  "subtitle": "세 문서를 겹쳐 보고 의미가 바뀐 항목과 근거를 고른다",
-  "evidenceLinks": {
-   "marked": [
-    "E07_report_revision",
-    "E03_preliminary_exam"
+  "desktop": {
+   "files": [
+    {
+     "id": "final",
+     "name": "검안기록_최종.txt",
+     "lines": [
+      "22:52 최초 확인",
+      "발견 위치: 책상 의자",
+      "기존 심장 질환에 의한 급성 심정지 추정",
+      "의식없음, 발견 당시 사망",
+      "※ 부원장 재검토 요청"
+     ]
+    },
+    {
+     "id": "log",
+     "name": "수정이력.log",
+     "evidenceId": "E07_report_revision"
+    },
+    {
+     "id": "auto",
+     "name": "검안기록_자동저장.txt",
+     "evidenceId": "E03_preliminary_exam",
+     "inTrash": true
+    }
+   ],
+   "trashName": "휴지통",
+   "compareName": "문서 비교",
+   "diffs": [
+    {
+     "id": "position",
+     "before": "발견 위치: 기도대 옆 바닥",
+     "after": "발견 위치: 책상 의자"
+    },
+    {
+     "id": "laceration",
+     "before": "후두부 열상 및 출혈 흔적",
+     "after": "기존 심장 질환에 의한 급성 심정지 추정"
+    },
+    {
+     "id": "breath",
+     "before": "의식없음, 미약 호흡",
+     "after": "의식없음, 발견 당시 사망"
+    }
    ]
   }
  },
@@ -452,17 +499,17 @@
    "E11_transfer_order"
   ],
   "slots": [
-   "doc_selection",
    "doc_approval",
+   "doc_selection",
    "doc_schedule",
    "doc_transfer"
   ],
   "correctSlots": {
-   "doc_selection": [
-    "lee_hyejeong"
-   ],
    "doc_approval": [
     "lee_hanshin"
+   ],
+   "doc_selection": [
+    "lee_hyejeong"
    ],
    "doc_schedule": [
     "baek_sunwoo"
@@ -472,136 +519,131 @@
    ]
   },
   "distractors": [
-   "doc_selection:lee_hanshin"
+   "*:oh_miran"
   ],
   "conflicts": {
-   "doc_selection:lee_hanshin": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_selection:baek_sunwoo": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
    "doc_approval:lee_hyejeong": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
    "doc_approval:baek_sunwoo": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
-   "doc_schedule:lee_hanshin": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_approval:oh_miran": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_selection:lee_hanshin": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_selection:baek_sunwoo": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_selection:oh_miran": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
    "doc_schedule:lee_hyejeong": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_schedule:lee_hanshin": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
+   "doc_schedule:oh_miran": "위조 동의서 묶음의 작성 약자와 맞지 않는다.",
    "doc_transfer:lee_hanshin": "화장·환자 이송 지시의 서명과 맞지 않는다.",
-   "doc_transfer:baek_sunwoo": "화장·환자 이송 지시의 서명과 맞지 않는다."
+   "doc_transfer:baek_sunwoo": "화장·환자 이송 지시의 서명과 맞지 않는다.",
+   "doc_transfer:oh_miran": "화장·환자 이송 지시의 서명과 맞지 않는다."
   },
   "hintTexts": [
-   "영문 약자와 문서의 권한·수정 계정을 함께 보세요.",
-   "후보 하나를 제거했습니다.",
-   "한 칸을 채웠습니다."
+   "영문 약자와 권한 문구를 함께 보세요.",
+   "틀린 후보 하나를 제거했습니다."
   ],
-  "layout": "connect",
+  "layout": "tree",
   "title": "특별 치료 승인 체계",
   "info": [
-   "문서 카드를 인물에 연결하고, 근거 자료를 붙인다",
+   "최종 승인 아래 선정·시술 진행·이송 지시 칸이 있다",
+   "서식 문구의 약자·권한을 보고 인물 카드를 칸에 놓는다",
    "필체만으로는 판단하지 않는다"
-  ],
-  "zones": [
-   {
-    "id": "lee_hyejeong",
-    "label": "이혜정",
-    "sub": "이사 · 서류 관리",
-    "x": 64,
-    "y": 6,
-    "w": 34,
-    "h": 24
-   },
-   {
-    "id": "lee_hanshin",
-    "label": "이한신",
-    "sub": "원장",
-    "x": 64,
-    "y": 38,
-    "w": 34,
-    "h": 24
-   },
-   {
-    "id": "baek_sunwoo",
-    "label": "백선우",
-    "sub": "부원장",
-    "x": 64,
-    "y": 70,
-    "w": 34,
-    "h": 24
-   }
   ],
   "tasks": [
    {
-    "slot": "doc_selection",
-    "label": "대상자 선정표",
-    "token": "대상자 선정표",
+    "slot": "doc_approval",
+    "label": "원장 승인표",
     "kind": "place",
+    "form": "[원장 승인표] 작성: LHS / 권한: 최종 승인",
+    "formSource": "E10_consent_forms",
     "options": [
      {
       "id": "lee_hyejeong",
-      "label": "이혜정"
+      "label": "이혜정 · 이사"
      },
      {
       "id": "lee_hanshin",
-      "label": "이한신"
+      "label": "이한신 · 원장"
      },
      {
       "id": "baek_sunwoo",
-      "label": "백선우"
+      "label": "백선우 · 부원장"
+     },
+     {
+      "id": "oh_miran",
+      "label": "오미란 · 수간호사"
      }
     ]
    },
    {
-    "slot": "doc_approval",
-    "label": "원장 승인표",
-    "token": "원장 승인표",
+    "slot": "doc_selection",
+    "label": "대상자 선정표",
     "kind": "place",
+    "form": "[대상자 선정표] 작성: LHJ / 권한: 선정",
+    "formSource": "E10_consent_forms",
     "options": [
      {
       "id": "lee_hyejeong",
-      "label": "이혜정"
+      "label": "이혜정 · 이사"
      },
      {
       "id": "lee_hanshin",
-      "label": "이한신"
+      "label": "이한신 · 원장"
      },
      {
       "id": "baek_sunwoo",
-      "label": "백선우"
+      "label": "백선우 · 부원장"
+     },
+     {
+      "id": "oh_miran",
+      "label": "오미란 · 수간호사"
      }
     ]
    },
    {
     "slot": "doc_schedule",
     "label": "시술 일정표",
-    "token": "시술 일정표",
     "kind": "place",
+    "form": "[시술 일정표] 작성: BSW / 권한: 시술 진행",
+    "formSource": "E10_consent_forms",
     "options": [
      {
       "id": "lee_hyejeong",
-      "label": "이혜정"
+      "label": "이혜정 · 이사"
      },
      {
       "id": "lee_hanshin",
-      "label": "이한신"
+      "label": "이한신 · 원장"
      },
      {
       "id": "baek_sunwoo",
-      "label": "백선우"
+      "label": "백선우 · 부원장"
+     },
+     {
+      "id": "oh_miran",
+      "label": "오미란 · 수간호사"
      }
     ]
    },
    {
     "slot": "doc_transfer",
     "label": "이송 지시서",
-    "token": "이송 지시서",
     "kind": "place",
+    "form": "서명: 이사 이혜정 / 권한: 이송 지시",
+    "formSource": "E11_transfer_order",
     "options": [
      {
       "id": "lee_hyejeong",
-      "label": "이혜정"
+      "label": "이혜정 · 이사"
      },
      {
       "id": "lee_hanshin",
-      "label": "이한신"
+      "label": "이한신 · 원장"
      },
      {
       "id": "baek_sunwoo",
-      "label": "백선우"
+      "label": "백선우 · 부원장"
+     },
+     {
+      "id": "oh_miran",
+      "label": "오미란 · 수간호사"
      }
     ]
    }
@@ -613,20 +655,25 @@
    ]
   },
   "solvedDialogue": "mono_p04_solved",
-  "evidenceLinks": {
-   "doc_selection": [
-    "E10_consent_forms"
-   ],
-   "doc_approval": [
-    "E10_consent_forms"
-   ],
-   "doc_schedule": [
-    "E10_consent_forms"
-   ],
-   "doc_transfer": [
-    "E11_transfer_order"
-   ]
-  }
+  "people": [
+   {
+    "id": "lee_hyejeong",
+    "label": "이혜정 · 이사"
+   },
+   {
+    "id": "lee_hanshin",
+    "label": "이한신 · 원장"
+   },
+   {
+    "id": "baek_sunwoo",
+    "label": "백선우 · 부원장"
+   },
+   {
+    "id": "oh_miran",
+    "label": "오미란 · 수간호사",
+    "decoy": true
+   }
+  ]
  },
  {
   "id": "P05_patient_code",
@@ -698,12 +745,10 @@
   },
   "hintTexts": [
    "나이·혈액형만으로는 후보가 둘 남습니다. 입원번호와 유품 표식을 보세요.",
-   "후보 하나를 제거했습니다.",
-   "한 칸을 채웠습니다."
+   "틀린 후보 하나를 제거했습니다."
   ],
   "layout": "logic",
   "title": "P-271 환자 코드 대조",
-  "subtitle": "후보 표를 자료와 대조한다",
   "info": [],
   "table": {
    "columns": [
@@ -949,24 +994,6 @@
     "E15_transport_manifest"
    ]
   },
-  "solvedDialogue": "mono_p05_solved",
-  "evidenceLinks": {
-   "ageMatch": [
-    "E12_ledger"
-   ],
-   "bloodMatch": [
-    "E12_ledger"
-   ],
-   "admissionMatch": [
-    "E13_identity_map"
-   ],
-   "belongingMatch": [
-    "han_s_bracelet",
-    "E14_belongings_diary"
-   ],
-   "identity": [
-    "E13_identity_map"
-   ]
-  }
+  "solvedDialogue": "mono_p05_solved"
  }
 ]

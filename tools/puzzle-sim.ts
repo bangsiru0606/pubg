@@ -1,8 +1,8 @@
-// 무작위 제출로 퍼즐이 우연히 풀릴 확률 (docs: 근거 연결 판정 전/후 비교)
-//   npx tsx tools/puzzle-sim.ts          → 퍼즐마다 1만 회, 오답 5회 이내(= 6번째 제출까지)에 풀리는 비율
-// 무작위 풀이: 모든 칸을 채운 완전한 답만 낸다(빈 칸이 있으면 오답 횟수가 오르지 않으므로). 토큰은 칸마다 균등 무작위,
-// 표시 칩은 비어 있지 않은 부분집합 중 균등 무작위, 근거는 그 시점에 가진 단서·진술 전부 중 균등 무작위.
-import { isCorrectAnswer, linkCandidates, linksCorrect, puzzles, type GameState, type Puzzle, type PuzzleAnswer, type PuzzleLinks } from '../src/core';
+// 무작위 제출로 퍼즐이 우연히 풀릴 확률: 결론 기회 3번 안에 (각 시도는 모든 칸을 채운 무작위 답)
+//   npx tsx tools/puzzle-sim.ts          → 퍼즐마다 1만 회, 목표 5% 미만
+// 무작위 풀이: 조각은 칸(+보관함)에 균등 무작위로 놓되 모든 칸이 채워질 때까지 다시 뽑는다(빈 칸이 있으면 확정할 수 없으므로).
+// 표시 선택지는 비어 있지 않은 부분집합(단일 선택은 하나), 트리의 인물 카드·논리표 토큰은 칸마다 균등 무작위. 시도끼리는 서로 모른다(이전 오답을 학습하지 않는다).
+import { MAX_ATTEMPTS, availablePieces, isAnswerComplete, isCorrectAnswer, puzzles, type GameState, type Puzzle, type PuzzleAnswer } from '../src/core';
 import { applyScene, buildProgress } from '../src/explore/playthrough';
 import { rng } from './sfx/generate-sfx';
 
@@ -14,46 +14,44 @@ export function stateBeforePuzzle(id: string): GameState {
   return s;
 }
 
-/** 수정 전의 표시 선택지 수 (P03 은 이번에 선택지를 5개에서 7개로 늘렸다) */
-const OLD_OPTION_COUNT: Record<string, number> = { P03_revision_diff: 5 };
-export function randomAnswer(p: Puzzle, r: () => number, legacy = false): PuzzleAnswer {
-  const a: PuzzleAnswer = Object.fromEntries(p.slots.map((sl) => [sl, [] as string[]]));
+export function randomAnswer(p: Puzzle, s: GameState, r: () => number): PuzzleAnswer {
   const pick = <T,>(xs: T[]) => xs[Math.floor(r() * xs.length)];
-  if (p.layout === 'timeline') { // 카드 5장 중 4장을 시간 칸에 (순서 무작위), 나머지는 바깥
-    const toks = (p.tokens ?? []).map((t) => t.id);
-    for (let i = toks.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [toks[i], toks[j]] = [toks[j], toks[i]]; } // Fisher-Yates
-    p.boxes!.forEach((b, i) => { a[b.id] = [toks[i]]; });
-    return a;
+  for (let tries = 0; tries < 1000; tries++) {
+    const a: PuzzleAnswer = {};
+    if (p.layout === 'plan' || p.layout === 'timeline') {
+      const zones = [...(p.layout === 'plan' ? (p.zones ?? []).map((z) => z.id) : (p.boxes ?? []).map((b) => b.id)), 'tray'];
+      for (const t of availablePieces(s, p)) {
+        const z = pick(zones);
+        if (z === 'tray') continue;
+        if (p.layout === 'timeline') a[z] = [t.id]; else a[z] = [...(a[z] ?? []), t.id]; // 시간 칸은 한 칸에 하나 (나중에 놓은 조각이 대신 들어간다)
+      }
+    }
+    for (const t of p.tasks ?? []) {
+      if (t.kind === 'place') a[t.slot] = [pick(t.options).id]; // 트리 칸·논리표 토큰
+      else if (t.single) a[t.slot] = [pick(t.options).id];
+      else { let sub: string[] = []; while (!sub.length) sub = t.options.filter(() => r() < 0.5).map((o) => o.id); a[t.slot] = sub; }
+    }
+    if (isAnswerComplete(p, a)) return a;
   }
-  for (const t of p.tasks ?? []) {
-    if (t.kind === 'place') a[t.slot] = [pick(t.options).id];
-    else { const opts = legacy && OLD_OPTION_COUNT[p.id] ? t.options.slice(0, OLD_OPTION_COUNT[p.id]) : t.options; let sub: string[] = []; while (!sub.length) sub = opts.filter(() => r() < 0.5).map((o) => o.id); a[t.slot] = sub; }
-  }
-  return a;
+  throw new Error(`${p.id}: 무작위로 완전한 답을 만들지 못했다`);
 }
-export function randomLinks(p: Puzzle, s: GameState, r: () => number): PuzzleLinks {
-  const cands = linkCandidates(s), out: PuzzleLinks = {};
-  for (const sl of Object.keys(p.evidenceLinks ?? {})) out[sl] = cands[Math.floor(r() * cands.length)].id;
-  return out;
-}
-export function simulate(id: string, o: { trials?: number; attempts?: number; useLinks?: boolean; seed?: number } = {}) {
-  const { trials = 10000, attempts = 6, useLinks = true, seed = 1234 } = o;
+export function simulate(id: string, o: { trials?: number; attempts?: number; seed?: number } = {}) {
+  const { trials = 10000, attempts = MAX_ATTEMPTS, seed = 1234 } = o;
   const p = puzzles.find((q) => q.id === id)!, s = stateBeforePuzzle(id), r = rng(seed);
-  let solved = 0, perAttempt = 0;
+  let solved = 0, first = 0;
   for (let t = 0; t < trials; t++) {
     for (let k = 0; k < attempts; k++) {
-      const a = randomAnswer(p, r, !useLinks), ok = isCorrectAnswer(p, a) && (!useLinks || linksCorrect(s, p, randomLinks(p, s, r)));
-      if (ok) { solved++; if (k === 0) perAttempt++; break; }
+      if (isCorrectAnswer(p, randomAnswer(p, s, r))) { solved++; if (k === 0) first++; break; }
     }
   }
-  return { id, trials, attempts, solved, rate: solved / trials, firstTry: perAttempt / trials, candidates: linkCandidates(s).length };
+  return { id, trials, attempts, solved, rate: solved / trials, firstTry: first / trials, pieces: availablePieces(s, p).length };
 }
 
 if (process.argv[1]?.endsWith('puzzle-sim.ts')) {
-  console.log('| 퍼즐 | 근거 후보 수 | 수정 전 (토큰만) | 수정 후 (토큰+근거) |\n|---|---|---|---|');
+  console.log(`| 퍼즐 | 조각 수 | 첫 시도에 우연히 풀림 | ${MAX_ATTEMPTS}번 안에 우연히 풀림 (목표 5% 미만) |\n|---|---|---|---|`);
   for (const p of puzzles) {
-    const before = simulate(p.id, { useLinks: false }), after = simulate(p.id, { useLinks: true });
-    console.log(`| ${p.id.slice(0, 3)} | ${after.candidates} | ${(before.rate * 100).toFixed(2)}% (${before.solved}/${before.trials}) | ${(after.rate * 100).toFixed(2)}% (${after.solved}/${after.trials}) |`);
+    const x = simulate(p.id);
+    console.log(`| ${p.id.slice(0, 3)} | ${x.pieces} | ${(x.firstTry * 100).toFixed(2)}% | ${(x.rate * 100).toFixed(2)}% (${x.solved}/${x.trials}) |`);
   }
-  console.log(`\n각 시행: 무작위 완전 답을 최대 ${6}번 제출 (오답 5회 이내 = 힌트 3단계 전).`);
+  console.log(`\n각 시행: 모든 칸을 채운 무작위 답을 최대 ${MAX_ATTEMPTS}번 제출.`);
 }

@@ -27,3 +27,32 @@ describe('진행 막힘 검사: 퍼즐을 하나도 풀지 않아도(P05 제외)
     expect(resolveEnding(s).id).toBe('ending_d');
   });
 });
+
+describe('P05 검증 실패 경로: 정하늘 등장 → 보고서', () => {
+  it('P05 가 검증 실패로 닫혀도 정하늘이 등장하고 고백·증거 보존 선택·보고서로 이어진다 (분기 대사 포함)', async () => {
+    const { failPuzzle } = await import('../src/explore/playthrough');
+    const { autoTriggered } = await import('../src/explore/interaction');
+    const { nextOf, enterNode, isVerificationFailed } = await import('../src/core');
+    const real = (await import('../src/data/dialogue.json')).default.dialogues as never as import('../src/core').Dialogues;
+    const s = buildProgress(5, { puzzles: false }).state; // 지하 입장, P05 재료는 아직
+    for (const id of ['E12_ledger', 'E13_identity_map', 'E14_belongings_diary', 'E15_transport_manifest']) if (!s.evidenceIds.includes(id)) s.evidenceIds.push(id);
+    s.flags.push('diary_closed');
+    expect(autoTriggered('b1', areas.b1, 400, s)).toBeNull(); // 풀리지도 닫히지도 않았다
+    failPuzzle(s, 'P05_patient_code');
+    expect(s.failedPuzzleIds).toContain('P05_patient_code'); expect(isVerificationFailed(s, 'E12_ledger')).toBe(true);
+    expect(autoTriggered('b1', areas.b1, 400, s)?.id).toBe('haneul_b1');
+    const D = real.jeong_haneul_final.nodes;
+    expect(nextOf(s, D.f1)).toBe('f2x'); expect(D.f2x.text).toContain('확정하지는 못했'); // 확정 못 한 상태로 자연스럽게 읽힌다
+    expect(nextOf(s, D.f3)).toBe('f3x');
+    for (const n of Object.values(D)) enterNode(s, n); // 고백 끝
+    expect(s.flags).toContain('haneul_confessed');
+    expect(autoTriggered('b1', areas.b1, 400, s)?.id).toBe('scene6'); // 증거 보존 선택 → 보고서
+    expect(resolveEnding(s).id).toBe('ending_d');
+  });
+  it('P05 가 풀린 경우의 정하늘 대사는 그대로 (확정 분기 없음)', async () => {
+    const { nextOf } = await import('../src/core');
+    const real = (await import('../src/data/dialogue.json')).default.dialogues as never as import('../src/core').Dialogues;
+    const s = buildProgress(6).state;
+    expect(nextOf(s, real.jeong_haneul_final.nodes.f1)).toBe('f2'); expect(nextOf(s, real.jeong_haneul_final.nodes.f3)).toBe('f4');
+  });
+});

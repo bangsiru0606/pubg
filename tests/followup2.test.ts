@@ -6,7 +6,7 @@ import characters from '../src/data/characters.json';
 import map from '../src/data/map.json';
 import evidence from '../src/data/evidence.json';
 import real from '../src/data/dialogue.json';
-import { createGameState, hasFlag, linkCandidates, puzzles, setFlag, shownEvidence } from '../src/core';
+import { createGameState, hasFlag, puzzles, setFlag, shownEvidence } from '../src/core';
 import { areas, isExamined, promptOf, showsSparkle, type Examine, type Transition } from '../src/explore/interaction';
 import { clearPending, mergeWalkFrames, type ManifestEntry } from '../tools/import-generated';
 import { stateBeforePuzzle } from '../tools/puzzle-sim';
@@ -105,11 +105,12 @@ describe('원장실 의자 조사 → P01 이동 대상 근거', () => {
     expect(isExamined(chair(), s)).toBe(true); expect(showsSparkle(chair(), s)).toBe(false);
     expect(hasFlag(s, 'chair_checked')).toBe(true);
   });
-  it('이동 대상 칸의 허용 근거는 의자 관찰 카드와 E03 (시신 이동은 E03 의 위치와 공식 설명의 차이)', () => {
+  it('의자 끌린 자국 조각의 출처는 의자 관찰 카드, 이동 대상 답은 시신과 의자', () => {
     const p = puzzles.find((q) => q.id === 'P01_scene_rebuild')!;
-    expect(p.evidenceLinks!.movedObjects).toEqual(['han_o_chair', 'E03_preliminary_exam']);
+    expect(p.tokens!.find((x) => x.id === 'p_drag')!.source).toBe('han_o_chair');
+    expect(p.correctSlots.movedObjects).toEqual(['body', 'chair']);
     const s = stateBeforePuzzle(p.id);
-    expect(linkCandidates(s).find((c) => c.id === 'han_o_chair')!.title).toMatch(/의 관찰$/);
+    expect(s.statements.han_o_chair).toBeDefined();
   });
 });
 

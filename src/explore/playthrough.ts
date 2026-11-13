@@ -2,7 +2,7 @@
 // 각 씬에서 거치는 조사 지점·대사 노드·퍼즐을 그대로 적용하므로, 단서 검증 상태·진술·플래그가 실제 플레이와 같다.
 // 6단계 코어 테스트의 "모든 조사 지점과 대사를 거친 상태"도 이 함수(buildProgress(7))를 쓴다.
 import real from '../data/dialogue.json';
-import { acquireEvidence, correctLinksOf, createGameState, enterNode, presentEvidence, puzzles, setFlag, submitPuzzle, type Dialogues, type GameState } from '../core';
+import { acquireEvidence, createGameState, enterNode, presentEvidence, puzzles, setFlag, submitPuzzle, type Dialogues, type GameState } from '../core';
 import { areas } from './interaction';
 
 const D = real.dialogues as unknown as Dialogues;
@@ -30,7 +30,13 @@ function applyExamine(s: GameState, areaId: string, id: string) {
 }
 
 /** 씬 `scene` 에서 거치는 대사·조사·퍼즐을 적용한다. opts.puzzles=false 면 퍼즐은 풀지 않는다 (퍼즐이 열리기 직전 상태: 화면 확인·근거 점검용). */
-export function applyScene(s: GameState, scene: number, secure = true, opts: { puzzles?: boolean } = {}) {
+/** 틀린 답을 세 번 내서 검증 실패로 닫는다 (F9·시험용). 칸은 모두 채우되 정답이 아닌 값을 넣는다. */
+export function failPuzzle(s: GameState, id: string) {
+  const p = puzzles.find((q) => q.id === id)!;
+  for (let i = 0; i < 3 && !s.failedPuzzleIds.includes(id); i++) submitPuzzle(s, id, Object.fromEntries(p.slots.map((sl) => [sl, ['__wrong__']])));
+}
+
+export function applyScene(s: GameState, scene: number, secure = true, opts: { puzzles?: boolean; fail?: string[] } = {}) {
   if (scene === 6) { // 씬 6: 증거 보존 선택
     enterNode(s, D.eunho_message.nodes.m1);
     enterNode(s, D.eunho_message.nodes[secure ? 'a1' : 'b1']);
@@ -45,14 +51,14 @@ export function applyScene(s: GameState, scene: number, secure = true, opts: { p
   }
   for (const [a, id] of st.examines ?? []) applyExamine(s, a, id);
   for (const f of st.flags ?? []) setFlag(s, f);
-  if (opts.puzzles !== false) for (const id of st.puzzles ?? []) { const p = puzzles.find((q) => q.id === id)!; submitPuzzle(s, id, p.correctSlots, correctLinksOf(p)); } // 근거 카드까지 붙여 푼 상태
+  if (opts.puzzles !== false) for (const id of st.puzzles ?? []) { const p = puzzles.find((q) => q.id === id)!; if (opts.fail?.includes(id)) failPuzzle(s, id); else submitPuzzle(s, id, p.correctSlots); } // 조각을 정답 칸에 놓은 상태 (fail: 검증 실패로 닫은 상태)
 }
 
 /** 씬 `scene`(1~7)을 시작하는 시점의 상태. 앞선 씬을 모두 거친 것으로 만든다. */
-export function buildProgress(scene: number, opts: { secure?: boolean; name?: string; puzzles?: boolean } = {}): { state: GameState; area: string; x: number } {
+export function buildProgress(scene: number, opts: { secure?: boolean; name?: string; puzzles?: boolean; fail?: string[] } = {}): { state: GameState; area: string; x: number } {
   const state = createGameState();
   if (opts.name) state.playerName = opts.name;
-  for (let k = 1; k < scene; k++) applyScene(state, k, opts.secure ?? true, { puzzles: opts.puzzles }); // puzzles:false = 퍼즐을 하나도 풀지 않은 플레이
+  for (let k = 1; k < scene; k++) applyScene(state, k, opts.secure ?? true, { puzzles: opts.puzzles, fail: opts.fail }); // puzzles:false = 퍼즐을 하나도 풀지 않은 플레이
   const at = SCENE_START[scene - 1];
   state.currentSceneId = at.area; state.playerX = at.x;
   if (scene > 1) for (const a of ['office', 'floor1']) if (!state.visitedAreaIds.includes(a)) state.visitedAreaIds.push(a);

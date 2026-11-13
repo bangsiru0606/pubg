@@ -13,18 +13,8 @@ export interface Row { puzzle: string; slot: string; label: string; token: strin
 
 /** 정답 칸마다의 근거 인용 (id: 단서 ID · 진술 ID · "panel:<퍼즐>:<문서 이름>") */
 export const ROWS: Row[] = [
-  { puzzle: 'P01_scene_rebuild', slot: 'impactPosition', label: '충돌 직후 원장의 위치', token: '기도대 옆 바닥', cites: [{ id: 'E03_preliminary_exam', contains: '발견 위치: 기도대 옆 바닥' }, { id: 'E02_altar_blood', contains: '기도대 받침 아래에 닦이지 않은 혈흔' }], why: '예비 검안 메모가 원장을 처음 확인한 위치를 적었고, 기도대 아래 혈흔이 그 자리에서 쓰러졌다는 흔적이다.' },
-  { puzzle: 'P01_scene_rebuild', slot: 'finalPosition', label: '공식 설명 속 원장의 위치', token: '책상 의자', cites: [{ id: 'baek_s_natural', contains: '집무실 의자에 앉으신 채 발견됐고' }], why: '백선우의 공식 설명이 원장이 발견됐다고 한 자리를 직접 말한다.' },
   { puzzle: 'P01_scene_rebuild', slot: 'movedObjects', label: '이동된 대상: 원장 시신', token: '원장 시신 (표시)', cites: [{ id: 'E03_preliminary_exam', contains: '발견 위치: 기도대 옆 바닥', note: '↔ 백선우의 진술 "의자에 앉으신 채"와 위치가 다르다' }], why: '예비 기록의 위치(바닥)와 공식 설명의 위치(의자)가 달라 시신이 옮겨졌음을 보인다.' },
   { puzzle: 'P01_scene_rebuild', slot: 'movedObjects', label: '이동된 대상: 의자', token: '의자 (표시)', cites: [{ id: 'han_o_chair', contains: '의자 다리 아래 바닥이 기도대 쪽에서부터 길게 긁혀 있다' }], why: '의자 다리 아래 바닥의 긁힌 자국은 의자가 끌려 옮겨졌다는 직접 흔적이다.' },
-  { puzzle: 'P02_night_timeline', slot: 't2234', label: '22:34', token: '청소용 마스터키 분실', cites: [{ id: 'chae_s_out', contains: '10시 34분이에요' }], why: '채소연의 진술이 정하늘이 병실을 나간 시각과 마스터키가 사라진 때를 함께 말했다.' },
-  { puzzle: 'P02_night_timeline', slot: 't2241', label: '22:41', token: '원장실 문 개방', cites: [{ id: 'E05_access_log', contains: '22:41 / 청소용 마스터키 사용' }], why: '출입 기록이 마스터키로 원장실 문이 열린 시각을 기록한다.' },
-  { puzzle: 'P02_night_timeline', slot: 't2246', label: '22:46', token: '둔탁한 충돌음', cites: [{ id: 'choi_s_thud', contains: '벽시계가 10시 46분이었으니' }], why: '최옥자가 쿵 하는 둔탁한 소리와 그때의 시각(벽시계)을 말했다.' },
-  { puzzle: 'P02_night_timeline', slot: 't2251', label: '22:51', token: '정하늘 병실 복귀', cites: [{ id: 'chae_s_time', contains: '10시 51분이었어요' }, { id: 'E06_torn_sleeve', contains: '팔꿈치 아래부터 거칠게 뜯겨 나간 흔적' }], why: '채소연의 진술이 병실로 돌아온 시각을 말하고, 소매 조각이 그 몸싸움의 흔적이다.' },
-  { puzzle: 'P02_night_timeline', slot: 'outside', label: '타임라인 바깥 (사람의 동선이 아닌 카드)', token: '기도 설교 방송 시작', cites: [{ id: 'dialogue:mono_broadcast:m', contains: '‘기도 설교’ 칸에는 ‘예약 재생’이라고만 적혀 있다', note: '근거 칸 없음 — 방송표 조사 독백(방송표를 봐야 퍼즐이 열린다)' }, { id: 'choi_s_prayer', contains: '스피커로 목소리가 들렸으니까', note: '최옥자는 직접 보지 않고 스피커 목소리만 들었다' }], why: '방송표가 설교를 예약 재생이라 적어 사람의 동선이 아님을 보이고, 최옥자는 목소리만 들었을 뿐 본 것이 아니다.' },
-  { puzzle: 'P03_revision_diff', slot: 'marked', label: '의미가 달라진 항목 ①', token: '발견 위치: 기도대 옆 바닥 → 책상 의자', cites: [{ id: 'E03_preliminary_exam', contains: '발견 위치: 기도대 옆 바닥' }, { id: 'panel:P03_revision_diff:최종 기록', contains: '발견 위치: 책상 의자' }], why: '예비 기록의 발견 위치와 최종 기록의 발견 위치를 나란히 보면 다르다.' },
-  { puzzle: 'P03_revision_diff', slot: 'marked', label: '의미가 달라진 항목 ②', token: '‘후두부 열상’ 문구 삭제', cites: [{ id: 'E07_report_revision', contains: '삭제: 후두부 열상, 외부 충격 가능' }], why: '수정 이력이 ‘후두부 열상’ 삭제를 기록한다.' },
-  { puzzle: 'P03_revision_diff', slot: 'marked', label: '의미가 달라진 항목 ③', token: '‘미약 호흡’ → ‘발견 당시 사망’', cites: [{ id: 'E03_preliminary_exam', contains: '의식없음, 미약 호흡' }, { id: 'panel:P03_revision_diff:최종 기록', contains: '의식 없음, 발견 당시 사망' }], why: '예비 기록의 ‘미약 호흡’과 최종 기록의 ‘발견 당시 사망’이 상태를 바꾼다.' },
   { puzzle: 'P04_approval_chain', slot: 'doc_selection', label: '대상자 선정표', token: '이혜정', cites: [{ id: 'E10_consent_forms', contains: '[대상자 선정표] 작성: LHJ / 권한: 선정', note: 'LHJ = Lee HyeJeong (이혜정)' }], why: '동의서 묶음의 대상자 선정표가 작성 약자 LHJ 와 선정 권한을 적었고, 이혜정의 로마자 첫 글자와 맞는다.' },
   { puzzle: 'P04_approval_chain', slot: 'doc_approval', label: '원장 승인표', token: '이한신', cites: [{ id: 'E10_consent_forms', contains: '[원장 승인표] 작성: LHS / 권한: 최종 승인', note: 'LHS = Lee HanShin (이한신)' }], why: '원장 승인표의 작성 약자 LHS 와 최종 승인 권한은 이한신의 첫 글자와 직위에 맞는다.' },
   { puzzle: 'P04_approval_chain', slot: 'doc_schedule', label: '시술 일정표', token: '백선우', cites: [{ id: 'E10_consent_forms', contains: '[시술 일정표] 작성: BSW / 권한: 시술 진행', note: 'BSW = Baek SunWoo (백선우), E07 의 수정 계정 BSW_ADMIN 과 같다' }], why: '시술 일정표의 작성 약자 BSW 와 시술 진행 권한은 백선우(수정 계정 BSW_ADMIN 과 같은 약자)에 맞는다.' },
@@ -35,12 +25,29 @@ export const ROWS: Row[] = [
   { puzzle: 'P05_patient_code', slot: 'belongingMatch', label: '한유진 진술의 유품 표식과 일치', token: '박은지 (노란 실팔찌)', cites: [{ id: 'han_s_bracelet', contains: '노란 실팔찌를 봤어요' }, { id: 'E14_belongings_diary', contains: '노란 실팔찌' }], why: '한유진이 본 노란 실팔찌와 유품 보관함의 유품이 같은 표식이다.' },
   { puzzle: 'P05_patient_code', slot: 'identity', label: 'P-271 은 누구인가', token: '박은지', cites: [{ id: 'E13_identity_map', contains: '환자번호 EW-0827 / P-271' }], why: '연결표가 입원번호 EW-0827 과 P-271 을 이어 신원을 박은지로 가리킨다.' },
   { puzzle: 'P05_patient_code', slot: 'linkedSources', label: '신원 확정에 연결한 자료 (슬롯 자체가 근거 선택)', token: '장부 · 연결표 · 유품 보관함 · 한유진의 진술', cites: [{ id: 'E12_ledger', contains: 'P-271' }, { id: 'E13_identity_map', contains: 'EW-0827' }, { id: 'E14_belongings_diary', contains: '박은지 이름이 적힌 목걸이' }, { id: 'han_s_bracelet', contains: '노란 실팔찌' }], why: '네 자료가 각각 장부·연결표·유품·증언으로 같은 사람을 가리킨다 (운송표는 신원을 말하지 않는다).' },
+  { puzzle: 'P03_revision_diff', slot: 'chg_position', label: '‘발견 위치’ 줄의 수정이 숨기려 한 사실', token: '시신이 옮겨졌다', cites: [{ id: 'E03_preliminary_exam', contains: '발견 위치: 기도대 옆 바닥' }, { id: 'E07_report_revision', contains: '삭제: 후두부 열상, 외부 충격 가능' }], why: '수정 전 기록은 기도대 옆 바닥에서 발견했다고 적었는데 최종본은 책상 의자로 바꿨다 — 시신이 옮겨진 사실을 감춘다.' },
+  { puzzle: 'P03_revision_diff', slot: 'chg_laceration', label: '‘후두부 열상’ 줄의 수정이 숨기려 한 사실', token: '충돌로 인한 외상', cites: [{ id: 'E03_preliminary_exam', contains: '후두부 열상 및 출혈 흔적' }, { id: 'E07_report_revision', contains: '삭제: 후두부 열상, 외부 충격 가능' }], why: '수정 이력이 후두부 열상과 외부 충격 가능성을 지우고 심장 질환 추정을 넣었다 — 충돌로 인한 외상을 감춘다.' },
+  { puzzle: 'P03_revision_diff', slot: 'chg_breath', label: '‘호흡’ 줄의 수정이 숨기려 한 사실', token: '발견 당시 살아 있었다(구조 지연)', cites: [{ id: 'E03_preliminary_exam', contains: '의식없음, 미약 호흡' }, { id: 'E07_report_revision', contains: '추가: 기존 심장 질환에 의한 급성 심정지 추정' }], why: '수정 전에는 미약하게나마 호흡이 있었는데 최종본은 발견 당시 사망으로 바꿨다 — 살아 있던 원장을 구하지 않은 사실(구조 지연)을 감춘다.' },
 ];
+
+/** 조각 라벨 → 원문에 있어야 하는 인용 조각들: " — " 앞이 인용(뒤는 풀이), "…" 로 이은 부분은 각각 */
+export const quoteParts = (label: string) => label.split(' — ')[0].split('…').map((x) => x.trim()).filter(Boolean);
+/** 조각(퍼즐 tokens)과 트리 서식 문구에서 자동으로 만든 줄: 조각 → 출처 → 원문 인용 */
+export function pieceRows(): Row[] {
+  const out: Row[] = [];
+  for (const p of puzzles) {
+    for (const k of p.tokens ?? []) {
+      const slot = p.slots.find((sl) => (p.correctSlots[sl] ?? []).includes(k.id)) ?? (k.decoy ? 'decoy' : '?');
+      out.push({ puzzle: p.id, slot, label: k.decoy ? '오답 조각 (놓지 않는다)' : `조각 → ${slot}`, token: k.label, cites: quoteParts(k.label).map((c) => ({ id: k.source, contains: c })), why: k.decoy ? '사건과 직접 관련 없는 자료라서 어느 칸에도 놓지 않는다.' : '출처 자료의 문장이 그 칸의 위치·시각을 말한다.' });
+    }
+    for (const tk of p.tasks ?? []) if (tk.form) out.push({ puzzle: p.id, slot: tk.slot, label: `${tk.label} 칸의 서식 문구`, token: (p.people ?? []).find((q) => q.id === p.correctSlots[tk.slot][0])?.label ?? '', cites: [{ id: tk.formSource!, contains: tk.form.replace(/ · .*/, '') }], why: '서식 문구의 약자·권한이 그 인물을 가리킨다.' });
+  }
+  return out;
+}
 
 /** 근거 카드 ID → 원문 전체 (단서: 제목·설명·본문, 진술: 문장, 패널: 줄들) */
 export function textOf(id: string, puzzleId?: string): string {
   if (id.startsWith('dialogue:')) { const [, d, n] = id.split(':'); return (real.dialogues as Record<string, { nodes: Record<string, { text: string }> }>)[d].nodes[n].text; }
-  if (id.startsWith('panel:')) { const [, pid, title] = id.split(':'); return (puzzles.find((p) => p.id === pid)!.panels ?? []).find((x) => x.title === title)!.lines!.join('\n'); }
   const e = evidenceById.get(id);
   if (e) { const v = shownEvidence({ evidenceIds: [], flags: [], statements: {} } as never, id)!; return [v.title, v.description, ...(v.body ?? [])].join('\n'); }
   for (const d of Object.values(real.dialogues) as { nodes: Record<string, { text: string; statement?: { id: string } }> }[]) for (const n of Object.values(d.nodes)) if (n.statement?.id === id) return n.text;
@@ -48,7 +55,6 @@ export function textOf(id: string, puzzleId?: string): string {
 }
 /** 어디서 얻는가 */
 export function whereOf(id: string): string {
-  if (id.startsWith('panel:')) return '퍼즐 화면의 문서 패널 (퍼즐 자체)';
   if (id.startsWith('dialogue:')) return '2층 복도 방송표 조사 (독백)';
   const e = evidenceById.get(id);
   if (e) { const a = areas[e.acquiredSceneId]; return `${a?.name ?? e.acquiredSceneId} — 단서 카드`; }
@@ -60,31 +66,30 @@ export function whereOf(id: string): string {
 }
 export function checkRows() {
   const out: { row: Row; ok: boolean; before: boolean[]; texts: string[] }[] = [];
-  for (const row of ROWS) {
+  for (const row of [...ROWS, ...pieceRows()]) {
     const s = stateBeforePuzzle(row.puzzle);
     const texts = row.cites.map((c) => textOf(c.id));
-    out.push({ row, ok: row.cites.every((c, i) => texts[i].includes(c.contains)), before: row.cites.map((c) => c.id.startsWith('panel:') || c.id.startsWith('dialogue:') || s.evidenceIds.includes(c.id) || !!s.statements[c.id]), texts });
+    out.push({ row, ok: row.cites.every((c, i) => texts[i].includes(c.contains)), before: row.cites.map((c) => c.id.startsWith('dialogue:') || s.evidenceIds.includes(c.id) || !!s.statements[c.id]), texts });
   }
   return out;
 }
 
 if (process.argv[1]?.endsWith('puzzle-evidence-table.ts')) {
   const res = checkRows();
-  const names: Record<string, string> = { P01_scene_rebuild: 'P01 현장 위치 재구성', P02_night_timeline: 'P02 야간 동선 시간 배열', P03_revision_diff: 'P03 검안 기록 변조 비교', P04_approval_chain: 'P04 특별 치료 승인 체계', P05_patient_code: 'P05 P-271 환자 코드 대조' };
-  const lines = ['# 퍼즐 근거표', '', '> `npx tsx tools/puzzle-evidence-table.ts` 가 만든다. 인용문이 실제 데이터에 있는지, 근거가 퍼즐이 열리기 전에 얻어지는지 검사한 결과다 (`tests/puzzle-evidence-table.test.ts`).', '> 정답 칸마다 근거 카드의 원문 문장으로 알 수 있고, 지워 나가기로만 맞히는 칸은 없다. 판정은 `src/core/puzzle.ts` (토큰과 근거가 모두 맞아야 정답).', ''];
+  const names: Record<string, string> = { P01_scene_rebuild: 'P01 원장실 재구성', P02_night_timeline: 'P02 야간 동선 시간 배열', P03_revision_diff: 'P03 검안 기록 변조 비교 (부원장 PC)', P04_approval_chain: 'P04 특별 치료 승인 체계', P05_patient_code: 'P05 환자 코드 대조' };
+  const lines = ['# 퍼즐 근거표', '', '> `npx tsx tools/puzzle-evidence-table.ts` 가 만든다. 퍼즐 조각(= 단서의 핵심 문장) → 출처(단서·진술 ID) → 원문 인용이 실제 데이터에 있는지, 출처가 퍼즐이 열리기 전에 얻어지는지 검사한 결과다 (`tests/puzzle-evidence-table.test.ts` 가 같은 검사를 한다). 근거 카드를 붙이는 단계는 없다 — 조각 자체가 단서 문장이고, 어느 칸에 놓느냐로 판정한다.', ''];
   for (const pid of Object.keys(names)) {
     const p = puzzles.find((q) => q.id === pid)!, scene = PUZZLE_SCENE[pid];
-    lines.push(`## ${names[pid]} (씬 ${scene})`, '', `허용 근거: ${Object.entries(p.evidenceLinks ?? {}).map(([sl, ids]) => `\`${sl}\` → ${ids.join(' · ')}`).join(' / ') || '(슬롯 자체가 근거 선택)'}`, '', '| 정답 칸 | 정답 토큰 | 허용 근거 | 그 근거의 원문 문장 | 이유 | 획득 장소 | 퍼즐이 열리기 전에 얻는가 |', '|---|---|---|---|---|---|---|');
+    lines.push(`## ${names[pid]} (씬 ${scene})`, '', `결론 기회 3번. 정답: ${p.slots.map((sl) => `\`${sl}\` = ${p.correctSlots[sl].join(' · ')}`).join(' / ')}`, '', '| 칸·조각 | 조각 문구 / 정답 | 출처 | 원문 인용 | 이유 |', '|---|---|---|---|---|');
     for (const r of res.filter((x) => x.row.puzzle === pid)) {
       const c = r.row.cites;
-      lines.push(`| ${r.row.slot === 'marked' || r.row.slot === 'movedObjects' ? `${r.row.slot} — ` : ''}${r.row.label} | ${r.row.token} | ${c.map((x) => (x.id.startsWith('dialogue:') ? `방송표 독백 (${x.id.split(':')[1]})` : x.id.replace('panel:', '').split(':').pop())).join('<br>')} | ${c.map((x) => `“${x.contains}”${x.note ? ` (${x.note})` : ''}`).join('<br>')} | ${r.row.why} | ${c.map((x) => whereOf(x.id)).join('<br>')} | ${r.before.every(Boolean) ? '예' : '**아니오**'} |`);
+      lines.push(`| ${r.row.label} | ${r.row.token} | ${[...new Set(c.map((x) => (x.id.startsWith('dialogue:') ? `${x.id.split(':')[1]} (독백)` : x.id)))].join(' · ')} | ${c.map((x) => `“${x.contains}”`).join(' · ')} | ${r.row.why} |`);
     }
     lines.push('');
   }
-  lines.push('## 퍼즐 화면에서 근거를 붙이는 방법', '', '정답 칸에 토큰을 놓으면 그 옆에 [근거 붙이기] 단추가 생긴다. 누르면 가진 단서·진술 전부(맥락 단서 포함)가 목록으로 나오고, 하나를 고르면 붙는다. 맥락 단서(E01)는 고를 수는 있지만 근거로 인정되지 않는다.', '');
   writeFileSync('docs/퍼즐_근거표.md', lines.join('\n'));
   const bad = res.filter((r) => !r.ok || !r.before.every(Boolean));
   console.log(`근거표 ${res.length}줄 → docs/퍼즐_근거표.md${bad.length ? ` (문제 ${bad.length}줄!)` : ' (모두 통과)'}`);
-  if (bad.length) { for (const b of bad) console.error(`✗ ${b.row.puzzle}/${b.row.slot}: 인용 ${b.ok ? '있음' : '없음'} · 열리기 전 ${b.before.every(Boolean)}`); process.exit(1); }
+  if (bad.length) { for (const b of bad) console.error(`✗ ${b.row.puzzle}/${b.row.slot}: ${b.row.token} — 인용 ${b.ok ? '있음' : '없음'} · 열리기 전 ${b.before.every(Boolean)}`); process.exit(1); }
   void readFileSync;
 }

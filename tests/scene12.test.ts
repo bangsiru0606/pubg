@@ -7,7 +7,7 @@ import { areas, isAvailable, nearest } from '../src/explore/interaction';
 const D = real.dialogues as unknown as Dialogues;
 const find = (area: string, id: string) => areas[area].interactables.find((i) => i.id === id)!;
 const P = 'P01_scene_rebuild';
-const ok = { impactPosition: ['altar_floor'], finalPosition: ['desk_chair'], movedObjects: ['body', 'chair'] };
+const ok = { altar_floor: ['p_blood', 'p_exam'], desk_chair: ['p_baek', 'p_drag'], movedObjects: ['body', 'chair'] };
 
 describe('씬 1·2 진행 조건', () => {
   it('사무실 문은 박은호 대화(intro_done) 후, 원장실 문과 검안 메모는 백선우가 떠난 뒤', () => {
@@ -69,24 +69,26 @@ describe('씬 1·2 진행 조건', () => {
 
 describe('P01 오답 표시', () => {
   const sub = (a: object) => submitPuzzle(createGameState(), P, a as never);
-  it('책상 옆 충돌 → 혈흔 위치 충돌만 표시, 정답은 알려주지 않는다', () => {
-    const r = sub({ ...ok, impactPosition: ['desk_side'] });
+  it('혈흔 조각을 책상 의자에 놓으면 그 자료 이름만 충돌로 표시하고 정답 위치는 알려주지 않는다', () => {
+    const r = sub({ ...ok, altar_floor: ['p_exam'], desk_chair: ['p_baek', 'p_drag', 'p_blood'] });
     expect(r.status).toBe('wrong');
-    expect(r.conflicts).toEqual([puzzleById.get(P)!.conflicts['impactPosition:desk_side']]);
-    expect(JSON.stringify(r.conflicts)).not.toContain('기도대 옆 바닥');
+    expect(r.conflicts).toHaveLength(1);
+    expect(r.conflicts[0]).toContain('기도대 아래 혈흔'); expect(JSON.stringify(r.conflicts)).not.toContain('기도대 옆 바닥');
   });
   it('주사기를 이동 대상에 넣으면 충돌, 의자를 빼면 끌린 자국 자료가 충돌', () => {
     expect(sub({ ...ok, movedObjects: ['body', 'chair', 'syringe'] }).conflicts).toHaveLength(1);
     expect(sub({ ...ok, movedObjects: ['body'] }).conflicts).toEqual([puzzleById.get(P)!.conflicts['movedObjects:!chair']]);
   });
-  it('빈 슬롯은 오답 횟수를 올리지 않는다', () => {
+  it('빈 칸이 있으면 확정되지 않고 기회도 줄지 않는다', () => {
     const s = createGameState();
-    expect(submitPuzzle(s, P, { ...ok, finalPosition: [] }).status).toBe('incomplete');
+    expect(submitPuzzle(s, P, { ...ok, desk_chair: [] }).status).toBe('incomplete');
     expect(s.wrongCountByPuzzle[P]).toBeUndefined();
   });
-  it('모든 과제 선택지가 정답과 충돌 항목을 포함한다', () => {
+  it('조각은 단서의 문장이다: 정답 조각 4개 + 오답 조각 2개, 이동 대상 선택지 4개', () => {
     const p = puzzleById.get(P)!;
-    expect(p.tasks!.map((t) => t.slot)).toEqual(p.slots);
+    expect(p.tokens!.filter((t) => !t.decoy).map((t) => t.id).sort()).toEqual(['p_baek', 'p_blood', 'p_drag', 'p_exam']);
+    expect(p.tokens!.filter((t) => t.decoy)).toHaveLength(2);
+    expect(p.slots).toEqual(['altar_floor', 'desk_chair', 'movedObjects']); expect(p.tasks!.map((t) => t.slot)).toEqual(['movedObjects']);
   });
 });
 

@@ -110,6 +110,7 @@ for (const [a, b] of conflictPairs) { needEv(a, 'conflicts'); needEv(b, 'conflic
 
 // puzzles
 dup(puzzles.map((p) => p.id), 'puzzle');
+const tasksOf = (p: { tasks?: { slot: string }[] }) => p.tasks ?? [];
 const flagsSetByPuzzles = new Set(puzzles.map((p) => p.flagOnSolve));
 const verifiers = new Map<string, string>();
 for (const p of puzzles) {
@@ -131,13 +132,21 @@ for (const p of puzzles) {
       if (slot === t.slot && !ids.has(tok.replace(/^!/, ''))) err(`${p.id}: ${k} 가 ${t.slot} 선택지에 없음`);
     }
   }
-  for (const pn of p.panels ?? []) {
-    // 원문 문서는 단서 ID 로 참조한다(복사 금지). 단서가 아닌 문서만 lines 를 직접 가진다.
-    if (pn.evidenceId && pn.lines) err(`${p.id}: 패널 ${pn.title} 이 evidenceId 와 lines 를 함께 가짐 (원문은 참조만)`);
-    if (pn.evidenceId && !evidenceById.get(pn.evidenceId)?.body) err(`${p.id}: 패널 ${pn.title} 의 단서 ${pn.evidenceId} 에 body 없음`);
-    if (!pn.evidenceId && pn.lines) for (const e of evidenceList) if (e.body && pn.lines.length >= 3 && pn.lines.every((l) => e.body!.includes(l))) err(`${p.id}: 패널 ${pn.title} 이 ${e.id} 원문을 복사함 — evidenceId 로 참조할 것`);
+  // 조각 = 단서 문장: 출처(단서·진술·대화 독백)가 있고, 정답 칸의 조각이 실제로 있다. 오답 조각(decoy)은 어느 칸의 정답에도 없다.
+  const tokIds = new Set((p.tokens ?? []).map((x) => x.id));
+  const peopleIds = new Set((p.people ?? []).map((x) => x.id));
+  const stmtIds = new Set(Object.values(real.dialogues).flatMap((d) => Object.values((d as unknown as Dialogue).nodes).map((n) => n.statement?.id).filter(Boolean) as string[]));
+  for (const t of p.tokens ?? []) {
+    if (!t.source) err(`${p.id}: 조각 ${t.id} 출처 없음`);
+    else if (t.source.startsWith('dialogue:')) { const [, did, nid] = t.source.split(':'); if (!(real.dialogues as Record<string, { nodes: Record<string, unknown> }>)[did]?.nodes[nid]) err(`${p.id}: 조각 ${t.id} 출처 대화 ${t.source} 없음`); if (!t.srcName) err(`${p.id}: 조각 ${t.id} 에 srcName 필요`); }
+    else if (!evidenceById.has(t.source) && !stmtIds.has(t.source)) err(`${p.id}: 조각 ${t.id} 의 출처 ${t.source} 는 단서도 진술도 아님`);
   }
-  if (p.hintTexts.length !== 3) err(`${p.id}: hintTexts 는 3개`);
+  if (p.layout === 'plan' || p.layout === 'timeline') for (const slot of p.slots) for (const c of p.correctSlots[slot])
+    if (!tasksOf(p).some((tk) => tk.slot === slot) && !tokIds.has(c)) err(`${p.id}: ${slot} 정답 ${c} 가 조각에 없다`);
+  if (p.layout === 'tree') for (const slot of p.slots) for (const c of p.correctSlots[slot]) if (!peopleIds.has(c)) err(`${p.id}: ${slot} 정답 인물 ${c} 없다`);
+  for (const t of p.tokens ?? []) if (t.decoy) for (const slot of p.slots) if (p.correctSlots[slot].includes(t.id)) err(`${p.id}: 오답 조각 ${t.id} 가 ${slot} 의 정답에 있다`);
+  if ((p.tokens ?? []).length && !(p.tokens ?? []).some((t) => t.decoy)) err(`${p.id}: 오답 조각이 하나도 없다`);
+  if (p.hintTexts.length !== 2) err(`${p.id}: hintTexts 는 2개 (1번째 오답 힌트 문장, 2번째 오답 후보 제거 안내)`);
   const slotKeys = new Set(p.slots);
   for (const k of [...p.distractors, ...Object.keys(p.conflicts)]) {
     const slot = k.split(':')[0];
@@ -240,16 +249,8 @@ for (const [key, lines] of Object.entries(endingLines)) {
     if (a.walk) { for (const x of [...ents.map(([x0]) => x0), ...sp]) if (x < lo - 1 || x > hi + 1) err(`map/${aid}: 물체·도착 지점 ${x} 가 걸을 수 있는 범위(${lo}~${hi}) 밖이다`); }
   }
 }
-{ // 퍼즐 근거 규칙(evidenceLinks): 슬롯·허용 근거가 실재하고, 맥락 단서는 근거가 아니다
-  const statementIds = new Set<string>();
-  for (const d of Object.values({ ...real.dialogues, ...fixture.dialogues }) as unknown as Dialogue[]) for (const n of Object.values(d.nodes)) if (n.statement) statementIds.add(n.statement.id);
-  for (const p of puzzles) {
-    if (!p.evidenceLinks) { err(`${p.id}: evidenceLinks 가 없다 (근거 카드 연결 규칙)`); continue; }
-    for (const [slot, ids] of Object.entries(p.evidenceLinks)) {
-      if (!p.slots.includes(slot)) err(`${p.id}: evidenceLinks 의 알 수 없는 슬롯 ${slot}`);
-      for (const id of ids) { const e = evidenceById.get(id); if (!e && !statementIds.has(id)) err(`${p.id}/${slot}: 없는 근거 ${id}`); if (e?.sourceType === 'context') err(`${p.id}/${slot}: 맥락 단서 ${id} 는 근거가 될 수 없다`); }
-    }
-  }
+{ // 퍼즐이 쓰는 플래그: 풀리거나 검증 실패로 닫혔다는 알림(puzzle_done:/puzzle_failed:)은 코드가 세운다
+  for (const p of puzzles) { knownFlags.add(`puzzle_done:${p.id}`); knownFlags.add(`puzzle_failed:${p.id}`); }
 }
 { // 초상 방향: 초상이 있는 인물은 원래 보는 방향(portraitFacing)이 있어야 한다
   for (const c of characters as unknown as { id: string; portrait: string | null; portraitFacing?: string }[]) if (c.portrait && !['left', 'right', 'front'].includes(c.portraitFacing ?? '')) err(`characters/${c.id}: portraitFacing(left|right|front) 이 없다`);

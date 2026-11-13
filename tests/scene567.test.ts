@@ -36,7 +36,7 @@ describe('12.3 진행', () => {
   it('3. 지하 이후 2층 강제 왕복이 없다: 지하 이후 필요한 조건은 지하 안에서 얻거나 지하 개방 전에 필수', () => {
     const b1 = areas.b1.interactables;
     expect(b1.filter((i) => i.type === 'transition').map((i) => (i as { to: string }).to)).toEqual(['floor1']);
-    const inB1 = new Set<string>(['flag_claim_d_open', 'diary_closed']); // P05 해결·일기장 닫기도 지하 안에서 일어난다
+    const inB1 = new Set<string>(['flag_claim_d_open', 'diary_closed', 'puzzle_done:P05_patient_code']); // P05 해결·일기장 닫기도 지하 안에서 일어난다
     for (const it of b1) {
       if (it.type === 'examine') [it.evidenceId, ...(it.evidenceIds ?? [])].filter(Boolean).forEach((x) => inB1.add(`evidence:${x}`));
       if (it.type === 'npc') for (const n of Object.values(D[it.dialogueId].nodes)) { (n.onEnter?.setFlags ?? []).forEach((f) => inB1.add(f)); (n.onEnter?.acquire ?? []).forEach((e) => inB1.add(`evidence:${e}`)); }
@@ -97,6 +97,8 @@ describe('씬 5·P05', () => {
     const s = createGameState();
     expect(autoTriggered('b1', areas.b1, 400, s)).toBeNull();
     s.flags.push('diary_closed');
+    expect(autoTriggered('b1', areas.b1, 400, s)).toBeNull(); // P05 를 풀거나 검증 실패로 닫기 전에는 나타나지 않는다
+    s.flags.push('puzzle_done:P05_patient_code');
     expect(autoTriggered('b1', areas.b1, 400, s)?.id).toBe('haneul_b1');
   });
   it('정하늘 최종 대면: 선택지 3개를 모두 듣고 이어진다, 면죄하지 않는다, 방송으로 끝', () => {
@@ -124,13 +126,11 @@ describe('씬 6·7', () => {
     expect(D.eunho_message.nodes.bc.text).toContain('되돌릴 수 없다');
     expect(D.eunho_message.then).toBe('report');
   });
-  it('scene6 사건은 정하늘 고백 + P05 해결 뒤에 시작된다', () => {
+  it('scene6 사건은 정하늘 고백 뒤에 시작된다', () => {
     const s = createGameState();
     expect(autoTriggered('b1', areas.b1, 0, s)).toBeNull();
     s.flags.push('haneul_confessed');
-    expect(autoTriggered('b1', areas.b1, 0, s)).toBeNull();
-    s.flags.push('flag_claim_d_open');
-    expect(autoTriggered('b1', areas.b1, 0, s)?.id).toBe('scene6');
+    expect(autoTriggered('b1', areas.b1, 0, s)?.id).toBe('scene6'); // P05 해결 여부와 무관 (검증 실패여도 이어진다)
   });
   it('엔딩 후 추리 등급: 질문별 해결·반박 적중·힌트 횟수 (힌트는 엔딩에 영향 없음)', () => {
     const s = playThrough(true); answer(s, ['claim_a', 'claim_b', 'claim_c', 'claim_d']); setReportTarget(s, 'external');

@@ -938,7 +938,15 @@
      "text": "그걸 찾았군요.",
      "source": "spec",
      "next": "f2",
-     "portrait": "haneul_neutral"
+     "portrait": "haneul_neutral",
+     "nextIf": [
+      {
+       "flags": [
+        "puzzle_failed:P05_patient_code"
+       ],
+       "next": "f2x"
+      }
+     ]
     },
     "f2": {
      "speaker": "han_jisu",
@@ -952,7 +960,15 @@
      "text": "침대가 비고, 목걸이가 지하로 내려간 날이요. 그래도 살아 있을 가능성을 놓지 못했어요.",
      "source": "spec",
      "next": "f4",
-     "portrait": "haneul_shaken"
+     "portrait": "haneul_shaken",
+     "nextIf": [
+      {
+       "flags": [
+        "puzzle_failed:P05_patient_code"
+       ],
+       "next": "f3x"
+      }
+     ]
     },
     "f4": {
      "speaker": "han_jisu",
@@ -1101,6 +1117,20 @@
      "source": "new",
      "portrait": "haneul_shaken",
      "next": "f8"
+    },
+    "f2x": {
+     "speaker": "han_jisu",
+     "text": "은지 씨일 가능성이 큽니다. 장부와 연결표로 확정하지는 못했습니다. …당신은 언제 알았습니까?",
+     "source": "new",
+     "portrait": "player_question",
+     "next": "f3"
+    },
+    "f3x": {
+     "speaker": "jeong_haneul",
+     "text": "서류로 확정이 안 된다면, 제가 본 것을 말하겠습니다. 은지는 그날 이후 돌아오지 않았어요.",
+     "source": "new",
+     "portrait": "haneul_shaken",
+     "next": "f4"
     }
    }
   },

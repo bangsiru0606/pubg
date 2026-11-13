@@ -165,21 +165,19 @@ describe('12.4 퍼즐', () => {
     s.flags.push('basement_key'); expect(isBasementOpen(s)).toBe(true);
     expect(isBasementOpen(createGameState())).toBe(false);
   });
-  it('1. P01 최초/위조 후 위치를 뒤바꾸면 해결되지 않는다', () => {
-    const { r } = sub('P01_scene_rebuild', { impactPosition: ['desk_chair'], finalPosition: ['altar_floor'], movedObjects: ['body', 'chair'] });
+  it('1. P01 혈흔·예비 검안 조각과 백선우 진술 조각의 위치를 뒤바꾸면 해결되지 않는다', () => {
+    const { r } = sub('P01_scene_rebuild', { altar_floor: ['p_baek', 'p_drag'], desk_chair: ['p_blood', 'p_exam'], movedObjects: ['body', 'chair'] });
     expect(r.status).toBe('wrong');
-    expect(r.conflicts.length).toBeGreaterThan(0);
+    expect(r.conflicts).toHaveLength(1);
   });
-  it('2. P02 예약 설교를 동선에 넣으면 시간 충돌을 표시', () => {
-    const { r } = sub('P02_night_timeline', { t2234: ['key_lost'], t2241: ['door_open'], t2246: ['sermon'], t2251: ['return_room'] });
+  it('2. P02 예약 방송 조각을 시간 칸에 넣으면 충돌을 표시', () => {
+    const { r } = sub('P02_night_timeline', { t2234: ['t_out'], t2241: ['t_door'], t2246: ['d_sermon'], t2251: ['t_time'] });
     expect(r.status).toBe('wrong');
     expect(r.conflicts.join()).toContain('예약 재생');
   });
-  it('3. P03 맞춤법 변경을 선택하면 정답 처리하지 않는다', () => {
-    const { r } = sub('P03_revision_diff', { marked: ['position_changed', 'laceration_deleted', 'spelling_fix'] });
-    expect(r.status).toBe('wrong');
-    expect(r.conflicts).toHaveLength(1); expect(r.conflicts.join()).toContain('띄어쓰기');
-    expect(sub('P03_revision_diff', { marked: [...ANSWERS.P03_revision_diff.marked, 'spelling_fix'] }).r.status).toBe('wrong');
+  it('3. P03 수정이 숨긴 사실을 서로 바꿔 고르면 해결되지 않는다 (의미 없는 변경은 비교 결과에 없다)', () => {
+    const { r } = sub('P03_revision_diff', { chg_position: ['impact_injury'], chg_laceration: ['body_moved'], chg_breath: ['alive_delay'] });
+    expect(r.status).toBe('wrong'); expect(r.conflicts).toHaveLength(1);
   });
   it('4. P04 LHJ/LHS 혼동 시 선정·승인 권한 충돌 표시', () => {
     const { r } = sub('P04_approval_chain', { doc_selection: ['lee_hanshin'], doc_approval: ['lee_hyejeong'], doc_schedule: ['baek_sunwoo'], doc_transfer: ['baek_sunwoo'] });
@@ -192,41 +190,34 @@ describe('12.4 퍼즐', () => {
     const { r } = sub('P05_patient_code', partial);
     expect(r.status).toBe('wrong');
     expect(r.conflicts).toHaveLength(1); expect(r.conflicts.join()).toContain('연결표');
-    // 일기장 하나로만 연결해도 불가
-    expect(sub('P05_patient_code', { ...p, linkedSources: ['E14_belongings_diary'] }).r.status).toBe('wrong');
+    expect(sub('P05_patient_code', { ...p, linkedSources: ['E14_belongings_diary'] }).r.status).toBe('wrong'); // 일기장 하나로만 연결해도 불가
   });
-  it('6. 오답 2·4·6회에서 힌트 단계가 정확히 1·2·3으로 오른다', () => {
-    expect([0, 1, 2, 3, 4, 5, 6, 7].map(hintLevelFor)).toEqual([0, 0, 1, 1, 2, 2, 3, 3]);
+  it('6. 오답 1·2번째에 힌트 문장·후보 제거, 3번째 오답은 검증 실패 (src/core 규칙, tests/puzzle-rules.test.ts 에 자세히)', () => {
+    expect([0, 1, 2, 3, 4].map(hintLevelFor)).toEqual([0, 1, 2, 2, 2]);
     const s = createGameState();
-    const wrong: PuzzleAnswer = { marked: ['spelling_fix'] };
-    const levels = Array.from({ length: 6 }, () => submitPuzzle(s, 'P03_revision_diff', wrong).hint.level);
-    expect(levels).toEqual([0, 1, 1, 2, 2, 3]);
-    const last = submitPuzzle(s, 'P03_revision_diff', wrong).hint;
-    expect(last.removedTokens).toEqual(['marked:spelling_fix']);
-    expect(last.autoFill).not.toBeNull();
-    expect(s.hintCountByPuzzle.P03_revision_diff).toBe(3);
+    const wrong: PuzzleAnswer = Object.fromEntries(puzzleById.get('P03_revision_diff')!.slots.map((sl) => [sl, ['__wrong__']]));
+    expect([1, 2, 3].map(() => submitPuzzle(s, 'P03_revision_diff', wrong).status)).toEqual(['wrong', 'wrong', 'failed']);
+    expect(s.hintCountByPuzzle.P03_revision_diff).toBe(2);
   });
   it('빈 슬롯 제출은 오답 횟수를 올리지 않는다', () => {
     const s = createGameState();
-    expect(submitPuzzle(s, 'P02_night_timeline', { t2234: ['key_lost'] }).status).toBe('incomplete');
+    expect(submitPuzzle(s, 'P02_night_timeline', { t2234: ['t_out'] }).status).toBe('incomplete');
     expect(s.wrongCountByPuzzle.P02_night_timeline ?? 0).toBe(0);
   });
-  it('7. 힌트를 끝까지 써도 엔딩 A 에 도달할 수 있다', () => {
+  it('7. 퍼즐을 전부 실패해도(검증 실패) 이야기는 엔딩까지 이어진다 (엔딩 A 는 검증된 단서가 필요하다)', () => {
     const s = createGameState();
     ALL_EXCEPT_E16.forEach((id) => acquireEvidence(s, id));
     for (const p of puzzles) {
-      for (let i = 0; i < 6; i++) submitPuzzle(s, p.id, p.slots.reduce((a, sl) => ({ ...a, [sl]: ['__wrong__'] }), {}));
-      expect(submitPuzzle(s, p.id, ANSWERS[p.id]).status).toBe('solved');
-      expect(s.hintCountByPuzzle[p.id]).toBe(3);
+      for (let i = 0; i < 3; i++) submitPuzzle(s, p.id, p.slots.reduce((a, sl) => ({ ...a, [sl]: ['__wrong__'] }), {}));
+      expect(s.failedPuzzleIds).toContain(p.id);
     }
-    claims.forEach((c) => answer(s, c.claimId, true));
     chooseEvidencePreservation(s, true); setReportTarget(s, 'external');
-    expect(resolveEnding(s).id).toBe('ending_a');
+    expect(resolveEnding(s).id).toBe('ending_d'); // 결론을 하나도 풀 수 없다
   });
   it('오답은 정답을 직접 보여주지 않는다 (충돌 문구만)', () => {
-    const { r } = sub('P01_scene_rebuild', { impactPosition: ['desk_side'], finalPosition: ['desk_chair'], movedObjects: ['body', 'chair'] });
+    const { r } = sub('P01_scene_rebuild', { altar_floor: ['p_blood', 'p_exam'], desk_chair: ['p_baek', 'p_drag'], door: ['d_letter'], movedObjects: ['body', 'chair'] });
     expect(r).not.toHaveProperty('wrongSlots');
-    expect(r.hint.autoFill).toBeNull();
+    expect(r.hint).not.toHaveProperty('autoFill');
   });
   it('이미 푼 퍼즐은 already_solved', () => {
     const s = fullState();

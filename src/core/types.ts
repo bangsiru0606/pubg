@@ -20,23 +20,32 @@ export interface Claim {
   relatedEvidenceIds: string[]; // 엔딩 D 재도전에서 "관련" 으로 먼저 보여 줄 단서 (그 질문을 다루는 장면에서 얻는 것, 정답 근거만이 아니다)
 }
 export type PuzzleType = 'SpatialPlacement' | 'Timeline' | 'DocumentDiff' | 'Connection' | 'LogicGrid';
-export interface PuzzleTask { slot: string; label: string; token?: string; detail?: string; kind: 'place' | 'mark'; options: { id: string; label: string }[] }
+export interface PuzzleTask { slot: string; label: string; token?: string; detail?: string; kind: 'place' | 'mark'; options: { id: string; label: string }[]; single?: boolean; form?: string; formSource?: string } // single: 하나만 고르는 표시(desktop), form·formSource: 트리 칸의 서식 문구와 그 출처
 export interface PuzzleBox { id: string; label: string; sub?: string; x: number; y: number; w: number; h: number } // 평면도 좌표(%)
+/** 퍼즐 조각: label 은 source(단서·진술 ID, 또는 dialogue:<대화>:<노드>)의 원문에 실제로 있는 문장이다. need: 그 플래그가 서야 나타난다(대화 출처). decoy: 어느 칸에도 놓지 않는 오답 조각 */
+export interface PuzzlePiece { id: string; label: string; source: string; srcName?: string; need?: string; decoy?: boolean } // srcName: 단서·진술이 아닌 출처(대화 독백)의 표시 이름
+/** P03 부원장 PC 바탕화면: 파일(문서·수정 이력)·휴지통 안의 이전 판·문서 비교 프로그램 */
+export interface PuzzleDesktop {
+  files: { id: string; name: string; evidenceId?: string; lines?: string[]; inTrash?: boolean }[];
+  trashName: string; compareName: string;
+  diffs: { id: string; before: string; after: string }[]; // 비교하면 표시되는 바뀐 줄 (의미 없는 변경은 넣지 않는다)
+}
 export interface Puzzle {
   id: string; type: PuzzleType; flagOnSolve: string;
   // 화면 구성 데이터
-  layout?: 'plan' | 'timeline' | 'lightbox' | 'connect' | 'logic';
+  layout?: 'plan' | 'timeline' | 'desktop' | 'tree' | 'logic';
   table?: { columns: string[]; rows: { id: string; cells: string[] }[] }; // logic: 후보 표
   statements?: string[];                                // logic: 대조에 쓰는 진술 ID
   title?: string; info?: string[]; tasks?: PuzzleTask[]; fixtures?: PuzzleBox[]; zones?: PuzzleBox[];
-  tokens?: { id: string; label: string }[];            // timeline: 사건 카드
+  tokens?: PuzzlePiece[];                              // plan·timeline: 퍼즐 조각 = 단서의 핵심 문장(인용). 출처(source)는 단서·진술 ID
+  people?: { id: string; label: string; decoy?: boolean }[]; // tree: 인물 카드 (칸마다 같은 카드를 놓을 수 있다)
+  desktop?: PuzzleDesktop;                              // desktop: 부원장 PC 바탕화면
   boxes?: { id: string; label: string }[];             // timeline: 시간 칸 (id = 슬롯)
-  panels?: { title: string; evidenceId?: string; lines?: string[] }[]; // evidenceId 로 원문(body)을 참조하거나, 단서가 아닌 문서는 lines
+  pieceConflict?: string;    // 조각을 틀린 칸에 놓았을 때의 문장 틀 ("{src}" = 조각의 출처 이름)
   subtitle?: string;       // lightbox: 겹쳐 보는 문서
   openWhen?: { flags?: string[]; evidence?: string[] }; // 자동으로 열리는 조건
   solvedDialogue?: string;                              // 해결 직후 독백 (중간 결론만)
   sourceEvidenceIds: string[]; verifiedEvidenceIds: string[];
-  evidenceLinks?: Record<string, string[]>; // 슬롯 → 허용 근거(단서 ID 또는 진술 ID). 있으면 그 칸에 근거 카드를 붙여야 정답이다 (판정은 core/puzzle.ts)
   slots: string[]; correctSlots: Record<string, string[]>;
   distractors: string[]; conflicts: Record<string, string>; hintTexts: string[];
 }
@@ -80,7 +89,9 @@ export interface GameState {
   selectedHypothesisByClaim: Record<string, string>;
   submittedEvidenceByClaim: Record<string, string[]>;
   submittedRebuttalByClaim: Record<string, string[]>;
-  hintCountByPuzzle: Record<string, number>; // 도달한 힌트 단계(0~3)
+  hintCountByPuzzle: Record<string, number>; // 도달한 힌트 단계(0~2)
+  failedPuzzleIds: string[];                  // 결론 기회 3번을 모두 써서 검증에 실패한 퍼즐 (닫혀서 다시 열 수 없다)
+  puzzleDrafts: Record<string, Record<string, string[]>>; // 보류하고 나간 퍼즐의 놓은 조각 (남은 기회와 함께 저장)
   wrongCountByPuzzle: Record<string, number>;
   evidenceSecured: boolean;
   reportTarget: ReportTarget | null;

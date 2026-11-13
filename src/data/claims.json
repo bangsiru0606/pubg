@@ -2,6 +2,7 @@
  {
   "claimId": "claim_a",
   "question": "원장의 직접 사인은 무엇인가?",
+  "stem": "원장의 직접 사인은 {}이다.",
   "requiredDistinctSourceTypes": 2,
   "hypotheses": [
    {
@@ -54,6 +55,7 @@
  {
   "claimId": "claim_b",
   "question": "정하늘의 행위는 무엇이었는가?",
+  "stem": "정하늘은 {}.",
   "requiredDistinctSourceTypes": 2,
   "hypotheses": [
    {
@@ -109,6 +111,7 @@
  {
   "claimId": "claim_c",
   "question": "누가 자연사로 위조했는가?",
+  "stem": "자연사로 위조한 경위는 이렇다: {}.",
   "requiredDistinctSourceTypes": 2,
   "hypotheses": [
    {
@@ -161,6 +164,7 @@
  {
   "claimId": "claim_d",
   "question": "박은지에게 무슨 일이 있었는가?",
+  "stem": "박은지는 {}.",
   "requiredDistinctSourceTypes": 2,
   "requiresFlag": "flag_claim_d_open",
   "hypotheses": [

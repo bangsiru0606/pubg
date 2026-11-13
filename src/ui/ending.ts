@@ -1,5 +1,5 @@
 // 엔딩: (A 만) 마지막 대본 → 엔딩 카드 + 결과 세 줄 → 추리 등급 → 선택.
-// D: 보고서 다시 쓰기(씬 7 시작 시점으로) · 처음부터 · 타이틀로.  그 밖: 처음부터 · 타이틀로.
+// 모든 엔딩: 다시 추리하기(같은 수사 상태로 이전 결론이 채워진 보고서) · 처음부터 · 타이틀로.
 import { characterName, gradeOf, pendingPuzzles, resolveEnding, resolveEndingLines, shownEvidence, unverifiedClues, type GameState } from '../core';
 import { bgmPop, bgmPush, endingTrack, sfx } from '../audio/audio';
 import { el, esc, root } from './hud';
@@ -18,7 +18,7 @@ export function openEnding(s: GameState, h: { onRetry: () => void; onRestart: ()
   const pages: ('talk' | 'card' | 'grade')[] = [...talk.map(() => 'talk' as const), 'card', 'grade'];
   let pi = 0, sel = 0;
   const buttons = [
-    ...(ending.id === 'ending_d' ? [{ label: '보고서 다시 쓰기', run: h.onRetry }] : []),
+    { label: '다시 추리하기', run: h.onRetry },
     { label: '처음부터', run: h.onRestart }, { label: '타이틀로', run: h.onTitle },
   ];
   const box = el('div', 'modal ending'); box.id = 'ending';
@@ -41,7 +41,7 @@ export function openEnding(s: GameState, h: { onRetry: () => void; onRestart: ()
       box.innerHTML = `<div class="etitle" style="font-size:13px">추리 등급 ${grade.letter} (${grade.total}/${grade.max})</div>
         <table class="grade" style="margin:6px auto">${rows}</table>
         <p style="text-align:center">퍼즐 오답 ${grade.wrongTotal}회 · 힌트가 열린 퍼즐 ${grade.hintedPuzzles}개 (최고 ${grade.maxHintLevel}단계) — 힌트는 엔딩에 영향을 주지 않는다.</p>
-        ${unverified}${ending.id === 'ending_d' ? '<p class="note" style="text-align:center">재도전하면 해결하지 못한 질문과 관련된 단서가 수첩에서 먼저 보인다.</p>' : ''}
+        ${unverified}<p class="note" style="text-align:center">다시 추리하면 같은 수사 상태로 이전 결론이 채워진 보고서가 열린다. 해결하지 못한 질문과 관련된 단서는 먼저 보인다.</p>
         <div style="width:150px;margin:6px auto">${buttons.map((b, i) => `<button class="opt${i === sel ? ' sel' : ''}" data-b="${i}" style="text-align:center">${esc(b.label)}</button>`).join('')}</div>
         <div class="foot">↑↓ 이동 · Enter 선택</div>`;
     }

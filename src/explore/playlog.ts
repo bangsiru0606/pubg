@@ -1,11 +1,13 @@
 // 플레이 기록 (개발 서버 전용 도구의 순수 계산 부분: DOM·저장소 없음, 테스트 대상).
 // 씬 1~7 과 퍼즐 P01~P05 의 시작·끝 시각, 수첩·메뉴에 머문 시간, 탭을 떠나 있던 시간(일시정지), 퍼즐 오답·힌트 횟수를 쌓는다.
-import { hasFlag, hintLevelFor, puzzles, type GameState } from '../core';
+import { gradeOf, hasFlag, hintLevelFor, puzzles, resolveEnding, type GameState } from '../core';
 
 export interface SceneRec { start: number; end?: number; menuMs: number; pausedMs: number }
 export interface PuzzleRec { first: number; end?: number; openMs: number; opens: number; wrong: number; hints: number; solved: boolean }
-export interface PlayLog { startedAt: number | null; endedAt?: number; scenes: Record<number, SceneRec>; puzzles: Record<string, PuzzleRec>; lastScene: number }
-export const emptyLog = (): PlayLog => ({ startedAt: null, scenes: {}, puzzles: {}, lastScene: 0 });
+/** 보고서를 낸 한 번의 기록 (엔딩 뒤 ‘다시 추리하기’로 다시 낸 것도 모두 남는다) */
+export interface ReportRec { at: number; ending: string; letter: string; solved: number }
+export interface PlayLog { startedAt: number | null; endedAt?: number; scenes: Record<number, SceneRec>; puzzles: Record<string, PuzzleRec>; lastScene: number; reports?: ReportRec[] }
+export const emptyLog = (): PlayLog => ({ startedAt: null, scenes: {}, puzzles: {}, lastScene: 0, reports: [] });
 export const SCENE_COUNT = 7;
 
 /** 상태로 지금 몇 번째 씬인지 (1~7). 씬 경계는 각 씬이 끝나는 조건으로 정한다 (explore/playthrough.ts 의 SCENE_STEPS 와 같다). */
@@ -34,8 +36,10 @@ export function observe(log: PlayLog, o: Observation): PlayLog {
     if (n < sc && r.end === undefined) r.end = o.now; // 이 씬은 끝났다
   }
   const last = log.scenes[SCENE_COUNT];
-  if (o.ended) { log.endedAt = o.now; if (last) last.end = o.now; } // 엔딩 화면이 열린 시각이 끝
-  else if (log.endedAt !== undefined && sc === SCENE_COUNT) { delete log.endedAt; if (last) delete last.end; } // 엔딩 D 재도전: 보고서를 다시 쓰는 중
+  if (o.ended) {
+    if (log.endedAt === undefined) { const g = gradeOf(o.state); (log.reports ??= []).push({ at: o.now, ending: resolveEnding(o.state).id, letter: g.letter, solved: g.claims.filter((c) => c.solved).length }); } // 엔딩 화면이 새로 열렸다 = 보고서를 한 번 냈다
+    log.endedAt = o.now; if (last) last.end = o.now; // 엔딩 화면이 열린 시각이 끝
+  } else if (log.endedAt !== undefined && sc === SCENE_COUNT) { delete log.endedAt; if (last) delete last.end; } // 다시 추리하기: 보고서를 다시 쓰는 중
   const cur = log.scenes[sc];
   if (cur) { if (o.hidden) cur.pausedMs += o.dt; else if (o.inMenu) cur.menuMs += o.dt; }
   for (const p of puzzles) {
@@ -79,5 +83,5 @@ export function toText(log: PlayLog, now: number): string {
   const t = table(log, now);
   const wrong = Object.values(log.puzzles).reduce((a, r) => a + r.wrong, 0), hints = Object.values(log.puzzles).reduce((a, r) => a + r.hints, 0);
   return [`총 시간 ${t.total}${log.endedAt === undefined ? ' (진행 중)' : ''} · 퍼즐 오답 ${wrong}회 · 힌트 ${hints}단계 합계`, '', ['씬', ...t.head].join('\t'), ...t.rows.map((r) => [r.label, ...r.cells].join('\t')),
-    '', ['퍼즐', ...t.puzzleHead].join('\t'), ...t.puzzleRows.map((r) => [r.label, ...r.cells].join('\t')), '', '시각은 첫 시작부터의 경과(분:초). 소요에는 수첩·메뉴·일시정지 시간이 포함된다.'].join('\n');
+    '', ['퍼즐', ...t.puzzleHead].join('\t'), ...t.puzzleRows.map((r) => [r.label, ...r.cells].join('\t')), ...(log.reports?.length ? ['', `보고서 제출 ${log.reports.length}회`, ...log.reports.map((r, i) => `  ${i + 1}회차 ${fmt(r.at - (log.startedAt ?? r.at))} — ${r.ending.replace('ending_', '엔딩 ').toUpperCase()} · 해결 ${r.solved}/4 · 추리 등급 ${r.letter}`)] : []), '', '시각은 첫 시작부터의 경과(분:초). 소요에는 수첩·메뉴·일시정지 시간이 포함된다.'].join('\n');
 }

@@ -44,11 +44,20 @@ describe('플레이 기록 (개발 전용 계산)', () => {
     observe(log, base({ now: 500, state: createGameState() })); expect(log.lastScene).toBe(1); expect(log.startedAt).toBe(500); expect(log.scenes[4]).toBeUndefined();
     const idle = emptyLog(); observe(idle, base({ now: 0, state: createGameState(), started: false })); expect(idle.startedAt).toBeNull();
   });
-  it('엔딩이 열리면 끝나고, 엔딩 D 재도전으로 보고서를 다시 쓰면 다시 진행 중이 된다', () => {
+  it('엔딩이 열리면 끝나고, 다시 추리하기로 보고서를 다시 쓰면 다시 진행 중이 된다', () => {
     const log = emptyLog(), s = buildProgress(7).state;
     observe(log, base({ now: 0, state: s })); observe(log, base({ now: 5000, state: s, ended: true }));
     expect(log.endedAt).toBe(5000); expect(table(log, 9000).total).toBe('0:05');
     observe(log, base({ now: 6000, state: s })); expect(log.endedAt).toBeUndefined();
+  });
+  it('다시 추리하기로 다시 낸 보고서도 회차별로 기록에 남는다', () => {
+    const log = emptyLog(), s = buildProgress(7).state;
+    observe(log, base({ now: 0, state: s })); observe(log, base({ now: 5000, state: s, ended: true })); observe(log, base({ now: 5250, state: s, ended: true })); // 엔딩 화면이 열려 있는 동안은 한 번만 센다
+    expect(log.reports).toHaveLength(1);
+    observe(log, base({ now: 6000, state: s })); // 다시 추리하기
+    observe(log, base({ now: 9000, state: s, ended: true }));
+    expect(log.reports).toHaveLength(2); expect(log.reports![1].at).toBe(9000);
+    const t = toText(log, 10000); expect(t).toContain('보고서 제출 2회'); expect(t).toContain('2회차');
   });
   it('텍스트 복사본에 총 시간·씬·퍼즐 표가 들어 있다', () => {
     const log = emptyLog(); observe(log, base({ now: 0, state: createGameState() }));

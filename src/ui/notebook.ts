@@ -7,7 +7,7 @@ import {
 import { el, esc, root } from './hud';
 import { sfx } from '../audio/audio';
 import { popModal, pushModal } from './input';
-import { TYPE_LABEL, areaName } from './labels';
+import { TYPE_LABEL, areaName, hypsOf } from './labels';
 import { openViewer } from './viewer';
 
 type Tab = { id: string; label: string };
@@ -78,9 +78,6 @@ export function openNotebook(s: GameState, onClose: () => void, startTab = 0, on
     const rows = list.map((p, i) => `<button class="row${i === c ? ' sel' : ''}" data-row="${i}">${esc(p.title ?? p.id)}${s.puzzleDrafts[p.id] ? ' (보류 중)' : ''}</button>`).join('') + failRows;
     return `<div class="nlist">${rows}</div><div class="ndetail"><h3>${esc(list[c].title ?? '')}</h3><p>필요한 자료가 모였다. 풀지 않아도 이야기는 이어지지만, 풀어야 검증되는 단서가 있다. 결론 기회는 퍼즐마다 3번이고, 보류하면 놓은 조각이 저장된다.</p><button class="row sel" data-row="${c}" style="width:auto;display:inline-block">사건 열기 (Enter)</button></div>`;
   }
-  // 가설 표시 순서는 질문마다 다르게 돌려 둔다 (정답이 항상 같은 자리에 오지 않게). 데이터 순서는 그대로.
-  const SHIFT = [0, 1, 2, 1];
-  const hypsOf = (c: Claim) => { const k = SHIFT[claims.indexOf(c)] % c.hypotheses.length; return [...c.hypotheses.slice(k), ...c.hypotheses.slice(0, k)]; };
   const rowsOfClaim = (c: Claim) => c.hypotheses.length + 5; // 가설들 + 지지1,2 + 반박 + 보류 + 저장
   function claimTab(c: Claim): string {
     if (!isClaimOpen(s, c)) return '<div class="ndetail note">아직 조사가 끝나지 않은 질문이다.</div>';

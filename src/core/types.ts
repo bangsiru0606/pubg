@@ -69,7 +69,7 @@ export interface DialogueNode {
   next?: string;
   nextIf?: { flags: string[]; next: string }[]; // 이 노드의 효과(플래그)까지 적용한 뒤 flags 가 모두 서 있으면 next 대신 그 노드로 간다 (선택지를 모두 물은 뒤 자연스럽게 이어지게)
   choices?: { text: string; next: string; requiresFlag?: string; requiresFlags?: string[]; hideIfFlag?: string }[];
-  statement?: { id: string };   // 이 문장은 검증 대상 진술 (9.3)
+  statement?: { id: string; text?: string };   // 이 문장은 검증 대상 진술 (9.3). text: 진술 카드에 적을 문장 (생략하면 이 노드의 문장). 한 진술이 두 대사에 걸칠 때 쓴다
   revises?: { id: string };     // 이 노드는 해당 진술의 정정 (text 가 새 문장)
   present?: { evidenceIds: string[]; next: string }[]; // 이 문장에만 제시 가능한 단서 (9.2)
   onEnter?: { acquire?: string[]; setFlags?: string[]; contradict?: string[]; preserve?: 'secure' | 'confront' }; // preserve: 씬 6 증거 보존 선택 // contradict: 미확인 진술을 모순 단계로

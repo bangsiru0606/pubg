@@ -22,16 +22,19 @@ describe('플레이 테스트 3차: 대사', () => {
     for (const n of starts) { expect(n.speaker).toBe('han_jisu'); expect(n.source).toBe('new'); expect(n.voice).toBeUndefined(); expect(n.text.length).toBeLessThan(45); }
     expect(new Set(starts.map((n) => n.text)).size).toBe(starts.length);
   });
-  it('다시 말 걸기: 상태가 같으면 처음부터, 상태가 바뀌었으면 그 상태의 노드에서', () => {
+  it('다시 말 걸기: 상태가 바뀌었으면 지나온 가장 뒤 대목(o1·o3·o8)에서 다시 시작하고, 끝까지 봐도 처음으로 돌아가지 않는다 (오미란 열쇠 막힘 수정)', () => {
     const s = createGameState(), d = D.oh_miran;
     expect(openingNodeOf(s, d, 'oh_miran')).toBe('o0');
-    s.flags.push('oh_done'); // 완료 표시만 하던 restart 는 없다: 같은 대화를 처음부터 다시 재생한다
-    expect(openingNodeOf(s, d, 'oh_miran')).toBe('o0');
-    s.flags.push('oh_admitted'); // 상태가 바뀐 restart(인정한 뒤)는 유지
-    expect(startNodeOf(s, d)).toBe('o3'); expect(openingNodeOf(s, d, 'oh_miran')).toBe('o3');
-    markDialogueDone(s, d, 'oh_miran'); // 그 상태에서 끝까지 본 뒤 또 말을 걸면 새로 바뀐 것이 없다 → 처음부터
-    expect(openingNodeOf(s, d, 'oh_miran')).toBe('o0');
-    s.flags.push('evidence_new_state'); expect(openingNodeOf(s, d, 'oh_miran')).toBe('o0');
+    s.flags.push('oh_met'); expect(openingNodeOf(s, d, 'oh_miran')).toBe('o1');
+    s.flags.push('oh_admitted'); expect(startNodeOf(s, d)).toBe('o3'); expect(openingNodeOf(s, d, 'oh_miran')).toBe('o3');
+    markDialogueDone(s, d, 'oh_miran'); expect(openingNodeOf(s, d, 'oh_miran')).toBe('o3'); // keep: 그 대목에서 끊었다 와도 처음부터 다시 하지 않는다
+    s.flags.push('oh_done'); expect(openingNodeOf(s, d, 'oh_miran')).toBe('o8');
+    s.flags.push('basement_key'); expect(openingNodeOf(s, d, 'oh_miran')).toBe('ok1');
+  });
+  it('keep 가 없는 restart(정하늘 h8 등)만 끝까지 본 뒤 처음부터 다시 재생한다', () => {
+    const s = createGameState(), d = D.jeong_haneul;
+    s.flags.push('haneul_pressed'); expect(openingNodeOf(s, d, 'jeong_haneul')).toBe('h8');
+    markDialogueDone(s, d, 'jeong_haneul'); expect(openingNodeOf(s, d, 'jeong_haneul')).toBe('h1');
   });
   it('정하늘: "침대로 보내겠다" 표현이 없고 고백 문장이 바뀌었다', () => {
     const t = Object.values(D.jeong_haneul_final.nodes).map((n) => n.text).join('\n');

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fixture from '../src/data/dialogue.test-fixture.json';
 import {
-  MSG_NO_CONFLICT, MSG_REPEAT, acquireEvidence, availableChoices, createGameState, enterNode, getNode, hasFlag, presentEvidence,
+  acquireEvidence, availableChoices, createGameState, enterNode, getNode, hasFlag, presentEvidence,
   type Dialogue, type Dialogues,
 } from '../src/core';
 
@@ -21,17 +21,17 @@ describe('대화 엔진 (테스트 전용 대사)', () => {
     s.flags.push('f');
     expect(availableChoices(s, node)).toHaveLength(2);
   });
-  it('9.2/9.3: 미확인 → 관련 없는 단서는 중립 메시지만 → 모순 → 수정, 같은 모순 반복 불가', () => {
+  it('9.2/9.3: 미확인 → 관련 없는 단서는 인물의 반응만(시스템 문구 없음) → 모순 → 수정, 같은 모순을 다시 내도 막히지 않는다', () => {
     const s = createGameState();
     acquireEvidence(s, 'E03_preliminary_exam'); acquireEvidence(s, 'E01_last_letter');
     const d = D.test_baek_lobby;
     enterNode(s, d.nodes.b1);
     expect(s.statements.baek_s1.stage).toBe('unconfirmed');
-    expect(presentEvidence(s, d, 'test_baek_lobby', 'b1', ['E01_last_letter'])).toEqual({ kind: 'none', message: MSG_NO_CONFLICT });
+    expect(presentEvidence(s, d, 'test_baek_lobby', 'b1', ['E01_last_letter'])).toMatchObject({ kind: 'none' }); // message 는 baek_sunwoo 의 반응 (present-fail.json)
     expect(s.statements.baek_s1.stage).toBe('unconfirmed');
     expect(presentEvidence(s, d, 'test_baek_lobby', 'b1', ['E03_preliminary_exam'])).toEqual({ kind: 'ok', next: 'b_contra' });
     expect(s.statements.baek_s1.stage).toBe('contradiction');
-    expect(presentEvidence(s, d, 'test_baek_lobby', 'b1', ['E03_preliminary_exam'])).toEqual({ kind: 'repeat', message: MSG_REPEAT });
+    expect(presentEvidence(s, d, 'test_baek_lobby', 'b1', ['E03_preliminary_exam'])).toEqual({ kind: 'ok', next: 'b_contra' }); // 반복 제시도 다음 노드로 진행시킨다
     enterNode(s, d.nodes.b_rev);
     expect(s.statements.baek_s1.stage).toBe('revised');
     expect(s.statements.baek_s1.revisedText).toContain('정정합니다');
@@ -48,8 +48,9 @@ describe('대화 엔진 (테스트 전용 대사)', () => {
   });
   it('벌점·진행 차단 없음: 잘못 제시해도 상태 변화 없음', () => {
     const s = createGameState(); acquireEvidence(s, 'E01_last_letter');
-    const before = JSON.stringify(s);
+    const snap = () => JSON.stringify({ ...s, flags: s.flags.filter((f) => !f.startsWith('present_none:')) }); // 인물의 반응을 돌아가며 쓰려고 세우는 표시만 다르다
+    const before = snap();
     presentEvidence(s, D.test_baek_lobby, 'test_baek_lobby', 'b1', ['E01_last_letter']);
-    expect(JSON.stringify(s)).toBe(before);
+    expect(snap()).toBe(before);
   });
 });

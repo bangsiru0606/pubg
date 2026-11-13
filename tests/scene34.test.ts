@@ -94,7 +94,7 @@ describe('씬 4 관계자 구역', () => {
     expect(submitPuzzle(s2, 'P03_revision_diff', P('P03_revision_diff').correctSlots).status).toBe('settled');
     expect(s2.verifiedEvidenceIds).toContain('E07_report_revision');
   });
-  it('오미란: 핵심 수정 증언은 E04+E06 정확히 둘이 있어야 열린다, 수정 진술 → E08', () => {
+  it('오미란: 핵심 수정 증언은 E04·E06 중 하나만 내도(둘 다 내도) 열린다, 수정 진술 → E08', () => {
     const s = createGameState();
     for (const id of ['E03_preliminary_exam', 'E04_wristband_fragment', 'E06_torn_sleeve']) acquireEvidence(s, id);
     enterNode(s, D.oh_miran.nodes.o1);
@@ -102,8 +102,11 @@ describe('씬 4 관계자 구역', () => {
     expect(presentEvidence(s, D.oh_miran, 'oh_miran', 'o1', ['E03_preliminary_exam']).kind).toBe('ok');
     expect(s.statements.oh_s_first.stage).toBe('contradiction');
     walk(s, 'oh_miran', 'o2'); // o3: 잘못 적었습니다 — 거기서 멈춘다
-    expect(presentEvidence(s, D.oh_miran, 'oh_miran', 'o3', ['E06_torn_sleeve']).kind).toBe('none');
-    expect(presentEvidence(s, D.oh_miran, 'oh_miran', 'o3', ['E04_wristband_fragment', 'E06_torn_sleeve']).kind).toBe('ok');
+    expect(presentEvidence(s, D.oh_miran, 'oh_miran', 'o3', ['E03_preliminary_exam']).kind).toBe('none'); // 맞지 않는 단서는 오미란의 반응만
+    expect(presentEvidence(s, D.oh_miran, 'oh_miran', 'o3', ['E06_torn_sleeve']).kind).toBe('ok'); // E06 하나만
+    expect(presentEvidence(s, D.oh_miran, 'oh_miran', 'o3', ['E04_wristband_fragment']).kind).toBe('ok'); // E04 하나만
+    expect(presentEvidence(s, D.oh_miran, 'oh_miran', 'o3', ['E04_wristband_fragment', 'E06_torn_sleeve']).kind).toBe('ok'); // 둘 다
+    expect(presentEvidence(s, D.oh_miran, 'oh_miran', 'o3', ['E04_wristband_fragment']).kind).toBe('ok'); // 같은 대목에서 다시 내도 막히지 않는다
     walk(s, 'oh_miran', 'o4');
     expect(s.statements.oh_s_first.stage).toBe('revised');
     expect(s.evidenceIds).toContain('E08_miran_revised');

@@ -1,13 +1,20 @@
 import { evidenceById } from './data';
+import presentFail from '../data/present-fail.json';
 import { acquireEvidence, chooseEvidencePreservation, isBasementOpen, setFlag } from './state';
 import type { Dialogue, DialogueNode, Dialogues, GameState } from './types';
 
-export const MSG_NO_CONFLICT = '이 자료는 지금 발언과 직접 충돌하지 않는다.';
-export const MSG_REPEAT = '같은 모순은 반복해서 제시할 수 없다.';
-
+// 맞지 않는 단서를 내면 시스템 문구 대신 그 인물이 성격대로 반응한다 (src/data/present-fail.json, 인물마다 2~3개를 돌아가며)
 export type PresentResult =
   | { kind: 'ok'; next: string }
-  | { kind: 'none' | 'repeat'; message: string };
+  | { kind: 'none'; message: string };
+
+const reactions = presentFail as unknown as Record<string, string[]>;
+function reactionOf(s: GameState, speaker: string): string {
+  const list = reactions[speaker] ?? reactions.baek_sunwoo, key = `present_none:${speaker}:`;
+  const n = s.flags.filter((f) => f.startsWith(key)).length;
+  s.flags.push(`${key}${n}`);
+  return list[n % list.length];
+}
 
 export function getNode(dialogues: Dialogues, id: string, nodeId: string): DialogueNode {
   const node = dialogues[id]?.nodes[nodeId];
@@ -19,7 +26,7 @@ export function getNode(dialogues: Dialogues, id: string, nodeId: string): Dialo
 export function enterNode(s: GameState, node: DialogueNode): { acquired: string[] } {
   const acquired: string[] = [];
   if (node.statement && !s.statements[node.statement.id])
-    s.statements[node.statement.id] = { text: node.text, speaker: node.speaker, stage: 'unconfirmed' };
+    s.statements[node.statement.id] = { text: node.statement.text ?? node.text, speaker: node.speaker, stage: 'unconfirmed' };
   if (node.revises) {
     const st = s.statements[node.revises.id];
     if (st) { st.stage = 'revised'; st.revisedText = node.text; }
@@ -35,19 +42,18 @@ const setKey = (ids: string[]) => [...ids].sort().join('+');
 
 /**
  * 단서 제시 (9.2): 노드의 present 규칙에만 반응한다. 관련 없는 단서는 중립 메시지만, 벌점·진행 차단 없음.
- * 같은 모순은 반복 제시 불가. 진술을 정정시키는 노드로 가는 규칙은 물증/기록이 하나 이상 있어야 열린다.
+ * 이미 맞게 제시했던 단서를 같은 대목에서 다시 내도 막지 않고 다음 노드로 진행시킨다 (대화를 중간에 끊었다 다시 와도 막히지 않게). 진술을 정정시키는 노드로 가는 규칙은 물증/기록이 하나 이상 있어야 열린다.
  */
 export function presentEvidence(s: GameState, d: Dialogue, dialogueId: string, nodeId: string, ids: string[]): PresentResult {
   const node = d.nodes[nodeId];
   const sel = setKey(ids);
   const rule = node.present?.find((r) => setKey(r.evidenceIds) === sel);
-  if (!rule) return { kind: 'none', message: MSG_NO_CONFLICT };
+  if (!rule) return { kind: 'none', message: reactionOf(s, node.speaker) };
   const needsHard = !!d.nodes[rule.next]?.revises;
   const hasHard = ids.some((id) => ['physical', 'record'].includes(evidenceById.get(id)?.sourceType ?? ''));
-  if (needsHard && !hasHard) return { kind: 'none', message: MSG_NO_CONFLICT };
+  if (needsHard && !hasHard) return { kind: 'none', message: reactionOf(s, node.speaker) };
   const key = `${dialogueId}:${nodeId}:${sel}`;
-  if (s.presentedKeys.includes(key)) return { kind: 'repeat', message: MSG_REPEAT };
-  s.presentedKeys.push(key);
+  if (!s.presentedKeys.includes(key)) s.presentedKeys.push(key);
   if (node.statement && s.statements[node.statement.id]?.stage === 'unconfirmed') s.statements[node.statement.id].stage = 'contradiction';
   return { kind: 'ok', next: rule.next };
 }

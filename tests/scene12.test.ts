@@ -95,9 +95,10 @@ describe('P01 오답 표시', () => {
 });
 
 describe('씬 1·2 대사 출처 표시', () => {
-  it('모든 대사에 source 가 있고 기획서 문장(spec)이 새 문장(new)보다 많다', () => {
+  it('모든 대사에 source 가 있고 기획서 문장(spec)이 새 문장(new)보다 많다 (플레이어의 생각·행동 독백은 피드백으로 늘어 센 곳에서 뺀다)', () => {
     const nodes = Object.values(D).flatMap((d) => Object.values(d.nodes));
     expect(nodes.every((n) => ['spec', 'new', 'craft_on'].includes(n.source!))).toBe(true);
-    expect(nodes.filter((n) => n.source === 'spec').length).toBeGreaterThan(nodes.filter((n) => n.source === 'new').length);
+    const spoken = nodes.filter((n) => !n.voice); // 실제로 입으로 하는 대사
+    expect(spoken.filter((n) => n.source === 'spec').length).toBeGreaterThan(spoken.filter((n) => n.source === 'new').length);
   });
 });

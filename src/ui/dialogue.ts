@@ -31,7 +31,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   let node: DialogueNode;
   let shown = 0, timer = 0, typing = false;
   let items: Item[] = [], sel = 0;
-  let msg = '';
+  let msg = '', react = ''; // react: 맞지 않는 단서를 냈을 때 그 인물의 반응 한 줄
   const got: string[] = [];
   let picker: { cursor: number; chosen: Set<string>; list: string[] } | null = null;
 
@@ -47,7 +47,7 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
     if (acquired.length) sfx('onEvidenceGet');
     if (node.onEnter?.contradict?.length) sfx('onStatementUpdate');
     for (const id of acquired) showToast(`단서 획득: ${shownEvidence(s, id)!.title}`);
-    msg = ''; picker = null; shown = 0; typing = true; items = []; sel = 0;
+    msg = ''; react = ''; picker = null; shown = 0; typing = true; items = []; sel = 0;
     clearInterval(timer);
     timer = window.setInterval(() => { shown++; if (shown % 3 === 0 && node.text[shown - 1] !== ' ') sfx('onTypeBlip'); if (shown >= node.text.length) finishTyping(); else render(); }, CHAR_MS);
     render();
@@ -68,10 +68,11 @@ export function openDialogue(s: GameState, dialogueId: string, onClose: (acquire
   function confirmPicker() {
     if (!picker || !picker.chosen.size) { msg = '제시할 자료를 고른 뒤 [제시하기]를 선택한다.'; render(); return; }
     const r = presentEvidence(s, d, dialogueId, nodeId, [...picker.chosen]);
-    if (r.kind === 'ok') go(r.next); else { msg = r.message; picker = null; render(); }
+    if (r.kind === 'ok') go(r.next); else { react = r.message; logLine(node.speaker, react, undefined); picker = null; items = [{ label: '계속', run: () => { react = ''; finishTyping(); } }]; sel = 0; render(); }
   }
 
   function textHtml() {
+    if (react) return `“${esc(react)}”`;
     const t = node.text.slice(0, shown);
     if (node.voice === 'message') return `<span class="voice voice-message">${esc(t)}</span>`; // 받은 메시지: 괄호 없이 띠 안에 그대로
     if (node.voice) return `<span class="voice voice-${node.voice}">(${esc(t)}${typing ? '' : ')'}</span>`; // 생각·행동 묘사는 ( ) 로 감싸 실제 말과 구분한다

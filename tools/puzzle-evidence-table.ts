@@ -52,7 +52,7 @@ export function textOf(id: string, puzzleId?: string): string {
   if (id.startsWith('dialogue:')) { const [, d, n] = id.split(':'); return (real.dialogues as Record<string, { nodes: Record<string, { text: string }> }>)[d].nodes[n].text; }
   const e = evidenceById.get(id);
   if (e) { const v = shownEvidence({ evidenceIds: [], flags: [], statements: {} } as never, id)!; return [v.title, v.description, ...(v.body ?? [])].join('\n'); }
-  for (const d of Object.values(real.dialogues) as { nodes: Record<string, { text: string; statement?: { id: string } }> }[]) for (const n of Object.values(d.nodes)) if (n.statement?.id === id) return n.text;
+  for (const d of Object.values(real.dialogues) as { nodes: Record<string, { text: string; statement?: { id: string; text?: string } }> }[]) for (const n of Object.values(d.nodes)) if (n.statement?.id === id) return n.statement.text ?? n.text;
   void puzzleId; throw new Error(`근거 ${id} 를 찾을 수 없다`);
 }
 /** 어디서 얻는가 */

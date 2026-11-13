@@ -1935,5 +1935,20 @@
       "Resources/Art/Office/item_letter.png"
     ],
     "prompt": "Top-down evidence close-up: unfolded yellowed newspaper on dark wood, one photo box with muted hospital-building silhouette, all headline/article zones represented only by blurred horizontal bands for HTML overlay. Match restrained hand-painted evidence style. No readable text, numbers, logo, people, blood or extra objects."
+  },
+  {
+    "file": "props/wall_clock.png",
+    "size": [
+      1024,
+      1024
+    ],
+    "kind": "prop",
+    "facing": null,
+    "chromaKey": true,
+    "refs": [
+      "generated/props/floor_plan_board.png",
+      "generated/props/prayer_corner.png"
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: small pixel-art game prop for a hospital patient-room wall\nInput images: Image 1 is the authority for thick dark outline, limited muted palette, coarse pixel clusters, and aged frame treatment; Image 2 is the authority for the small-prop scale, coarse pixel density, restrained shading, and worn hospital colors.\nPrimary request: Create one small round analog wall clock, seen straight-on from the front as a wall-mounted prop. It has a worn off-white dial, a thick dark charcoal-brown rim, simple dark hour and minute hands, and evenly spaced tick marks only.\nComposition/framing: Center the clock on a 1024x1024 square canvas; keep it clearly smaller than the reference props, occupying about 42% of the canvas width and height, with generous empty space around it. Perfect circular silhouette, no perspective tilt.\nStyle/medium: exact coarse low-detail pixel art matching the references; same large pixel-block size, thick dark outline, limited number of flat shade steps, muted low-saturation hospital palette. No smoothing, no antialiasing, no high-detail rendering.\nScene/backdrop: every background pixel must be a single uniform pure chroma green #00FF00.\nConstraints: no numbers, no letters, no words, no logo, no signature, no watermark; tick marks only; no wall, no floor, no cast shadow, no glow; no green or lime colors anywhere in the clock itself; no extra objects."
   }
 ]

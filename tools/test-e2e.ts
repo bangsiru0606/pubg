@@ -380,36 +380,45 @@ await noIds('[P01] 초기 화면');
 await shot('stage4_p01_start');
 check((await page.locator('#puzzle .pz-ov').count()) === 1 && (await page.locator('#puzzle .pz-ov').innerText()).includes('세 번까지 확정할 수 있다') && (await page.locator('#puzzle .pz-ov').innerText()).includes('보류하고 나가도 된다'), '[P01] 처음 열릴 때 규칙 안내 한 번: 결론은 세 번까지, 확신이 없으면 보류');
 await dismissRule(page);
-check((await page.locator('#puzzle [data-piece]').count()) === 6 && (await page.locator('#puzzle [data-link]').count()) === 0 && !(await page.locator('#puzzle').innerText()).includes('근거 붙이기'), '[P01] 조각 6개(단서 문장 4 + 오답 조각 2), 근거 붙이기 UI 는 없다');
-check((await page.locator('#puzzle .pc i').first().innerText()).startsWith('‹'), '[P01] 조각마다 출처(단서·진술 이름)가 보인다');
-check((await page.locator('#puzzle [data-submit][disabled]').count()) === 1 && (await page.locator('#puzzle [data-hold]').isVisible()), '[P01] 모든 칸이 채워지기 전에는 [결론 확정]을 누를 수 없고, [보류하고 나가기]가 눈에 띈다');
-check((await page.locator('#puzzle').innerText()).includes('남은 기회') && (await page.locator('#puzzle .pz-att').innerText()).includes('3/3'), '[P01] 남은 결론 기회 3/3 표시');
-// 마우스 드래그: 혈흔 조각을 책상 의자 칸으로 (오답 배치)
-{ const a1 = await page.locator('#puzzle [data-piece="p_blood"]').first().boundingBox(); const b1 = await page.locator('#puzzle .zone[data-zone="desk_chair"]').first().boundingBox();
-  await page.mouse.move(a1!.x + a1!.width / 2, a1!.y + a1!.height / 2); await page.mouse.down();
-  await page.mouse.move(b1!.x + b1!.width / 2, b1!.y + b1!.height / 2, { steps: 8 }); await page.mouse.up(); await wait(100); }
-check((await page.locator('#puzzle .zone[data-zone="desk_chair"] [data-piece="p_blood"]').count()) === 1, '[P01] 마우스 드래그로 조각을 칸에 놓는다');
-await placeCorrect(page, 'P01_scene_rebuild', { altar_floor: ['p_baek', 'p_drag'], desk_chair: ['p_blood', 'p_exam'] }); // 두 칸의 조각을 서로 바꿔 놓는다
-check((await page.locator('#puzzle [data-chip]').count()) === 4 && (await page.locator('#puzzle [data-submit]:not([disabled])').count()) === 1, '[P01] 모든 위치에 조각을 놓으면 “무엇이 옮겨졌나?”가 나오고 확정할 수 있다');
+const pz = async () => (await page.locator('#puzzle').innerText()).replace(/\s+/g, ' ');
+check((await page.locator('#puzzle [data-choice]').count()) === 3 && (await page.locator('#puzzle [data-piece]').count()) === 0 && (await pz()).includes('질문 1. 원장의 직접 사인은 무엇인가?'), '[P01] 추리 문답: 첫 질문과 선택지 3개 (조각 놓기가 아니다)');
+check((await page.locator('#puzzle [data-choice] b').first().innerText()).length > 4 && (await page.locator('#puzzle [data-choice] i').first().innerText()).startsWith('‹'), '[P01] 선택지는 “판단 + 이유”이고 이유마다 출처(단서·진술 이름)가 보인다');
+check((await page.locator('#puzzle [data-submit][disabled]').count()) === 1 && (await page.locator('#puzzle [data-hold]').isVisible()) && (await page.locator('#puzzle .pz-att').innerText()).includes('3/3'), '[P01] 마지막 판단까지 가기 전에는 [결론 확정]을 누를 수 없고, [보류하고 나가기]가 눈에 띄며, 남은 기회 3/3');
+check((await page.locator('#puzzle [data-src]').count()) === 3, '[P01] 화면 옆에서 원문 열기(관련 단서 3개)를 할 수 있다');
+await page.locator('#puzzle [data-src]').first().click(); await page.waitForSelector('#viewer'); await press('Enter'); await page.waitForFunction(() => !document.querySelector('#viewer')); await wait(100);
+check((await page.locator('#puzzle').count()) === 1, '[P01] 원문을 읽고 닫으면 문답으로 돌아온다');
+// 키보드: Enter 로 첫 선택지, Backspace 로 이전 질문
+await press('Enter'); await wait(80);
+check((await pz()).includes('질문 2.') && (await page.locator('#puzzle .qt').count()) === 1, '[P01] 키보드 Enter 로 고르면 다음 질문으로 간다 (맞고 틀림은 알려 주지 않는다)');
+check((await page.locator('#puzzle .warn, #puzzle .hint-t, #puzzle .ok, #puzzle .bad').count()) === 0 && !/정답|오답|맞았|틀렸/.test(await pz()), '[P01] 문답 도중에는 맞고 틀림을 알리지 않는다');
+await press('Backspace'); await wait(80);
+check((await pz()).includes('질문 1.') && (await page.locator('#puzzle .qt').count()) === 0, '[P01] Backspace(이전 질문으로)로 되돌아갈 수 있다');
+// 마우스: 틀린 길 (머리 손상 → 발작 → 기도대 옆 바닥 → 시신·의자를 옮김). 지나온 판단을 눌러 되돌아갈 수도 있다.
+await page.locator('#puzzle [data-choice="c1_head"]').click(); await page.locator('#puzzle [data-choice="c2_seizure"]').click();
+await page.locator('#puzzle .qt').nth(0).click(); await wait(60);
+check((await pz()).includes('질문 1.'), '[P01] 지나온 판단(1번)을 누르면 그 질문으로 돌아간다');
+await page.locator('#puzzle [data-choice="c1_head"]').click(); await page.locator('#puzzle [data-choice="c2_seizure"]').click(); await page.locator('#puzzle [data-choice="c3_altar"]').click(); await page.locator('#puzzle [data-choice="c4_moved"]').click(); await wait(80);
+check((await page.locator('#puzzle [data-submit]:not([disabled])').count()) === 1 && (await page.locator('#puzzle .qconc').innerText()).includes('발작으로 쓰러지며') && (await page.locator('#puzzle .qconc').innerText()).includes('시신과 의자를 옮겨'), '[P01] 마지막 판단에 이르면 지나온 판단이 한 문장 결론으로 보이고 확정할 수 있다');
+await shot('stage4_p01_conclusion');
 await page.locator('#puzzle [data-submit]').click();
 check((await page.locator('#puzzle .pz-ov').innerText()).includes('이 결론을 확정할까요?') && (await page.locator('#puzzle .pz-ov').innerText()).includes('남은 기회 3/3'), '[P01] 확정 전에 확인 창: 이 결론을 확정할까요? 남은 기회 3/3');
 await page.locator('#puzzle [data-confirm="no"]').click();
 check(await cw<boolean>('!cw.state.wrongCountByPuzzle.P01_scene_rebuild'), '[P01] 확인 창에서 취소하면 기회가 줄지 않는다');
 await confirm(page);
 { const warn = await warnLines();
-  check(warn.length === 1 && warn[0].includes('백선우의 진술') && !warn.join().includes('기도대 옆 바닥') && !warn.join().includes('책상 의자'), '[P01] 1번째 오답: 충돌 문장 하나(자료 이름만, 정답 위치 없음)'); }
+  check(warn.length === 1 && warn[0].includes('찢어진 손목띠 조각') && !warn.join().includes('몸싸움') && !warn.join().includes('기도대 옆 바닥'), '[P01] 1번째 오답: 충돌 문장 하나(처음 틀린 판단과 부딪히는 자료 이름만, 정답은 말하지 않음)'); }
 check((await page.locator('#puzzle .hint-t').innerText()).includes('힌트') && (await page.locator('#puzzle .pz-att').innerText()).includes('2/3') && await cw<boolean>('cw.state.wrongCountByPuzzle.P01_scene_rebuild === 1'), '[P01] 1번째 오답: 힌트 문장 + 남은 기회 2/3');
 await noIds('[P01] 오답 화면');
-// 보류하고 나가기: 놓은 조각과 남은 기회가 저장되고 벌점이 없다
+// 보류하고 나가기: 지나온 판단과 남은 기회가 저장되고 벌점이 없다
 await page.locator('#puzzle [data-hold]').click(); await page.waitForSelector('#dialogue');
-check((await page.locator('#dialogue .text').innerText()).length >= 0 && await cw<boolean>("!!cw.state.puzzleDrafts.P01_scene_rebuild && cw.state.wrongCountByPuzzle.P01_scene_rebuild === 1"), '[P01] 보류: 놓은 조각 저장, 기회는 그대로(2/3)');
+check((await page.locator('#dialogue .text').innerText()).length >= 0 && await cw<boolean>("!!cw.state.puzzleDrafts.P01_scene_rebuild && cw.state.wrongCountByPuzzle.P01_scene_rebuild === 1"), '[P01] 보류: 지나온 판단 저장, 기회는 그대로(2/3)');
 await wait(2200); check((await page.locator('#dialogue .text').innerText()).includes('미결 사건'), '[미결 사건] 보류하고 나가면 처음 한 번 독백으로 알려 준다');
 await mash();
 await cw("cw.ui.puzzle('P01_scene_rebuild')"); await page.waitForSelector('#puzzle'); await wait(200);
-check((await page.locator('#puzzle .zone[data-zone="desk_chair"] [data-piece="p_blood"]').count()) === 1 && (await page.locator('#puzzle .pz-att').innerText()).includes('2/3'), '[P01] 다시 열면 놓은 조각과 남은 기회(2/3)가 그대로다');
-// 정답: 키보드 (조각 선택 → Enter 로 잡기 → 방향키로 칸 → Enter 로 놓기) 후 나머지는 마우스
+check((await page.locator('#puzzle .qt').count()) === 4 && (await page.locator('#puzzle .pz-att').innerText()).includes('2/3'), '[P01] 다시 열면 지나온 판단과 남은 기회(2/3)가 그대로다');
 await page.mouse.move(5, 5);
 await placeCorrect(page, 'P01_scene_rebuild');
+check((await page.locator('#puzzle .qconc').innerText()).includes('몸싸움 중 밀려') && (await page.locator('#puzzle .qconc').innerText()).includes('지병으로 꾸몄다'), '[P01] 정답 길의 결론 문장');
 await confirm(page);
 check(await cw<boolean>("cw.state.solvedPuzzleIds.includes('P01_scene_rebuild') && cw.state.flags.includes('flag_scene_rebuilt') && cw.state.flags.includes('puzzle_done:P01_scene_rebuild')"), '[P01] 정답 → 해결 (puzzle_done 플래그)');
 check(await cw<boolean>("cw.state.verifiedEvidenceIds.includes('E02_altar_blood') && cw.state.verifiedEvidenceIds.includes('E03_preliminary_exam')"), '[P01] 해결 → E02·E03 검증');
@@ -783,37 +792,67 @@ await press('Enter'); // 대화 끝 → 씬 7
 await page.waitForSelector('#report', { timeout: 3000 });
 check(true, '[씬 7] 최종 보고서 시작');
 check(await cw<boolean>("cw.state.flags.includes('haneul_cleared')") && await cw<boolean>("!cw.scene.npcSprites.get('haneul_b1')?.visible"), '[씬 7] 보고서로 넘어갈 때 정하늘이 정리된다');
-// 질문 A~D 네 개를 사건 수첩 UI 에서 키보드로 직접 채운다 (시험 훅 사용 안 함)
 const selText = async (sel: string) => (await page.locator(sel).first().innerText().catch(() => '')).replace(/\s+/g, ' ');
-const moveTo = async (sel: string, text: string, key = 'ArrowDown') => { for (let i = 0; i < 20 && !(await selText(sel)).includes(text); i++) await press(key); };
+// 질문 A~D 네 개를 보고서 화면에서 직접 채운다 (시험 훅 사용 안 함): A = 키보드, B~D = 마우스(근거 카드 한 장은 끌어서)
 const claimsToFill: [string, string, string[], string][] = [
   ['claim_a', '기도대 충돌', ['기도대 아래 혈흔', '예비 검안 메모'], '검안 기록 수정 이력'],
   ['claim_b', '은지와 자신을 구하려', ['정하늘 손목띠 조각', '오미란의 수정 진술'], '원장실 출입 기록'],
   ['claim_c', '이혜정 이사가 기록과 현장', ['검안 기록 수정 이력', '오미란의 수정 진술'], '찢어진 환자복 소매'],
   ['claim_d', 'P-271로 분류', ['특별 치료 장부', '박은지의 유품과 일기'], '생체 보존물 운송표'],
 ];
-for (let i = 0; i < claimsToFill.length; i++) {
-  const [cid, hyp, sup, reb] = claimsToFill[i];
-  await press('Enter'); // 질문 i 의 사건 수첩 탭
-  await page.waitForSelector('#notebook');
-  await moveTo('#notebook .ndetail .row.sel', hyp); await press('Enter');
-  const pick = async (slot: string, title: string) => { await moveTo('#notebook .ndetail .row.sel', slot); await press('Enter'); await moveTo('#notebook .picker .row.sel', title); await press('Enter'); };
-  await pick('지지 근거 1', sup[0]); await pick('지지 근거 2', sup[1]); await pick('반박 근거', reb);
-  await moveTo('#notebook .ndetail .row.sel', '[결론 저장]'); await press('Enter');
-  check(await cw<boolean>(`!!cw.state.selectedHypothesisByClaim.${cid} && cw.state.submittedEvidenceByClaim.${cid}.length === 2 && cw.state.submittedRebuttalByClaim.${cid}.length === 1`), `[씬 7] 사건 수첩에서 키보드로 질문 ${'ABCD'[i]} 결론 저장 (시험 훅 없음)`);
-  await press('Escape'); // 수첩 닫기 → 보고서
-  await page.waitForSelector('#report');
-  if (i < 3) await press('ArrowDown');
+check((await page.locator('#report .rtab').count()) === 5 && (await page.locator('#report .rpaper').innerText()).includes('질문 A.') && (await page.locator('#report .rdrawer').count()) === 1, '[보고서] 종이 한 장에 질문 하나, 위쪽 탭(질문 A~D·보고 대상), 왼쪽 단서 서랍');
+check((await page.locator('#report .rblank').innerText()).includes('눌러서 고른다') && (await page.locator('#report .rpaper').innerText()).includes('원장의 직접 사인은') && (await page.locator('#report .rpaper').innerText()).includes('이다.'), '[보고서] 가설은 문장 빈칸으로 고른다 (원장의 직접 사인은 [ ▾ ]이다.)');
+check((await page.locator('#report .rslot').count()) === 3 && (await page.locator('#report .rpaper').innerText()).includes('예상 반론'), '[보고서] 근거 2칸 + 예상 반론 1칸');
+check((await page.locator('#report .rcard').count()) === 0 && (await page.locator('#report .dc .rk').first().innerText()).length > 0, '[보고서] 서랍 카드에 유형 표시(물증·기록·증언)가 보인다');
+{ const ctx = page.locator('#report .dc', { hasText: '박은지의 마지막 편지' }); await ctx.first().click(); await wait(60);
+  await page.locator('#report [data-slot="s0"]').click(); await wait(60);
+  check((await page.locator('#report .rmsg').innerText()).includes('맥락') && (await page.locator('#report .rslot .rcard').count()) === 0, '[보고서] 맥락 단서는 꽂히지 않고 이유만 한 줄로 보인다');
+  await press('Escape'); }
+const pickCards = async (sup: string[], reb: string, byMouse = true) => {
+  const card = async (title: string) => page.locator('#report .dc', { hasText: title }).first();
+  for (const [slot, title] of [['s0', sup[0]], ['s1', sup[1]], ['r0', reb]] as const) {
+    await page.locator(`#report [data-slot="${slot}"]`).click(); await wait(60);
+    if (slot === 's0' && byMouse) { // 첫 카드는 끌어서 꽂는다
+      await press('Escape');
+      const a = await (await card(title)).boundingBox(), b = await page.locator('#report [data-slot="s0"]').boundingBox();
+      await page.mouse.move(a!.x + a!.width / 2, a!.y + a!.height / 2); await page.mouse.down(); await page.mouse.move(b!.x + b!.width / 2, b!.y + b!.height / 2, { steps: 8 }); await page.mouse.up(); await wait(100);
+    } else await (await card(title)).click();
+    await wait(60);
+  }
+};
+// 질문 A: 키보드
+await press('Enter'); // 빈칸 → 후보 문장 목록
+check((await page.locator('#report .ropt').count()) === 3, '[보고서] 빈칸을 누르면 후보 문장 3개가 나온다 (순서는 섞여 있다)');
+for (let i = 0; i < 4 && !(await selText('#report .ropt.foc')).includes('기도대 충돌'); i++) await press('ArrowDown');
+await press('Enter');
+check((await page.locator('#report .rblank').innerText()).includes('기도대 충돌'), '[보고서] 키보드로 후보 문장을 골라 빈칸을 채운다');
+for (const [k, title] of [['s0', '기도대 아래 혈흔'], ['s1', '예비 검안 메모'], ['r0', '검안 기록 수정 이력']] as const) {
+  await press('ArrowDown'); await press('Enter'); // 칸 → 서랍
+  for (let i = 0; i < 30 && !(await selText('#report .dc.foc')).includes(title); i++) await press('ArrowDown');
+  await press('Enter');
+  check((await selText(`#report [data-slot="${k}"]`)).includes(title), `[보고서] 키보드: ${title} 카드를 ${k} 칸에 꽂는다`);
 }
-await press('ArrowDown'); // 보고 대상 행
-await press('ArrowRight'); await press('ArrowRight'); // 박은호만 → 외부 수사기관 포함
-await press('ArrowDown'); await press('Enter'); // 작성 내용 확인
-await page.waitForFunction(() => document.querySelector('#report .sum'));
-const sum = await page.locator('#report').innerText();
-check(sum.includes('보고 대상: 외부 수사기관에도 보고한다') && sum.includes('기도대 충돌로 인한 후두부 손상'), '[씬 7] 제출 전 요약: 고른 결론과 보고 대상을 문장으로 다시 보여 준다');
-check(!/정답|오답|해결|엔딩|맞았|틀렸/.test(sum), '[씬 7] 요약은 정답·해결 여부·예상 엔딩을 암시하지 않는다');
-await noIds('[씬 7] 요약');
+await press('ArrowDown'); await press('Enter'); // 도장
+check(await cw<boolean>('!!cw.state.selectedHypothesisByClaim.claim_a && cw.state.submittedEvidenceByClaim.claim_a.length === 2 && cw.state.submittedRebuttalByClaim.claim_a.length === 1') && (await page.locator('#report .rstamp').count()) === 1, '[보고서] 키보드로 질문 A 작성 완료 도장 (시험 훅 없음)');
 await shot('stage6_report');
+for (let i = 1; i < claimsToFill.length; i++) {
+  const [cid, hyp, sup, reb] = claimsToFill[i];
+  await page.locator(`#report [data-pg="${i}"]`).click(); await wait(80);
+  await page.locator('#report [data-blank]').click(); await page.locator('#report .ropt', { hasText: hyp }).click(); await wait(60);
+  await pickCards(sup, reb, i === 1);
+  if (i === 1) check((await page.locator('#report .rslot .rcard').count()) === 3, '[보고서] 서랍 카드를 끌어다 칸에 꽂는다 (마우스 드래그)');
+  await page.locator('#report [data-stamp]').click(); await wait(80);
+  check(await cw<boolean>(`!!cw.state.selectedHypothesisByClaim.${cid} && cw.state.submittedEvidenceByClaim.${cid}.length === 2 && cw.state.submittedRebuttalByClaim.${cid}.length === 1`), `[보고서] 질문 ${'ABCD'[i]} 작성 완료 도장 (시험 훅 없음)`);
+}
+check((await page.locator('#report .rtab.done').count()) === 4, '[보고서] 도장을 찍은 질문 탭에 ✔ 표시');
+await page.locator('#report [data-pg="4"]').click(); await wait(100);
+await page.locator('#report [data-tg="external"]').click(); await wait(60);
+const sum = await page.locator('#report').innerText();
+check(sum.includes('외부 수사기관에도 보고한다') && sum.includes('기도대 충돌로 인한 후두부 손상'), '[보고서] 마지막 쪽: 보고 대상 선택 + 완성된 문장으로 읽히는 미리보기');
+check(!/정답|오답|해결|엔딩|맞았|틀렸/.test(await page.locator('#report .rpaper').innerText()), '[보고서] 미리보기는 정답·해결 여부·예상 엔딩을 암시하지 않는다');
+await noIds('[씬 7] 요약');
+await page.locator('#report [data-submit]').click(); await wait(80);
+check((await page.locator('#report .rov').innerText()).includes('제출할까요'), '[보고서] 제출 전에 확인 창');
 await press('Enter'); // 제출한다
 
 // 엔딩 A
@@ -828,8 +867,8 @@ await shot('stage6_ending_a');
 await press('Enter');
 const gr = await page.locator('#ending').innerText();
 check(gr.includes('추리 등급 S') && gr.includes('반박 근거 적중') && gr.includes('힌트가 열린 퍼즐'), '[엔딩 A] 추리 등급: 질문별 해결·반박 적중·힌트 횟수');
-check(!gr.includes('보고서 다시 쓰기'), '[엔딩 A] 다른 엔딩은 “처음부터”와 “타이틀로”만');
-await press('ArrowDown'); await press('Enter');
+check(gr.includes('다시 추리하기') && gr.includes('처음부터') && gr.includes('타이틀로'), '[엔딩 A] 모든 엔딩 끝에 “다시 추리하기” · “처음부터” · “타이틀로”');
+await press('ArrowDown', 2); await press('Enter');
 await page.waitForSelector('#title');
 check((await page.locator('#title').innerText()).includes('이어하기'), '[타이틀] 엔딩 후 타이틀로 돌아오고, 저장이 있으면 이어하기가 보인다');
 check((await page.locator('#title').innerText()).includes('조작법'), '[타이틀] 새 게임 / 이어하기 / 조작법');
@@ -853,12 +892,11 @@ const finishReport = async (opts: { good: string[]; target: 'external' | 'eunho_
     for (const [id, [sup, reb]] of Object.entries(G)) { const c = cw.claims.find((x) => x.claimId === id);
       if (${JSON.stringify(opts.good)}.includes(id)) cw.saveConclusion(s, id, c.hypotheses.find((h) => h.isCorrect).id, sup, reb);
       else cw.saveConclusion(s, id, c.hypotheses.find((h) => !h.isCorrect).id, [], ['E02_altar_blood']); } })()`);
-  await press('ArrowUp'); await press('ArrowDown');
-  await press('ArrowDown', 3); await press('ArrowDown');
-  await press('ArrowRight'); if (opts.target === 'external') await press('ArrowRight');
-  await press('ArrowDown'); await press('Enter');
-  await page.waitForFunction(() => document.querySelector('#report .sum'));
-  await press('Enter');
+  await press('Tab'); await page.waitForSelector('#notebook'); await press('Escape'); await wait(100); // 수첩을 열었다 닫으면 보고서가 저장된 결론을 다시 읽는다
+  await press('ArrowRight', 4); // 보고 대상·제출 쪽
+  if (opts.target === 'external') await press('ArrowDown');
+  await press('Enter'); await press('ArrowDown', opts.target === 'external' ? 1 : 2); await press('Enter'); // 보고 대상 → 제출한다
+  await page.waitForSelector('#report .rov'); await press('Enter');
   await page.waitForSelector('#ending');
 };
 await jump();
@@ -879,7 +917,7 @@ await finishReport({ good: ['claim_a', 'claim_b', 'claim_c', 'claim_d'], target:
 check((await page.locator('#ending').innerText()).includes('빈 병원'), '[엔딩 C] 선택 B 이후에도 보고서를 제출할 수 있고 엔딩 C 가 된다');
 await shot('stage6_ending_c');
 await press('Enter');
-check(!(await page.locator('#ending').innerText()).includes('보고서 다시 쓰기'), '[엔딩 C] 처음부터 / 타이틀로만');
+check((await page.locator('#ending').innerText()).includes('다시 추리하기'), '[엔딩 C] 다시 추리하기도 있다');
 
 // 엔딩 D → 보고서 다시 쓰기 → 엔딩 A
 await jump();
@@ -889,11 +927,13 @@ await press('1'); await wait(60); await press('Enter'); await press('Enter');
 await finishReport({ good: ['claim_c', 'claim_d'], target: 'external' }); // 질문 A·B 오답
 check((await page.locator('#ending').innerText()).includes('자연사'), '[엔딩 D] 질문 2개 오답');
 await press('Enter');
-check((await page.locator('#ending').innerText()).includes('보고서 다시 쓰기'), '[엔딩 D] 재도전 선택지');
+check((await page.locator('#ending').innerText()).includes('다시 추리하기'), '[엔딩 D] 다시 추리하기 선택지 (엔딩 D 전용 재시도와 하나로 합쳤다)');
 await shot('stage6_ending_d');
-await press('Enter'); // 보고서 다시 쓰기
+const before = await cw<string>("JSON.stringify({ ev: cw.state.evidenceIds, ver: cw.state.verifiedEvidenceIds, sec: cw.state.evidenceSecured, fail: cw.state.failedPuzzleIds, sel: cw.state.selectedHypothesisByClaim })");
+await press('Enter'); // 다시 추리하기
 await page.waitForSelector('#report', { timeout: 3000 });
-check(await cw<boolean>("cw.state.retryClaimIds.length === 2 && cw.state.evidenceSecured && !cw.state.selectedHypothesisByClaim.claim_a"), '[엔딩 D] 씬 7 시작 시점으로 돌아간다 (이전 제출 내용은 없고, 미해결 질문 2개가 기록됨)');
+check(await cw<string>("JSON.stringify({ ev: cw.state.evidenceIds, ver: cw.state.verifiedEvidenceIds, sec: cw.state.evidenceSecured, fail: cw.state.failedPuzzleIds, sel: cw.state.selectedHypothesisByClaim })") === before && await cw<boolean>('cw.state.retryClaimIds.length === 2 && cw.state.evidenceSecured'), '[다시 추리하기] 같은 수사 상태(단서·검증·증거 보존·퍼즐 검증 실패)로 이전 결론이 채워진 보고서로 돌아간다');
+check((await page.locator('#report .rmsg').innerText()).includes('다시 추리하기') && (await page.locator('#report .rtab.done').count()) === 4, '[다시 추리하기] 이전에 쓴 결론이 그대로 채워져 있다 (도장 4개)');
 await press('Tab'); await page.waitForSelector('#notebook');
 const firstRow = await page.locator('#notebook .nlist .row').first().innerText();
 check(firstRow.includes('미해결 질문 관련'), '[엔딩 D] 수첩 단서 목록에서 미해결 질문과 관련된 단서가 먼저 보인다');
@@ -997,7 +1037,7 @@ await mash();
 // 검증 실패: 결론 기회 3번을 모두 쓰면 퍼즐이 닫히고 관련 단서는 검증 실패(신빙성 낮음)로 남는다
 await cw("cw.ui.puzzle('P01_scene_rebuild')"); await page.waitForSelector('#puzzle'); await dismissRule(page);
 for (let i = 1; i <= 3; i++) {
-  await placeCorrect(page, 'P01_scene_rebuild', { altar_floor: ['p_baek', 'p_drag'], desk_chair: ['p_blood', 'p_exam'] });
+  await placeCorrect(page, 'P01_scene_rebuild', { path: ['c1_disease', 'ca1_chair', 'ca2_fall'] });
   await confirm(page); await wait(150);
 }
 check((await page.locator('#puzzle .bad').innerText()).includes('검증 실패') && await cw<boolean>("cw.state.failedPuzzleIds.includes('P01_scene_rebuild') && cw.state.flags.includes('puzzle_failed:P01_scene_rebuild')"), '[검증 실패] 3번째 오답: 검증 실패로 닫힌다 (퍼즐 화면에 이유 표시)');
@@ -1005,8 +1045,39 @@ check((await page.locator('#puzzle [data-submit]').count()) === 0, '[검증 실�
 await press('Enter'); await page.waitForFunction(() => !document.querySelector('#puzzle'));
 check(await cw<boolean>("cw.state.verifiedEvidenceIds.every((id) => id !== 'E02_altar_blood')"), '[검증 실패] 관련 단서(E02·E03)는 검증되지 않는다');
 await press('Tab'); await page.waitForSelector('#notebook'); await press('ArrowLeft'); await wait(150);
-check((await page.locator('#notebook .row.dis').first().innerText()).includes('검증 실패') && (await page.locator('#notebook button.row', { hasText: '현장 위치 재구성' }).count()) === 0, '[검증 실패] 수첩 “미결 사건” 탭에 “검증 실패”로 표시되고 열 수 없다');
+check((await page.locator('#notebook .row.dis').first().innerText()).includes('검증 실패') && (await page.locator('#notebook button.row', { hasText: '원장실 추리 문답' }).count()) === 0, '[검증 실패] 수첩 “미결 사건” 탭에 “검증 실패”로 표시되고 열 수 없다');
 await press('Tab');
+
+// ---- P05 를 보류하면 진행이 멈춘 것처럼 보이지 않게 독백으로 알려 준다 / 계단에서 한 번 더 ----
+await page.goto(url);
+await page.waitForFunction(() => typeof (window as any).__cw?.scene?.jumpToScene === 'function', null, { timeout: 10000 });
+await startQuick();
+await cw('cw.scene.jumpToScene(5)'); await wait(700);
+await cw("cw.ui.acquire(['E12_ledger', 'E13_identity_map', 'E14_belongings_diary', 'E15_transport_manifest'])"); await cw("cw.state.flags.push('diary_closed')");
+await cw("cw.scene.puzzle('P05_patient_code')"); await page.waitForSelector('#puzzle'); await dismissRule(page);
+await page.locator('#puzzle [data-hold]').click(); await page.waitForSelector('#dialogue'); await wait(2400);
+check((await page.locator('#dialogue .text').innerText()).includes('이 장부를 정리하기 전에는 여기서 더 알아낼 수 없다'), '[P05 보류] 보류하고 나가면 한 번 독백으로 알려 준다 (정하늘이 나타나지 않는 까닭)');
+await mash();
+check(await cw<boolean>("!cw.state.flags.includes('puzzle_done:P05_patient_code') && cw.state.flags.includes('p05_hold_seen')"), '[P05 보류] 보류는 풀리지도 닫히지도 않은 상태다');
+await cw('cw.scene.teleportX(0)'); await wait(300); await press('Enter'); await page.waitForSelector('#dialogue');
+await wait(2400);
+check((await page.locator('#dialogue .text').innerText()).includes('이 장부를 정리하기 전에는'), '[P05 보류] 지하에서 계단으로 올라가려 할 때 P05 가 미결이면 같은 안내를 한 번 더 보여 준다');
+await mash(); await page.waitForFunction(() => (window as any).__cw.scene.areaId === 'floor1', null, { timeout: 6000 });
+check(true, '[P05 보류] 안내 뒤에는 막지 않고 올라간다');
+
+// ---- P05 검증 실패로 질문 D 가 열리지 않아도 보고서를 제출할 수 있다 (열린 질문만 도장을 요구한다) ----
+await page.goto(url);
+await page.waitForFunction(() => typeof (window as any).__cw?.scene?.jumpToScene === 'function', null, { timeout: 10000 });
+await startQuick();
+await cw("cw.scene.jumpToScene(7, ['P05_patient_code'])"); await page.waitForSelector('#report', { timeout: 6000 }); await wait(600);
+await page.locator('#report [data-pg="3"]').click(); await wait(80);
+check((await page.locator('#report .rpaper').innerText()).includes('다룰 수 없는 질문') && (await page.locator('#report [data-blank]').count()) === 0, '[보고서] 질문 D 가 열리지 않으면 “다룰 수 없는 질문”이고 비워 둔 채로 제출된다');
+await cw(`(() => { const G = { claim_a: [['E02_altar_blood', 'E03_preliminary_exam'], ['E07_report_revision']], claim_b: [['E04_wristband_fragment', 'E08_miran_revised'], ['E05_access_log']], claim_c: [['E07_report_revision', 'E08_miran_revised'], ['E06_torn_sleeve']] };
+  for (const [id, [sup, reb]] of Object.entries(G)) cw.saveConclusion(cw.state, id, cw.claims.find((x) => x.claimId === id).hypotheses.find((h) => h.isCorrect).id, sup, reb); })()`);
+await press('Tab'); await page.waitForSelector('#notebook'); await press('Escape'); await wait(100);
+await page.locator('#report [data-pg="4"]').click(); await page.locator('#report [data-tg="external"]').click(); await page.locator('#report [data-submit]').click(); await page.waitForSelector('#report .rov'); await press('Enter');
+await page.waitForSelector('#ending', { timeout: 5000 });
+check(true, '[보고서] P05 검증 실패 상태에서도 질문 A~C 만 도장을 찍으면 제출되어 엔딩에 이른다');
 
 await browser.close();
 check(errors.length === 0, `콘솔 오류 0 ${errors.join(' | ')}`);

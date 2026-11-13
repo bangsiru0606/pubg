@@ -33,6 +33,8 @@ await shot('dialogue'); await closeAll();
 await jump(5); await cw('cw.ui.notebook(0)'); await wait(200); for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowDown'); await wait(200);
 await shot('notebook'); await closeAll();
 await jump(2); await cw("cw.ui.acquire(['E02_altar_blood','E03_preliminary_exam','E04_wristband_fragment'])"); await cw("cw.ui.puzzle('P01_scene_rebuild')"); await wait(400);
+await page.locator('#puzzle [data-rule]').first().click(); await wait(100); // 규칙 안내를 닫고 문답 한 단계를 진행한 화면
+await page.locator('#puzzle [data-choice="c1_head"]').click(); await wait(250);
 await shot('puzzle');
 await browser.close();
 if (errors.length) { console.error(errors.join('\n')); process.exit(1); }

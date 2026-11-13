@@ -34,8 +34,11 @@
 
 ## 스크린샷
 
-(최종 촬영 예정 — `screenshots/` 에 `main.png`, `play.png` 등을 넣고 아래 줄의 주석을 푼다)
-<!-- ![메인 화면](screenshots/main.png) ![플레이 화면](screenshots/play.png) -->
+![메인 화면](screenshots/main.png)
+![1층 탐색](screenshots/play.png)
+![대화·심문](screenshots/dialogue.png)
+![사건 수첩](screenshots/notebook.png)
+![원장실 추리 문답](screenshots/puzzle.png)
 
 ## ⬇️ 다운로드
 

@@ -40,19 +40,20 @@ page.on('requestfailed', (r) => { if (!(/\.(mp3|ogg|wav|webp)$/.test(r.url()) &&
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__game?.scene.getScene('Explore')?.player, null, { timeout: 10000 });
 await page.waitForSelector('#title'); // 타이틀 → (소리) 설정·정보 화면을 지나 새 게임
+await page.waitForTimeout(600); // 타이틀 메뉴가 입력을 받을 때까지 (너무 일찍 누르면 첫 키가 사라진다)
 const hintBefore = await page.locator('#title .anykey').count(); // 메뉴가 곧 입력 대기라 "아무 키나" 안내는 없다
 for (const k of ['ArrowDown', 'ArrowDown']) await page.keyboard.press(k); // 새 게임 → 조작법 → 설정 (이어하기는 저장이 없어 없다)
-await page.keyboard.press('Enter'); await page.waitForTimeout(100);
+await page.keyboard.press('Enter'); await page.waitForTimeout(400);
 const settingsText = await page.locator('#title').innerText();
 await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowLeft'); // 음량 조절
 await page.keyboard.press('Escape');
-await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(100); // 정보
+await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(400); // 설정 → (전체화면) → 정보
 const infoText = await page.locator('#title').innerText();
 await page.keyboard.press('Escape');
 const hintAfter = await page.locator('#title .anykey').count();
 await page.keyboard.press('m'); await page.keyboard.press('m'); // 전체 음소거 두 번 (켬 → 끔)
 const audioSaved = await page.evaluate(() => { try { return localStorage.getItem('cw_audio'); } catch { return 'blocked'; } });
-for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowUp'); // 정보 → 새 게임
+for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowUp'); // 정보 → 전체화면 → 설정 → 조작법 → 새 게임
 await page.keyboard.press('Enter');
 await page.waitForSelector('#title', { state: 'detached' });
 // 새 게임: 이름 입력(기본 이름) → 근접 조사(Esc) → 오프닝 연출을 Enter 로 끝까지
